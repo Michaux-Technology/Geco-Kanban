@@ -19,6 +19,9 @@ The license available on Github is :
 
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de)
 
+## ✅ Origin of the project
+This project was created in 🇫🇷 and 🇩🇪 
+
 ## ✅ Make a donation
 
 To obtain a license :
