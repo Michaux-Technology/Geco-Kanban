@@ -17,4 +17,7 @@ Pour obtenir une licence :
 - [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.de)
 - [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.de)
   
-Die richtige [Spende](https://github.com/sponsors/Michaux-Technology) machen
+Faire le bon [don](https://github.com/sponsors/Michaux-Technology)
+🙏🙏🙏
+
+Bon courage!
