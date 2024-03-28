@@ -22,6 +22,9 @@ The license available on Github is :
 ## ✅ Origin of the project
 This project was created in 🇫🇷 and 🇩🇪 
 
+## ✅ Project status
+This project is currently being programmed, there are still a lot of blogs out there 
+
 ## ✅ Make a donation
 
 To obtain a license :
