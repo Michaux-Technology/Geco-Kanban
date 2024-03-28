@@ -12,6 +12,7 @@ La licence disponible sur Github est :
 
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de)
 
+## ✅ Faire un don
 
 Pour obtenir une licence :
 - [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.de)
