@@ -6,6 +6,13 @@ This software lets you manage projects using Kanban.
 Each project comprises tasks that can be dragged from one column to another.  
 The software is multi-user and changes are visible live, without the need to refresh the page. 
 
+## ✅ Technologies used
+
+HTML
+React.js
+Node.js
+Mongodb
+
 ## ✅ Rights
 
 The license available on Github is : 
