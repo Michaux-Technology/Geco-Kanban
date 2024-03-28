@@ -1,25 +1,25 @@
-# ✅ Logiciel de gestion de projets
+# ✅ Project management software Open Source
 
-## ✅ Descriptif
+## ✅ Description
 
-Ce logiciel permet des projets à l'aide de Kanban.
-Chaque projet comporte des tâches que l'on peut glisser d'une colonne à l'autre.  
-Ce logiciel est multi utilisateurs et les changements sont visibles en direct sans avoir besoin de rafraichir la page. 
+This software lets you manage projects using Kanban.
+Each project comprises tasks that can be dragged from one column to another.  
+The software is multi-user and changes are visible live, without the need to refresh the page. 
 
-## ✅ Droits
+## ✅ Rights
 
-La licence disponible sur Github est : 
+The license available on Github is : 
 
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de)
 
-## ✅ Faire un don
+## ✅ Make a donation
 
-Pour obtenir une licence :
+To obtain a license :
 - [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.de)
 - [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.de)
   
-Faire le bon [don](https://github.com/sponsors/Michaux-Technology)
+Making the [right](https://github.com/sponsors/Michaux-Technology) donation
 
 🙏🙏🙏
 
-Bon courage!
+Good luck!
