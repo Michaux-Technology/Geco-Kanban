@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar, Badge } from '@mui/material';
-import { handelUserExistInProject } from './ProjectList.js';
 import { styled } from '@mui/material/styles';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -32,43 +31,46 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const AvatarComponent = ({ person, editingProject, handleUserSelect }) => {
-  const [userExists, setUserExists] = useState(null);
-  const [userSelectedForUpdate, setUserSelectedForUpdate] = useState(false);
+const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton, handelUserExistnewPeople, setNewPeople }) => {
+  const userExists = selectedUsersProject.includes(person._id);
+  const [isGreenBottonAdded, setIsGreenBottonAdded] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await handelUserExistInProject(person._id, editingProject?._id);
-      setUserExists(result === true);
-    };
+    console.log('User exists in the component thanks useEffect: ', userExists)
+  }, [userExists])
 
+  const fetchData = async () => {
+
+    const result = await handelUserExistInProject(person._id, editingProject?._id);
+    
+    if (result === true) {
+          // Chargement des participants au projet present dans la base de données
+          addGreenBotton(person, false)
+    }
+  }
+
+  useEffect(() => {
     fetchData();
-  }, [person._id, editingProject, userExists]);
+  }, [editingProject?._id, person._id]);
 
-  const handleAvatarClickOn = () => {
-    //handleUserSelect(person._id, editingProject?._id);
-    setUserSelectedForUpdate(true);
-  };
-
-  const handleAvatarClickOff = () => {
-    //handleUserSelect(person._id, editingProject?._id);
-    setUserSelectedForUpdate(false);
-  };
+  const handleAvatarClickOn = useCallback(() => {
+    handleAvatarClickOnChild(person, userExists);
+  }, [])
 
   return (
-    <React.Fragment>
+    <>
       {
-        (userExists === true  || userSelectedForUpdate)? (
+        (userExists === true) ? (
           <StyledBadge
             overlap="circular"
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             variant="dot"
           >
             <Avatar
+              key={person._id}
               src={`./uploads/${person.avatar}`}
               alt={person.firstName}
-              onClick={handleAvatarClickOff}
-              //onClick={() => handleUserSelect(person._id, editingProject?._id)}
+              onClick={handleAvatarClickOn}
               sx={{
                 cursor: 'pointer',
               }}
@@ -76,17 +78,16 @@ const AvatarComponent = ({ person, editingProject, handleUserSelect }) => {
           </StyledBadge>
         ) : (
           <Avatar
+            key={person._id}
             src={`./uploads/${person.avatar}`}
             alt={person.firstName}
-            updateExistUser={userExists}
             onClick={handleAvatarClickOn}
-            //onClick={() => handleUserSelect(person._id, editingProject?._id)}
             sx={{
               cursor: 'pointer',
             }}
           />
         )}
-    </React.Fragment>
+    </>
   );
 };
 

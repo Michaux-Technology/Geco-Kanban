@@ -550,6 +550,7 @@ app.get('/projects/:projectId/users/:personId', async (req, res) => {
 });
 
 app.post('/projects/:projectId/users/:personId', async (req, res) => {
+
   const { projectId, personId } = req.params;
   try {
 
