@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Avatar, Badge } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -33,7 +33,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 
 const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton, handelUserExistnewPeople, setNewPeople }) => {
   const userExists = selectedUsersProject.includes(person._id);
-  const [isGreenBottonAdded, setIsGreenBottonAdded] = useState(false);
+  
 
   useEffect(() => {
     console.log('User exists in the component thanks useEffect: ', userExists)
@@ -44,7 +44,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
     const result = await handelUserExistInProject(person._id, editingProject?._id);
     
     if (result === true) {
-          // Chargement des participants au projet present dans la base de données
+          // Chargement des parsticipants au projet present dans la base de données
           addGreenBotton(person, false)
     }
   }

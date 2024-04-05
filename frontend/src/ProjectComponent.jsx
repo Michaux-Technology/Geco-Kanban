@@ -168,19 +168,34 @@ const ProjectComponent = () => {
         }
     }
 
-    const UpdateUserSelect = (selectedUsers, project) => {
-        console.log("project", project)
-        selectedUsers.forEach((person) => {
-            axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
-        });
+    const UpdateUserSelect = async (selectedUsers, project) => {
+
+        try {
+            const response = await axios.get(`${API_URL}/projects/${project._id}/users`);
+            const projectUsers = response.data.users;
+
+            // Supprimer les utilisateurs qui ne sont pas dans la liste selectedUsers mais qui appartiennent au projet
+            const usersToDelete = projectUsers.filter(user => !selectedUsers.some(person => person._id === user._id));
+            for (const user of usersToDelete) {
+                await axios.delete(`${API_URL}/projects/${project._id}/users/${user._id}`);
+            }
+
+            // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
+            for (const person of selectedUsers) {
+                const response = await axios.get(`${API_URL}/projects/${project._id}/users/${person._id}`);
+                const userExists = response.data.exists;
+                if (!userExists) {
+                    await axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     // Modifiez la logique pour ouvrir le modal en mode édition
     const handleEditProject = async (project) => {
         try {
-
-
-            console.log("selectedUsers for update:", selectedUsers)
             //Mise a jour des utilisateurs affecté au projet
             UpdateUserSelect(selectedUsers, project)
 
@@ -271,31 +286,31 @@ const ProjectComponent = () => {
 
     const handelUserExistInProject = (personId, projectId) => {
         return axios
-          .get(`${API_URL}/projects/${projectId}/users/${personId}`)
-          .then((response) => {
-            if (response.data.message) {
-              return true;
-            } else {
-              return false;
-            }
-          })
-          .catch((error) => {
-            throw error;
-          });
-      };
+            .get(`${API_URL}/projects/${projectId}/users/${personId}`)
+            .then((response) => {
+                if (response.data.message) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            .catch((error) => {
+                throw error;
+            });
+    };
 
     //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
-      const addGreenBotton = (person, userExists) => {
+    const addGreenBotton = (person, userExists) => {
+
         if (!isGreenBottonAdded) {
-        //Application d'un point vert
-        setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-        setSelectedUsers(prevSelectedUsers => {
-            const updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
-            console.log("updatedSelectedUsers", updatedSelectedUsers)
-        });
-        setIsGreenBottonAdded(true);
+
+            //Application d'un point vert
+            setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
+            setSelectedUsers(prevSelectedUsers => [...prevSelectedUsers, person._id]);
+
+            setIsGreenBottonAdded(true);
         }
-       }
+    }
 
     //renvoie le click de l'Avatar
     const handleAvatarClickOn = useCallback((person, userExists) => {
@@ -308,24 +323,11 @@ const ProjectComponent = () => {
                 setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
             }
         }
-      
-        //Supprime un point vert sur l'icone du participant au projet
+
+        // Supprimer un point vert sur l'icone du participant au projet
         if (userExists === true) {
-            if (selectedUsersProject.includes(person._id)) {
-                setSelectedUsersProject(prevSelectedUsersProject => prevSelectedUsersProject.filter(user => user !== person._id));
-              } else {
-                setSelectedUsersProject(prevSelectedUsersProject => prevSelectedUsersProject.filter(user => user !== person._id));
-              }
-        }
-
-        console.log("selectedUsersProject", selectedUsersProject)
-
-        //Ajouter au Tableau d'utilisateurs
-        if (userExists === false) {
-            setSelectedUsers(prevSelectedUsers => {
-                const updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
-                console.log("updatedSelectedUsers", updatedSelectedUsers)
-                return updatedSelectedUsers;
+            setSelectedUsersProject(prevSelectedUsersProject => {
+                    return prevSelectedUsersProject.filter(user => user !== person._id);
             });
         }
 
@@ -333,11 +335,19 @@ const ProjectComponent = () => {
         if (userExists === true) {
             setSelectedUsers(prevSelectedUsers => {
                 const updatedSelectedUsers = prevSelectedUsers.filter(user => user !== person);
-                console.log("updatedSelectedUsers", updatedSelectedUsers);
+                return updatedSelectedUsers;
+            });
+            console.log("selectedUsers apres suppression:", selectedUsers)
+        }
+
+        //Ajouter au Tableau d'utilisateurs
+        if (userExists === false) {
+            setSelectedUsers(prevSelectedUsers => {
+                const updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
                 return updatedSelectedUsers;
             });
         }
-
+        console.log("selectedUsers apres ajout:", selectedUsers)
     }, []);
 
     return (
@@ -436,10 +446,10 @@ const ProjectComponent = () => {
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
                                                 newPeople={newPeople}
                                                 setNewPeople={setNewPeople}
-                                                editingProject = {editingProject}
+                                                editingProject={editingProject}
                                                 selectedUsersProject={selectedUsersProject}
-                                                handelUserExistInProject = {handelUserExistInProject}
-                                                addGreenBotton = {addGreenBotton}
+                                                handelUserExistInProject={handelUserExistInProject}
+                                                addGreenBotton={addGreenBotton}
                                             />
                                         ) : (
                                             <TextAvatarComponent
@@ -448,9 +458,9 @@ const ProjectComponent = () => {
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
                                                 newPeople={newPeople}
                                                 setNewPeople={setNewPeople}
-                                                editingProject = {editingProject}
+                                                editingProject={editingProject}
                                                 selectedUsersProject={selectedUsersProject}
-                                                handelUserExistInProject = {handelUserExistInProject}
+                                                handelUserExistInProject={handelUserExistInProject}
                                             />
                                         )
                                     );

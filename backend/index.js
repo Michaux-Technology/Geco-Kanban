@@ -527,10 +527,20 @@ app.get('/projects/:projectId/tasks', async (req, res) => {
 app.get('/projects/:projectId/users', async (req, res) => {
   const { projectId } = req.params;
   try {
-    const projectUsers = await ProjectUsers.find({ projectId });
-    res.json(projectUsers); // Retourne simplement une liste vide si aucune tâche n'est trouvée
+      const projectUsers = await ProjectUsers.find({ projectId: projectId });
+      res.json({ users: projectUsers });
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
+      res.status(500).json({ error: 'An error occurred' });
+  }
+});
+
+app.delete('/projects/:projectId/users/:personId', async (req, res) => {
+  const { projectId, personId } = req.params;
+  try {
+      await ProjectUsers.deleteOne({ projectId: projectId, userId: personId });
+      res.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+      res.status(500).json({ error: 'An error occurred' });
   }
 });
 
@@ -550,19 +560,24 @@ app.get('/projects/:projectId/users/:personId', async (req, res) => {
 });
 
 app.post('/projects/:projectId/users/:personId', async (req, res) => {
-
   const { projectId, personId } = req.params;
   try {
-
-    const projectUsers = new ProjectUsers({
-      projectId: projectId,
-      userId: personId
-    });
-    await projectUsers.save();
-
-    res.json({ success: true, message: 'User created successfully' });
+      const projectUsers = await ProjectUsers.findOne({
+          projectId: projectId,
+          userId: personId
+      });
+      if (!projectUsers) {
+          const newProjectUser = new ProjectUsers({
+              projectId: projectId,
+              userId: personId
+          });
+          await newProjectUser.save();
+          res.json({ success: true, message: 'User created successfully' });
+      } else {
+          res.json({ success: false, message: 'User already exists for the project' });
+      }
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
+      res.status(500).json({ error: 'An error occurred' });
   }
 });
 
