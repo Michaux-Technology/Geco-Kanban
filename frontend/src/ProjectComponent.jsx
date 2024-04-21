@@ -30,20 +30,28 @@ const ProjectComponent = () => {
 
     // Declaration des variables
     let [isModalOpen, setModalOpen] = useState(false);
+
     let [editingProject, setEditingProject] = useState(null);
+    let [isEditing, setIsEditing] = useState(false);
+
     let [tempImage, setTempImage] = useState(null);
     const DEFAULT_IMAGE = "./img/gecko.jpg";
     const [preview, setPreview] = useState(DEFAULT_IMAGE);
+
     const newProjectNameRef = useRef();
     const newProjectDescriptionRef = useRef();
+
     const [listUsers, setListUsers] = useState([]);
+
     const [selectedUsers, setSelectedUsers] = useState([]);
+    const [selectedUsersProject, setSelectedUsersProject] = useState([]);
+
     let [projects, setProjects] = useState([]);
+
     const [newPeople, setNewPeople] = useState([]); // Définition de newPeople
     const newProjectEnddateRef = useRef();
-    let [isEditing, setIsEditing] = useState(false);
+
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
-    const [selectedUsersProject, setSelectedUsersProject] = useState([]);
 
     const API_URL = 'http://localhost:3001';
     const socket = io(API_URL); // Connectez-vous au serveur WebSocket
@@ -120,6 +128,11 @@ const ProjectComponent = () => {
     const resetEditing = () => {
         setEditingProject(null);
         setModalOpen(false);
+        setSelectedUsers([]);
+        setSelectedUsersProject([]);
+        setIsGreenBottonAdded(false);
+        setIsEditing(false);
+        setTempImage(null)
     };
 
     const handleDrop = (event) => {
@@ -148,8 +161,6 @@ const ProjectComponent = () => {
             const response = await axios.post(`${API_URL}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data', },
             });
-
-            console.log('File uploaded successfully');
         } catch (error) {
             console.error('Erreur lors de l’appel axios:', error);
             if (error.response) {
@@ -171,20 +182,50 @@ const ProjectComponent = () => {
     const UpdateUserSelect = async (selectedUsers, project) => {
 
         try {
+
             const response = await axios.get(`${API_URL}/projects/${project._id}/users`);
             const projectUsers = response.data.users;
 
             // Supprimer les utilisateurs qui ne sont pas dans la liste selectedUsers mais qui appartiennent au projet
-            const usersToDelete = projectUsers.filter(user => !selectedUsers.some(person => person._id === user._id));
-            for (const user of usersToDelete) {
-                await axios.delete(`${API_URL}/projects/${project._id}/users/${user._id}`);
-            }
+            console.log("selectedUsers final", selectedUsers)
+            console.log("projectUsers", projectUsers)
+
+             const usersToDelete = projectUsers.filter(user => 
+                 projectUsers.includes(user) && !selectedUsers.some(person => person._id === user.userId)
+             );
+
+               for (const user of usersToDelete) {
+                 console.log("DELETE");
+                 //console.log("selectedUsers", selectedUsers);
+
+                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
+               }
+
+            //Si un user n'est pas dans selectedUser mais pas dans projectUsers
+            const checkMatchingIdAndProject = () => {
+                const isMatching = selectedUsers.some(selectedUser => {
+                    return !projectUsers.some(projectUser => {
+                        return (
+                            projectUser._id === selectedUser._id &&
+                            projectUser.projectId === selectedUser.projectId
+                        );
+                    });
+                });
+
+                if (isMatching) {
+                    console.log("DELETE");
+                }
+            };
+
 
             // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
             for (const person of selectedUsers) {
                 const response = await axios.get(`${API_URL}/projects/${project._id}/users/${person._id}`);
                 const userExists = response.data.exists;
-                if (!userExists) {
+
+                //Si n'exite pas dans la db pas alors ajouter
+                if (!userExists && person._id) {
+                    console.log("ADD")
                     await axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
                 }
             }
@@ -300,14 +341,17 @@ const ProjectComponent = () => {
     };
 
     //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
-    const addGreenBotton = (person, userExists) => {
+    const addGreenBotton = (person, project, userExists) => {
 
         if (!isGreenBottonAdded) {
-
+            //console.log("project", project)
             //Application d'un point vert
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-            setSelectedUsers(prevSelectedUsers => [...prevSelectedUsers, person._id]);
-
+            // setSelectedUsers(prevSelectedUsers => [...prevSelectedUsers, person._id]);
+            setSelectedUsers(prevSelectedUsers => [
+                ...prevSelectedUsers,
+                { _id: person._id, projectId: project }
+            ]);
             setIsGreenBottonAdded(true);
         }
     }
@@ -318,26 +362,13 @@ const ProjectComponent = () => {
         //Ajout un point vert sur l'icone du participant au projet
         if (userExists === false) {
             if (selectedUsersProject.includes(person._id)) {
+                console.log("ajout de l'utilisateur du tableau SelectedUsers1")
                 setSelectedUsersProject(prevSelectedUsersProject => prevSelectedUsersProject.filter(user => user !== person._id));
             } else {
+                console.log("ajout de l'utilisateur du tableau SelectedUsers2")
                 setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
+                console.log("selectedUsersProject", selectedUsersProject)
             }
-        }
-
-        // Supprimer un point vert sur l'icone du participant au projet
-        if (userExists === true) {
-            setSelectedUsersProject(prevSelectedUsersProject => {
-                    return prevSelectedUsersProject.filter(user => user !== person._id);
-            });
-        }
-
-        //Supprimer au Tableau d'utilisateurs
-        if (userExists === true) {
-            setSelectedUsers(prevSelectedUsers => {
-                const updatedSelectedUsers = prevSelectedUsers.filter(user => user !== person);
-                return updatedSelectedUsers;
-            });
-            console.log("selectedUsers apres suppression:", selectedUsers)
         }
 
         //Ajouter au Tableau d'utilisateurs
@@ -346,8 +377,52 @@ const ProjectComponent = () => {
                 const updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
                 return updatedSelectedUsers;
             });
+            console.log("selectedUsers Ajout", selectedUsers)
         }
-        console.log("selectedUsers apres ajout:", selectedUsers)
+
+         //Supprimer au Tableau d'utilisateurs
+        //  if (userExists === true) {
+        //     setSelectedUsers(prevSelectedUsers => {
+        //         return prevSelectedUsers.filter(user => user !== person._id);
+        //     })
+        //     console.log("selectedUsers Suppression", selectedUsers)
+        // }
+
+        if (userExists === true) {
+            setSelectedUsers(prevSelectedUsers => {
+              const updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
+              return updatedSelectedUsers;
+            });
+            console.log("selectedUsers Suppression", selectedUsers);
+          }
+
+
+
+
+            //setSelectedUsers(prevSelectedUsers => {
+              //console.log("suppression de l'utilisateur du tableau SelectedUsers");
+              //const updatedSelectedUsers = prevSelectedUsers.filter(user => user !== person._id);
+
+              //if (prevSelectedUsers === selectedUsers) {
+                //console.log("prevSelectedUsers est égal à selectedUsers avant la mise à jour");
+              //} else {
+                //console.log("prevSelectedUsers n'est pas égal à selectedUsers avant la mise à jour");
+                //console.log("person._id",person._id )
+                //return prevSelectedUsers.filter(user => user !== person._id);
+              //}
+            //});
+            
+          //}
+
+        // Supprimer un point vert sur l'icone du participant au projet
+        if (userExists === true) {
+            console.log(person._id);
+            setSelectedUsersProject(prevSelectedUsersProject => {
+                return prevSelectedUsersProject.filter(user => user !== person._id);
+            });
+            console.log("SelectedUsersProject", selectedUsersProject)
+        }
+        
     }, []);
 
     return (

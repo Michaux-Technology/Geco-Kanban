@@ -109,7 +109,6 @@ io.on('connection', socket => {
       // Diffuser la mise à jour à tous les clients connectés
       io.emit('taskUpdated', { taskId, status, order });
 
-      console.log('Task updated successfully');
     } catch (error) {
       console.error('Error updating task:', error);
     }
@@ -124,7 +123,6 @@ io.on('connection', socket => {
 
 // io.socket pour les projets (au lieu de socketIo)
 io.on('connection', (socket) => {
-  console.log('A user connected to projects');
   socket.on('taskUpdated', (task) => {
     socket.broadcast.emit('taskUpdated', task);
   });
@@ -144,8 +142,6 @@ io.on('connection', (socket) => {
 
       await project.save();
       io.emit('projectAdded', project);
-
-      console.log('Project added successfully');
     } catch (error) {
       console.error('Error adding project:', error);
     }
@@ -157,7 +153,6 @@ io.on('connection', (socket) => {
 
       await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
       io.emit('projectUpdated', projectData);
-      console.log('Project updated successfully');
     } catch (error) {
       console.error('Error updating project:', error);
     }
@@ -169,7 +164,6 @@ io.on('connection', (socket) => {
       const validProjectId = new mongoose.Types.ObjectId(projectId);
       await Project.findByIdAndDelete(validProjectId);
       io.emit('projectDeleted', projectId);
-      console.log('Project deleted successfully');
     } catch (error) {
       console.error('Error deleting project:', error);
     }
@@ -186,11 +180,8 @@ io.on('connection', (socket) => {
         emailGroup: collabData.emailGroup,
         avatar: namefile
       });
-      console.log(namefile)
       await collaborator.save();
       io.emit('CollaboratorAdded', collaborator);
-
-      console.log('Collaborator added successfully');
     } catch (error) {
       console.error('Error adding Collaborator:', error);
     }
@@ -527,22 +518,22 @@ app.get('/projects/:projectId/tasks', async (req, res) => {
 app.get('/projects/:projectId/users', async (req, res) => {
   const { projectId } = req.params;
   try {
-      const projectUsers = await ProjectUsers.find({ projectId: projectId });
-      res.json({ users: projectUsers });
+    const projectUsers = await ProjectUsers.find({ projectId: projectId });
+    res.json({ users: projectUsers });
   } catch (error) {
-      res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
-app.delete('/projects/:projectId/users/:personId', async (req, res) => {
-  const { projectId, personId } = req.params;
-  try {
-      await ProjectUsers.deleteOne({ projectId: projectId, userId: personId });
-      res.json({ success: true, message: 'User deleted successfully' });
-  } catch (error) {
-      res.status(500).json({ error: 'An error occurred' });
-  }
-});
+//  app.delete('/projects/:projectId/users/:personId', async (req, res) => {
+//    const { projectId, personId } = req.params;
+//    try {
+//        await ProjectUsers.deleteOne({ projectId: projectId, userId: personId });
+//        res.json({ success: true, message: 'User deleted successfully' });
+//    } catch (error) {
+//        res.status(500).json({ error: 'An error occurred' });
+//    }
+//  });
 
 app.get('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
@@ -552,7 +543,6 @@ app.get('/projects/:projectId/users/:personId', async (req, res) => {
       projectId: projectId
     });
 
-    console.log('isSelected:', isSelected)
     res.json({ message: isSelected });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred' });
@@ -562,27 +552,28 @@ app.get('/projects/:projectId/users/:personId', async (req, res) => {
 app.post('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
   try {
-      const projectUsers = await ProjectUsers.findOne({
-          projectId: projectId,
-          userId: personId
+    const projectUsers = await ProjectUsers.findOne({
+      projectId: projectId,
+      userId: personId
+    });
+    if (!projectUsers) {
+      const newProjectUser = new ProjectUsers({
+        projectId: projectId,
+        userId: personId
       });
-      if (!projectUsers) {
-          const newProjectUser = new ProjectUsers({
-              projectId: projectId,
-              userId: personId
-          });
-          await newProjectUser.save();
-          res.json({ success: true, message: 'User created successfully' });
-      } else {
-          res.json({ success: false, message: 'User already exists for the project' });
-      }
+      await newProjectUser.save();
+      res.json({ success: true, message: 'User created successfully' });
+    } else {
+      res.json({ success: false, message: 'User already exists for the project' });
+    }
   } catch (error) {
-      res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
 app.delete('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
+  console.log("testBackend")
   try {
     const deletedUser = await ProjectUsers.findOneAndDelete({ userId: personId, projectId: projectId });
     if (deletedUser) {

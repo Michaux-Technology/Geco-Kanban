@@ -33,19 +33,19 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 
 const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton, handelUserExistnewPeople, setNewPeople }) => {
   const userExists = selectedUsersProject.includes(person._id);
-  
+
 
   useEffect(() => {
-    console.log('User exists in the component thanks useEffect: ', userExists)
+    //console.log('User exists in the component thanks useEffect: ', userExists)
   }, [userExists])
 
   const fetchData = async () => {
 
     const result = await handelUserExistInProject(person._id, editingProject?._id);
-    
+
     if (result === true) {
-          // Chargement des parsticipants au projet present dans la base de données
-          addGreenBotton(person, false)
+      // Chargement des parsticipants au projet present dans la base de données
+      addGreenBotton(person, editingProject?._id, false)
     }
   }
 
