@@ -31,7 +31,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton, handelUserExistnewPeople, setNewPeople }) => {
+const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton }) => {
   const userExists = selectedUsersProject.includes(person._id);
 
 

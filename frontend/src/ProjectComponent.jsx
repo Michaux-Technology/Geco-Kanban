@@ -15,6 +15,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import EditIcon from '@mui/icons-material/Edit';
+import { Avatar } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Rating from '@mui/material/Rating';
 import Card from '@mui/material/Card';
@@ -26,7 +27,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AvatarComponent from './AvatarComponent';
 import TextAvatarComponent from './TextAvatarComponent';
 
+
+
 const ProjectComponent = () => {
+
 
     // Declaration des variables
     let [isModalOpen, setModalOpen] = useState(false);
@@ -42,6 +46,7 @@ const ProjectComponent = () => {
     const newProjectDescriptionRef = useRef();
 
     const [listUsers, setListUsers] = useState([]);
+    const [listUsersProject, setListUsersProject] = useState([]);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [selectedUsersProject, setSelectedUsersProject] = useState([]);
@@ -60,6 +65,12 @@ const ProjectComponent = () => {
         display: 'inline-flex',
         flexWrap: 'wrap'
     };
+
+    const flexGauche = {
+        paddingLeft: '100'
+    };
+
+
     const [isGreenBottonAdded, setIsGreenBottonAdded] = useState(false);
 
     const fetchData = async () => {
@@ -69,8 +80,10 @@ const ProjectComponent = () => {
             const responseUsers = await axios.get(`${API_URL}/users`)
             setListUsers(responseUsers.data);
 
-            //const responseCollaborators = await axios.get(`${API_URL}/user/${email}/collaborators`)
-            //setCollaborators(responseCollaborators.data);
+            // Recherche d'utilisateur(s) affecté(s) à un projet
+            const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
+            setListUsersProject(responseUsersProject.data);
+            console.log(listUsersProject);
 
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);
@@ -190,16 +203,16 @@ const ProjectComponent = () => {
             console.log("selectedUsers final", selectedUsers)
             console.log("projectUsers", projectUsers)
 
-             const usersToDelete = projectUsers.filter(user => 
-                 projectUsers.includes(user) && !selectedUsers.some(person => person._id === user.userId)
-             );
+            const usersToDelete = projectUsers.filter(user =>
+                projectUsers.includes(user) && !selectedUsers.some(person => person._id === user.userId)
+            );
 
-               for (const user of usersToDelete) {
-                 console.log("DELETE");
-                 //console.log("selectedUsers", selectedUsers);
+            for (const user of usersToDelete) {
+                console.log("DELETE");
+                //console.log("selectedUsers", selectedUsers);
 
-                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
-               }
+                await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
+            }
 
             //Si un user n'est pas dans selectedUser mais pas dans projectUsers
             const checkMatchingIdAndProject = () => {
@@ -341,13 +354,12 @@ const ProjectComponent = () => {
     };
 
     //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
-    const addGreenBotton = (person, project, userExists) => {
+    const addGreenBotton = (person, project) => {
 
         if (!isGreenBottonAdded) {
-            //console.log("project", project)
+
             //Application d'un point vert
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-            // setSelectedUsers(prevSelectedUsers => [...prevSelectedUsers, person._id]);
             setSelectedUsers(prevSelectedUsers => [
                 ...prevSelectedUsers,
                 { _id: person._id, projectId: project }
@@ -380,39 +392,14 @@ const ProjectComponent = () => {
             console.log("selectedUsers Ajout", selectedUsers)
         }
 
-         //Supprimer au Tableau d'utilisateurs
-        //  if (userExists === true) {
-        //     setSelectedUsers(prevSelectedUsers => {
-        //         return prevSelectedUsers.filter(user => user !== person._id);
-        //     })
-        //     console.log("selectedUsers Suppression", selectedUsers)
-        // }
-
+        //Supprimer au Tableau d'utilisateurs
         if (userExists === true) {
             setSelectedUsers(prevSelectedUsers => {
-              const updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
-              return updatedSelectedUsers;
+                const updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
+                return updatedSelectedUsers;
             });
             console.log("selectedUsers Suppression", selectedUsers);
-          }
-
-
-
-
-            //setSelectedUsers(prevSelectedUsers => {
-              //console.log("suppression de l'utilisateur du tableau SelectedUsers");
-              //const updatedSelectedUsers = prevSelectedUsers.filter(user => user !== person._id);
-
-              //if (prevSelectedUsers === selectedUsers) {
-                //console.log("prevSelectedUsers est égal à selectedUsers avant la mise à jour");
-              //} else {
-                //console.log("prevSelectedUsers n'est pas égal à selectedUsers avant la mise à jour");
-                //console.log("person._id",person._id )
-                //return prevSelectedUsers.filter(user => user !== person._id);
-              //}
-            //});
-            
-          //}
+        }
 
         // Supprimer un point vert sur l'icone du participant au projet
         if (userExists === true) {
@@ -422,7 +409,7 @@ const ProjectComponent = () => {
             });
             console.log("SelectedUsersProject", selectedUsersProject)
         }
-        
+
     }, []);
 
     return (
@@ -605,15 +592,38 @@ const ProjectComponent = () => {
                                             {project.description}
 
                                             {!isModalOpen && (
-                                                <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                                                    <Fab size="small" color="primary" aria-label="edit" onClick={() => {
-                                                        setEditingProject(project);
-                                                        setIsEditing(true);
-                                                        setModalOpen(true);
-                                                    }}>
-                                                        <EditIcon />
-                                                    </Fab>
-                                                </Box>
+                                                <div>
+
+                                                    <AvatarGroup>
+                                                        {
+                                                        listUsersProject.map(userProject => {
+                                                            console.log(`Lien de l'avatar : ./uploads/${userProject.avatar}`);
+                                                            console.log(listUsersProject)
+                                                            return (
+                                                                userProject.projectId === project._id && (
+                                                                    <Avatar
+                                                                        key={userProject.id}
+                                                                        src={`./uploads/${userProject.userId.avatar}`}
+                                                                        alt={userProject.name} />
+                                                                )
+                                                            );
+                                                        })}
+                                                    </AvatarGroup>
+
+
+
+                                                    <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                                                        <Fab size="small" color="primary" aria-label="edit" onClick={() => {
+                                                            setEditingProject(project);
+                                                            setIsEditing(true);
+                                                            setModalOpen(true);
+                                                        }}>
+                                                            <EditIcon />
+                                                        </Fab>
+
+
+                                                    </Box>
+                                                </div>
                                             )}
 
                                         </Typography>

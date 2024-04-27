@@ -515,6 +515,26 @@ app.get('/projects/:projectId/tasks', async (req, res) => {
   }
 });
 
+//jointure entre users et projectusers
+app.get('/projectusers', async (req, res) => {
+  try {
+    const projectUsers = await ProjectUsers.find()
+      .populate({
+        path: 'userId',
+        select: 'avatar',
+        model: 'User', // Assurez-vous d'utiliser le nom du modèle 'User' correct
+      })
+      .select('projectId userId');
+
+    console.log(projectUsers);
+    res.json(projectUsers);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.get('/projects/:projectId/users', async (req, res) => {
   const { projectId } = req.params;
   try {
@@ -524,16 +544,6 @@ app.get('/projects/:projectId/users', async (req, res) => {
     res.status(500).json({ error: 'An error occurred' });
   }
 });
-
-//  app.delete('/projects/:projectId/users/:personId', async (req, res) => {
-//    const { projectId, personId } = req.params;
-//    try {
-//        await ProjectUsers.deleteOne({ projectId: projectId, userId: personId });
-//        res.json({ success: true, message: 'User deleted successfully' });
-//    } catch (error) {
-//        res.status(500).json({ error: 'An error occurred' });
-//    }
-//  });
 
 app.get('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
