@@ -60,7 +60,7 @@ const CollaboratorComponent = () => {
 
       // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
 
-      const responseCollaborators = await axios.get(`${API_URL}/user/${email}/collaborators`)
+      const responseCollaborators = await axios.get(`${API_URL}/users`)
       setCollaborators(responseCollaborators.data);
 
     } catch (error) {
@@ -163,7 +163,9 @@ const CollaboratorComponent = () => {
         lastname: lastNameCollab,
         firstname: firstNameCollab,
         position: positionCollab,
-        emailGroup: email,
+        company: localStorage.getItem('companyuser'),
+        password:"1234"
+
       });
 
       tempImage(null)

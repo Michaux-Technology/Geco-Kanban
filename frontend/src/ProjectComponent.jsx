@@ -43,6 +43,7 @@ const ProjectComponent = () => {
     const [preview, setPreview] = useState(DEFAULT_IMAGE);
 
     const newProjectNameRef = useRef();
+    const listProjectUsers = useRef();
     const newProjectDescriptionRef = useRef();
 
     const [listUsers, setListUsers] = useState([]);
@@ -83,7 +84,7 @@ const ProjectComponent = () => {
             // Recherche d'utilisateur(s) affecté(s) à un projet
             const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
             setListUsersProject(responseUsersProject.data);
-            console.log(listUsersProject);
+            //console.log(listUsersProject);
 
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);
@@ -112,6 +113,23 @@ const ProjectComponent = () => {
             setProjects((prevProjects) => prevProjects.filter((project) => project._id !== deletedProjectId));
         });
 
+        // Écoutez l'événement pour les utilisateurs dans un projet
+
+        socket.on('projectusers', (responseUsersProject) => {
+            console.log(responseUsersProject);
+            setListUsersProject(responseUsersProject.data);
+        });
+
+        //         // Écoutez l'événement pour l'ajout d'un utilisateur au projet
+        // socket.on('userAdded', (userProject) => {
+        //     setListUsersProject(prevListUsersProject => [...prevListUsersProject, userProject]);
+        // });
+
+        // // Écoutez l'événement pour la suppression d'un utilisateur du projet
+        // socket.on('userRemoved', (userId) => {
+        //     setListUsersProject(prevListUsersProject => prevListUsersProject.filter(userProject => userProject.userId !== userId));
+        // });
+
         // Écoutez l'événement pour les projets mis à jour en temps réel
         socket.on('projectUpdated', (updatedProject) => {
             setProjects((prevProjects) =>
@@ -120,6 +138,11 @@ const ProjectComponent = () => {
                 )
             );
         });
+
+        // Écoutez l'événement pour les utilisateurs dans un projet
+        //socket.on('projectusers', (responseUsersProject) => {
+        //setListUsersProject(responseUsersProject.data);
+        //});
 
         // Nettoyez les écouteurs d'événements lorsque le composant se démonte
         return () => {
@@ -240,6 +263,11 @@ const ProjectComponent = () => {
                 if (!userExists && person._id) {
                     console.log("ADD")
                     await axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
+
+                    socket.on('userProjectAdded', (person) => {
+                         setListUsersProject(prevListUsersProject => [...prevListUsersProject, person]);
+                     });
+
                 }
             }
         } catch (error) {
@@ -596,18 +624,18 @@ const ProjectComponent = () => {
 
                                                     <AvatarGroup>
                                                         {
-                                                        listUsersProject.map(userProject => {
-                                                            console.log(`Lien de l'avatar : ./uploads/${userProject.avatar}`);
-                                                            console.log(listUsersProject)
-                                                            return (
-                                                                userProject.projectId === project._id && (
-                                                                    <Avatar
-                                                                        key={userProject.id}
-                                                                        src={`./uploads/${userProject.userId.avatar}`}
-                                                                        alt={userProject.name} />
-                                                                )
-                                                            );
-                                                        })}
+                                                            listUsersProject.map(userProject => {
+                                                                //console.log(`Lien de l'avatar : ./uploads/${userProject.avatar}`);
+                                                                //console.log(listUsersProject)
+                                                                return (
+                                                                    userProject.projectId === project._id && (
+                                                                        <Avatar
+                                                                            key={userProject.id}
+                                                                            src={`./uploads/${userProject.userId.avatar}`}
+                                                                            alt={userProject.name} />
+                                                                    )
+                                                                );
+                                                            })}
                                                     </AvatarGroup>
 
 

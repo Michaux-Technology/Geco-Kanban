@@ -1,4 +1,4 @@
-import React, { useState, useContext  } from 'react';
+import React, { useState, useContext } from 'react';
 import { Container, TextField, Button, Typography, Link, CssBaseline, Avatar, Grid } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -8,15 +8,12 @@ import { useNavigate } from 'react-router-dom';
 
 function AuthPage() {
     const API_URL = 'http://localhost:3001';
-    // const { email, setEmail } = useContext(UserContext);
-    // const { avatar, setAvatar } = useContext(UserContext);
-    // const { lastname, setLastname } = useContext(UserContext);
-    // const { firstname, setFirstname } = useContext(UserContext);
 
-    const [ email, setEmail ] =  useState(localStorage.getItem('email') || '');
-    const [ avatar, setAvatar ] = useState(localStorage.getItem('avataruser') || '');
-    const [ lastname, setLastname ] = useState(localStorage.getItem('lastnameuser') || '');
-    const [ firstname, setFirstname ] = useState(localStorage.getItem('firstnameuser') || '');
+    const [email, setEmail] = useState(localStorage.getItem('email') || '');
+    const [avatar, setAvatar] = useState(localStorage.getItem('avataruser') || '');
+    const [lastname, setLastname] = useState(localStorage.getItem('lastnameuser') || '');
+    const [firstname, setFirstname] = useState(localStorage.getItem('firstnameuser') || '');
+    const [company, setCompany] = useState(localStorage.getItem('companyuser') || '');
 
     let [password, setPassword] = useState('');
     let navigate = useNavigate();
@@ -26,20 +23,41 @@ function AuthPage() {
 
         try {
             const response = await axios.post(`${API_URL}/login`, { email, password });
-            
+
             if (response.data && response.data.message === 'Login successful') {
-                console.log('test')
+                //console.log('test')
                 const responseUser = await axios.get(`${API_URL}/user`, { email });
                 setAvatar(responseUser.data.avatar);
                 setLastname(responseUser.data.lastName);
                 setFirstname(responseUser.data.firstName);
+                setCompany(responseUser.data.company);
 
                 // Enregistrer l'avatar, le prenom et le nom de famille dans le localStorage
-            localStorage.setItem('avataruser', avatar);
-            localStorage.setItem('firstnameuser', firstname);
-            localStorage.setItem('lastnameuser', lastname);
 
-                //console.log(responseUser.data)
+                //passage des Localstarage sous forme de fonction car sans fonction ca créé un bug
+                //Probleme de rapidité 
+                saveAvatarToLocalStorage(responseUser.data.avatar);
+                savefirstnameToLocalStorage(responseUser.data.firstname);
+                savelastnameToLocalStorage(responseUser.data.lastname);
+                saveCompanyToLocalStorage(responseUser.data.company);
+
+                function saveAvatarToLocalStorage(avatar) {
+                    localStorage.setItem('avataruser', avatar);
+                }
+
+                function savefirstnameToLocalStorage(firstname) {
+                    localStorage.setItem('firstnameuser', firstname);
+                }
+
+                function savelastnameToLocalStorage(company) {
+                    localStorage.setItem('companyuser', company);
+                }
+
+                function saveCompanyToLocalStorage(lastname) {
+                    localStorage.setItem('lastnameuser', lastname);
+                }
+
+                //console.log(responseUser.data.avatar)
                 navigate('/projectList'); // Redirection vers la page projectList
             } else {
                 console.error(response.data.message);
@@ -58,11 +76,11 @@ function AuthPage() {
         const newEmail = e.target.value;
         localStorage.setItem('email', newEmail);
         setEmail(newEmail);
-      };
+    };
 
     return (
         <Container component="main" maxWidth="xs">
-            
+
             <CssBaseline />
             <div style={{
                 display: 'flex',
@@ -77,7 +95,7 @@ function AuthPage() {
                     Login
                 </Typography>
                 <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmit}>
-            
+
                     <TextField
                         variant="outlined"
                         margin="normal"
@@ -91,7 +109,7 @@ function AuthPage() {
                         value={email}
                         onChange={handleEmailChange}
                     />
-              
+
                     <TextField
                         variant="outlined"
                         margin="normal"
@@ -138,10 +156,10 @@ function AuthPage() {
                             </Link>
                         </Grid>
                     </Grid>
-                   
+
                 </form>
             </div>
-            
+
         </Container>
     );
 }

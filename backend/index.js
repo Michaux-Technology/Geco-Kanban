@@ -172,12 +172,13 @@ io.on('connection', (socket) => {
   socket.on('addCollab', async (collabData) => {
     try {
 
-      const collaborator = new Collaborator({
+      const collaborator = new User({
         email: collabData.email,
         lastName: collabData.lastname,
         firstName: collabData.firstname,
         position: collabData.position,
-        emailGroup: collabData.emailGroup,
+        company: collabData.company,
+        password: collabData.password,
         avatar: namefile
       });
       await collaborator.save();
