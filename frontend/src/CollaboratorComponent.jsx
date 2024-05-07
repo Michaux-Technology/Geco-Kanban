@@ -32,6 +32,8 @@ const CollaboratorComponent = () => {
   const API_URL = 'http://localhost:3001'; // Adresse du serveur
   const socket = io(API_URL); // Se connecter au serveur WebSocket
 
+  const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '');
+
   const resetEditingCollab = () => {
     setEditingCollab(null);
     setModalOpenCollab(false);
@@ -122,9 +124,6 @@ const CollaboratorComponent = () => {
       // Réinitialisez les champs
       resetEditingCollab();
       //console.log('Image:', tempImage);
-      if (tempImage) {
-        await onUpload(tempImage);
-      }
 
       if (tempImage) { // Si une nouvelle image a été déposée
         await onUpload(tempImage); // Uploadez l'image
@@ -163,9 +162,8 @@ const CollaboratorComponent = () => {
         lastname: lastNameCollab,
         firstname: firstNameCollab,
         position: positionCollab,
-        company: localStorage.getItem('companyuser'),
+        company: companyuser,
         password:"1234"
-
       });
 
       tempImage(null)
@@ -243,6 +241,7 @@ const CollaboratorComponent = () => {
                   value={lastNameCollab}
                   onChange={(e) => setLastNameCollab(e.target.value)}
                 />
+
                 <TextField
                   variant="outlined"
                   margin="normal"
@@ -255,6 +254,7 @@ const CollaboratorComponent = () => {
                   value={firstNameCollab}
                   onChange={(e) => setFirstNameCollab(e.target.value)}
                 />
+
                 <TextField
                   variant="outlined"
                   margin="normal"

@@ -1,21 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar, Badge } from '@mui/material';
 // import{ handelUserExistInProject } from './ProjectList';
 //import { stringAvatar } from './ProjectList';
 
-const TextAvatarComponent = ({ person, editingProject, selectedUsers, handleUserSelect, handelUserExistInProject }) => {
-  console.log("TextAvatarComponent")
+const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handleUserSelect, handelUserExistInProject, addGreenBotton }) => {
+
     const [userExists, setUserExists] = useState(null);
  
-    useEffect(() => {
-      const fetchData = async () => {
-        const result = await handelUserExistInProject(person._id, editingProject?._id);
-        setUserExists(result === 'yes');
-      };
+    const fetchData = async () => {
+
+      const result = await handelUserExistInProject(person._id, editingProject?._id);
   
+      if (result === true) {
+        // Chargement des parsticipants au projet present dans la base de données
+        addGreenBotton(person, editingProject?._id, false)
+      }
+    }
+
+    useEffect(() => {
       fetchData();
     }, [person._id, editingProject]);
 
+
+    const handleAvatarClickOn = useCallback(() => {
+      handleAvatarClickOnChild(person, userExists);
+    }, [])
 
     function stringToColor(string) {
       let hash = 0;
@@ -44,10 +53,13 @@ const TextAvatarComponent = ({ person, editingProject, selectedUsers, handleUser
       };
     }
     
+
+
     if (userExists === null) {
       return null;
     }
   
+
     const isUserSelected = selectedUsers.some((user) => {
       if (user.personId === person._id && user.projectId === editingProject?._id) {
         console.log("true", user.personId);
@@ -56,10 +68,12 @@ const TextAvatarComponent = ({ person, editingProject, selectedUsers, handleUser
       return false;}
     });
   
+
     return (
       <React.Fragment>
        
-        {isUserSelected ? (
+       {
+        (userExists === true) ? (
           <Badge
             overlap="circular"
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -67,8 +81,9 @@ const TextAvatarComponent = ({ person, editingProject, selectedUsers, handleUser
           >
             <Avatar
               {...stringAvatar(`${person.firstName} ${person.lastName}`)}
+              key={person._id}
               alt={person.firstName}
-              onClick={() => handleUserSelect(person._id, editingProject?._id)}
+              onClick={handleAvatarClickOn}
               sx={{
                 cursor: 'pointer',
               }}
@@ -77,8 +92,9 @@ const TextAvatarComponent = ({ person, editingProject, selectedUsers, handleUser
         ) : (
           <Avatar
             {...stringAvatar(`${person.firstName} ${person.lastName}`)}
+            key={person._id}
             alt={person.firstName}
-            onClick={() => handleUserSelect(person._id, editingProject?._id)}
+            onClick={handleAvatarClickOn}
             sx={{
               cursor: 'pointer',
             }}
