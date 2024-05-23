@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react'
+import io from 'socket.io-client'
+import axios from 'axios'
 
-import ShareIcon from '@mui/icons-material/Share';
-import { Avatar } from '@mui/material';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import ShareIcon from '@mui/icons-material/Share'
+import { Avatar } from '@mui/material'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip, CssBaseline } from '@mui/material';
-import Fab from '@mui/material/Fab';
-import AddIcon from '@mui/icons-material/Add';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import Fab from '@mui/material/Fab'
+import AddIcon from '@mui/icons-material/Add'
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
+
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
+import ModalClose from '@mui/joy/ModalClose';
 
 
 const CollaboratorComponent = () => {
@@ -29,72 +33,91 @@ const CollaboratorComponent = () => {
   let [isEditing, setIsEditing] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
 
-  const API_URL = 'http://localhost:3001'; // Adresse du serveur
+  const API_URL = 'http://localhost:3001' // Adresse du serveur
   const socket = io(API_URL); // Se connecter au serveur WebSocket
 
-  const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '');
+  const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '')
 
   const resetEditingCollab = () => {
-    setEditingCollab(null);
-    setModalOpenCollab(false);
-    setEmailCollab(null);
-    setAvatarCollab(null);
-    setLastNameCollab(null);
-    setFirstNameCollab(null);
-    setPositionCollab(null);
-    setTempImage(null);
+    setEditingCollab(null)
+    setModalOpenCollab(false)
+    setEmailCollab(null)
+    setAvatarCollab(null)
+    setLastNameCollab(null)
+    setFirstNameCollab(null)
+    setPositionCollab(null)
+    setTempImage(null)
 
-  };
+  }
 
-  const Modal = React.memo(({ onClose, children }) => {
-    return (
-      <div className="modal">
-        <div className="modal-content">
-          <span className="close" onClick={onClose}>&times;</span>
-          {children}
-        </div>
-      </div>
-    );
-  });
+  const emailRef = useRef();
+  const firstNameRef = useRef();
+  const lastNameRef = useRef();
+  const positionRef = useRef();
+  const iconRef = useRef();
 
   const fetchData = async () => {
     try {
 
       // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
-
       const responseCollaborators = await axios.get(`${API_URL}/users`)
-      setCollaborators(responseCollaborators.data);
+      setCollaborators(responseCollaborators.data)
 
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching projects:', error)
+    }
+  };
+
+  const handleChange = () => {
+    setEmailCollab(emailRef.current.value);
+    setFirstNameCollab(firstNameRef.current.value);
+    setLastNameCollab(lastNameRef.current.value);
+    setPositionCollab(positionRef.current.value);
+  };
+
+  const [tempLastName, setTempLastName] = useState("");
+  const [tempFirstName, setTempFirstName] = useState("");
+  const [tempPosition, setTempPosition] = useState("");
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "lastName") {
+      setTempLastName(value);
+    } else if (name === "firstName") {
+      setTempFirstName(value);
+    } else if (name === "position") {
+      setTempPosition(value);
     }
   };
 
   useEffect(() => {
+
     fetchData();
 
     socket.on('collaboratorAdded', (newCollaborator) => {
-      setCollaborators((prevCollaborators) => [...prevCollaborators, newCollaborator]);
-    });
+      setCollaborators((prevCollaborators) => [...prevCollaborators, newCollaborator])
 
-  }, []);
+    })
+
+  }, [])
 
   function stringToColor(string) {
-    let hash = 0;
-    let i;
+    let hash = 0
+    let i
 
     for (i = 0; i < string.length; i += 1) {
       hash = string.charCodeAt(i) + ((hash << 5) - hash);
     }
 
-    let color = '#';
+    let color = '#'
 
     for (i = 0; i < 3; i += 1) {
       const value = (hash >> (i * 8)) & 0xff;
       color += `00${value.toString(16)}`.slice(-2);
     }
 
-    return color;
+    return color
   }
 
   function stringAvatar(name) {
@@ -111,11 +134,39 @@ const CollaboratorComponent = () => {
     //console.log(event)
 
     if (event.target.files && event.target.files[0]) {
-      setAvatarCollab(URL.createObjectURL(event.target.files[0]));
-      const file = event.target.files[0];
-      setTempImage(file);
+      setAvatarCollab(URL.createObjectURL(event.target.files[0]))
+      const file = event.target.files[0]
+      setTempImage(file)
     }
   };
+
+  const onUpload = async (file) => {
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const response = await axios.post(`${API_URL}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', },
+      })
+
+      //console.log('File uploaded successfully')
+    } catch (error) {
+      console.error('Erreur lors de l’appel axios:', error)
+      if (error.response) {
+        // La requête a été faites et le serveur a répondu avec un statut
+        // qui est hors de la plage de 2xx
+
+      } else if (error.request) {
+        // La requête a été faites mais pas de réponse a été reçue
+        console.error('Request data:', error.request)
+      } else {
+        // Quelque chose s'est produit lors de la configuration de la requête
+        console.error('Error message:', error.message)
+      }
+    } finally {
+      console.log('Finally après l’appel axios');
+    }
+  }
 
   const handleAddCollab = async (e) => {
 
@@ -123,39 +174,12 @@ const CollaboratorComponent = () => {
 
       // Réinitialisez les champs
       resetEditingCollab();
-      //console.log('Image:', tempImage);
 
       if (tempImage) { // Si une nouvelle image a été déposée
         await onUpload(tempImage); // Uploadez l'image
       }
 
-      const onUpload = async (file) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        try {
 
-          const response = await axios.post(`${API_URL}/upload`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data', },
-          });
-
-          console.log('File uploaded successfully');
-        } catch (error) {
-          console.error('Erreur lors de l’appel axios:', error);
-          if (error.response) {
-            // La requête a été faites et le serveur a répondu avec un statut
-            // qui est hors de la plage de 2xx
-
-          } else if (error.request) {
-            // La requête a été faites mais pas de réponse a été reçue
-            console.error('Request data:', error.request);
-          } else {
-            // Quelque chose s'est produit lors de la configuration de la requête
-            console.error('Error message:', error.message);
-          }
-        } finally {
-          console.log('Finally après l’appel axios');
-        }
-      }
 
       socket.emit('addCollab', {
         email: emailCollab,
@@ -163,49 +187,77 @@ const CollaboratorComponent = () => {
         firstname: firstNameCollab,
         position: positionCollab,
         company: companyuser,
-        password:"1234"
+        password: "1234"
       });
 
       tempImage(null)
-      setModalOpenCollab(false);
+      setModalOpenCollab(false)
     } catch (error) {
       console.error('Error adding/editing Collaborator:', error);
     }
   }
 
   const handleSubmitCollab = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
   }
+
+  const [layout, setLayout] = React.useState(undefined);
+
 
   return (
     <>
-      {!isModalOpenCollab && (
-        <Box sx={{ '& > :not(style)': { m: 1 } }}>
-          <Fab color="primary" aria-label="add" onClick={() => { setIsEditingCollab(false); setModalOpenCollab(true); }}>
-            <AddIcon />
-          </Fab>
-        </Box>
-      )}
+      {!isModalOpenCollab
+        && (
+
+          <Box sx={{ '& > :not(style)': { m: 1 } }}>
+            <Fab
+              color="primary"
+              aria-label="add"
+              onClick={() => { setIsEditingCollab(false); setModalOpenCollab(true); setLayout('center'); }}>
+              <AddIcon />
+            </Fab>
+          </Box>
+        )
+      }
+
 
       {isModalOpenCollab && (
-        <Modal onClose={resetEditingCollab}>
+
+        <Modal
+          open={!!layout}
+          id='modalCollab'
+          onClose={resetEditingCollab}>
+            
+            <ModalDialog>
           <div style={{
+            backgroundColor: '#ffffff',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // pour le centrage vertical
+            flexWrap: 'wrap',
+            justifyContent: 'center',
             alignItems: 'center',
-            height: '100%'
-          }}>
+            padding: '10px',
+            width: '500px',
+            height: '700px',
+          }}
+          >
 
-            <CssBaseline />
+           
+            <ModalClose
+              onClick={() => setModalOpenCollab(false)}
+            />
+ 
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                marginTop: '8vh',
-              }}
+              style={
+                {
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  marginTop: '8vh',
+                }
+              }
             >
+
 
               <Avatar src={avatarCollab} style={{ backgroundColor: '#f50057', width: 80, height: 80 }}>
                 <LockOutlinedIcon />
@@ -215,6 +267,7 @@ const CollaboratorComponent = () => {
               </Typography>
 
               <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmitCollab}>
+
                 <TextField
                   variant="outlined"
                   margin="normal"
@@ -224,11 +277,11 @@ const CollaboratorComponent = () => {
                   label="E-mail address"
                   name="email"
                   autoComplete="email"
-                  autoFocus
-                  value={emailCollab}
+                  value={emailCollab || ""}
                   onChange={(e) => setEmailCollab(e.target.value)}
+                  inputRef={emailRef}
+                  autoFocus
                 />
-
                 <TextField
                   variant="outlined"
                   margin="normal"
@@ -238,7 +291,8 @@ const CollaboratorComponent = () => {
                   label="Last Name"
                   name="lastName"
                   autoComplete="lname"
-                  value={lastNameCollab}
+                  value={lastNameCollab || ""}
+                  inputRef={lastNameRef}
                   onChange={(e) => setLastNameCollab(e.target.value)}
                 />
 
@@ -251,7 +305,8 @@ const CollaboratorComponent = () => {
                   label="First Name"
                   name="firstName"
                   autoComplete="fname"
-                  value={firstNameCollab}
+                  value={firstNameCollab || ""}
+                  inputRef={firstNameRef}
                   onChange={(e) => setFirstNameCollab(e.target.value)}
                 />
 
@@ -263,7 +318,8 @@ const CollaboratorComponent = () => {
                   id="position"
                   label="Position"
                   name="position"
-                  value={positionCollab}
+                  value={positionCollab || ""}
+                  inputRef={positionRef}
                   onChange={(e) => setPositionCollab(e.target.value)}
                 />
                 <input
@@ -297,21 +353,20 @@ const CollaboratorComponent = () => {
                   style={{ marginTop: '1rem' }}
                   onClick={() => {
                     if (isEditing) {
-                      //handleEditCollab(editingProject);
                     } else {
-                      handleAddCollab();
+                      handleAddCollab()
                     }
                   }}
                 >
                   Save
                 </Button>
-
               </form>
             </div>
-
           </div>
+          </ModalDialog>
         </Modal>
-      )}
+      )
+      }
       <div style={{ maxWidth: '600px' }}>
         <List>
           {collaborators.map(collaborator => (
@@ -320,9 +375,12 @@ const CollaboratorComponent = () => {
 
                 {collaborator.avatar ? (
 
-                  <Avatar src={"./uploads/" + collaborator.avatar} onLoad={() => console.log("Avatar loaded:", collaborator.avatar)} />
+                  <Avatar src={"./uploads/" + collaborator.avatar} />
                 ) : (
-                  <Avatar {...stringAvatar(`${collaborator.firstName} ${collaborator.lastName}`)} />
+                  <Avatar
+                    {...stringAvatar(`${collaborator.firstName} ${collaborator.lastName}`)}
+                    key={collaborator._id}
+                  />
                 )}
               </ListItemAvatar>
               <ListItemText

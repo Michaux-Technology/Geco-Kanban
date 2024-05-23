@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Button, TextField } from '@mui/material';
+import { Button, TextField, CssBaseline } from '@mui/material';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import GradeIcon from '@mui/icons-material/Grade';
@@ -26,8 +26,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 //Components
 import AvatarComponent from './AvatarComponent';
 import TextAvatarComponent from './TextAvatarComponent';
-
-
+import Modal from '@mui/joy/Modal';
+import ModalClose from '@mui/joy/ModalClose';
+import ModalDialog from '@mui/joy/ModalDialog';
 
 const ProjectComponent = () => {
 
@@ -121,14 +122,14 @@ const ProjectComponent = () => {
         });
 
         //         // Écoutez l'événement pour l'ajout d'un utilisateur au projet
-        // socket.on('userAdded', (userProject) => {
-        //     setListUsersProject(prevListUsersProject => [...prevListUsersProject, userProject]);
-        // });
+         socket.on('userAdded', (userProject) => {
+             setListUsersProject(prevListUsersProject => [...prevListUsersProject, userProject]);
+         });
 
         // // Écoutez l'événement pour la suppression d'un utilisateur du projet
-        // socket.on('userRemoved', (userId) => {
-        //     setListUsersProject(prevListUsersProject => prevListUsersProject.filter(userProject => userProject.userId !== userId));
-        // });
+         socket.on('userRemoved', (userId) => {
+             setListUsersProject(prevListUsersProject => prevListUsersProject.filter(userProject => userProject.userId !== userId));
+         });
 
         // Écoutez l'événement pour les projets mis à jour en temps réel
         socket.on('projectUpdated', (updatedProject) => {
@@ -149,17 +150,6 @@ const ProjectComponent = () => {
             socket.disconnect();
         };
     }, []);
-
-    const Modal = React.memo(({ onClose, children }) => {
-        return (
-            <div className="modal">
-                <div className="modal-content">
-                    <span className="close" onClick={onClose}>&times;</span>
-                    {children}
-                </div>
-            </div>
-        );
-    });
 
     const resetEditing = () => {
         setEditingProject(null);
@@ -265,8 +255,8 @@ const ProjectComponent = () => {
                     await axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
 
                     socket.on('userProjectAdded', (person) => {
-                         setListUsersProject(prevListUsersProject => [...prevListUsersProject, person]);
-                     });
+                        setListUsersProject(prevListUsersProject => [...prevListUsersProject, person]);
+                    });
 
                 }
             }
@@ -440,20 +430,41 @@ const ProjectComponent = () => {
 
     }, []);
 
+    const [layout, setLayout] = React.useState(undefined);
+
     return (
         <>
             {!isModalOpen && (
                 <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                    <Fab color="primary" aria-label="add" onClick={() => { setIsEditing(false); setModalOpen(true); }}>
+                    <Fab color="primary"
+                        aria-label="add"
+                        onClick={() => { setIsEditing(false); setModalOpen(true); setLayout('center'); }}>
                         <AddIcon />
                     </Fab>
                 </Box>
             )}
 
             {isModalOpen && (
-                <Modal onClose={resetEditing}>
+                <Modal
+                    open={!!layout}
+                    onClose={resetEditing}
+                >
+            <ModalDialog>
+          <div style={{
+            backgroundColor: '#ffffff',
+            display: 'flex',
+            flexDirection: 'column',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '10px',
+            width: '500px',
+            height: '700px',
+          }}
+          >
 
-                    <div>
+                        <ModalClose onClick={() => setModalOpen(false)} />
+
                         <Typography variant="caption" display="block" gutterBottom>
                             Drag the image of your project here
                         </Typography>
@@ -489,7 +500,6 @@ const ProjectComponent = () => {
                                         title: e.target.value,
                                     })
                                 }
-                                inputRef={newProjectNameRef}
                             />
                         </Box>
                         <Box
@@ -506,57 +516,56 @@ const ProjectComponent = () => {
                                 variant="standard"
                                 value={editingProject ? editingProject.description : ''}
                                 multiline
-                                maxRows={4}
+                                //maxRows={4}
                                 onChange={(e) =>
                                     setEditingProject({
                                         ...editingProject,
                                         description: e.target.value,
                                     })
                                 }
-                                inputRef={newProjectDescriptionRef}
                             />
                         </Box>
-                        <div><br></br>
-                            <Typography
-                                variant="caption"
-                                display="block"
-                                gutterBottom
-                            >
-                                Participants
-                            </Typography>
 
-                            <AvatarGroup sx={alignementGauche}>
-                                {/* Afficher les avatars de toutes les utilisateurs */}
-                                {listUsers.map((person) => {
-                                    return (
-                                        person.avatar ? (
-                                            <AvatarComponent
-                                                key={person._id}
-                                                person={person}
-                                                handleAvatarClickOnChild={handleAvatarClickOn}
-                                                newPeople={newPeople}
-                                                setNewPeople={setNewPeople}
-                                                editingProject={editingProject}
-                                                selectedUsersProject={selectedUsersProject}
-                                                handelUserExistInProject={handelUserExistInProject}
-                                                addGreenBotton={addGreenBotton}
-                                            />
-                                        ) : (
-                                            <TextAvatarComponent
-                                                key={person._id}
-                                                person={person}
-                                                handleAvatarClickOnChild={handleAvatarClickOn}
-                                                newPeople={newPeople}
-                                                setNewPeople={setNewPeople}
-                                                editingProject={editingProject}
-                                                selectedUsersProject={selectedUsersProject}
-                                                handelUserExistInProject={handelUserExistInProject}
-                                            />
-                                        )
-                                    );
-                                })}
-                            </AvatarGroup>
-                        </div>
+                        <Typography
+                            variant="caption"
+                            display="block"
+                            gutterBottom
+                        >
+                            Participants
+                        </Typography>
+
+                        <AvatarGroup sx={alignementGauche}>
+                            {/* Afficher les avatars de toutes les utilisateurs */}
+                            {listUsers.map((person) => {
+                                return (
+                                    person.avatar ? (
+                                        <AvatarComponent
+                                            key={person._id}
+                                            person={person}
+                                            handleAvatarClickOnChild={handleAvatarClickOn}
+                                            newPeople={newPeople}
+                                            setNewPeople={setNewPeople}
+                                            editingProject={editingProject}
+                                            selectedUsersProject={selectedUsersProject}
+                                            handelUserExistInProject={handelUserExistInProject}
+                                            addGreenBotton={addGreenBotton}
+                                        />
+                                    ) : (
+                                        <TextAvatarComponent
+                                            key={person._id}
+                                            person={person}
+                                            handleAvatarClickOnChild={handleAvatarClickOn}
+                                            newPeople={newPeople}
+                                            setNewPeople={setNewPeople}
+                                            editingProject={editingProject}
+                                            selectedUsersProject={selectedUsersProject}
+                                            handelUserExistInProject={handelUserExistInProject}
+                                        />
+                                    )
+                                );
+                            })}
+                        </AvatarGroup>
+
                         <br></br>
                         <div>
                             <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
@@ -574,7 +583,6 @@ const ProjectComponent = () => {
                                             enddate: date
                                         })
                                     }
-                                    inputRef={newProjectEnddateRef}
                                 />
 
                             </LocalizationProvider>
@@ -595,6 +603,7 @@ const ProjectComponent = () => {
                         </Button>
 
                     </div>
+                    </ModalDialog>
                 </Modal>
             )}
 
@@ -625,31 +634,28 @@ const ProjectComponent = () => {
                                                     <AvatarGroup>
                                                         {
                                                             listUsersProject.map(userProject => {
-                                                                //console.log(`Lien de l'avatar : ./uploads/${userProject.avatar}`);
-                                                                //console.log(listUsersProject)
                                                                 return (
                                                                     userProject.projectId === project._id && (
                                                                         <Avatar
-                                                                            key={userProject.id}
+                                                                            key={userProject._id}
                                                                             src={`./uploads/${userProject.userId.avatar}`}
-                                                                            alt={userProject.name} />
+                                                                            alt={userProject.name}
+                                                                        />
                                                                     )
                                                                 );
                                                             })}
                                                     </AvatarGroup>
 
-
-
                                                     <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                                                        <Fab size="small" color="primary" aria-label="edit" onClick={() => {
+                                                        <Fab size="small" color="primary" aria-label="edit" 
+                                                        onClick={() => {
                                                             setEditingProject(project);
                                                             setIsEditing(true);
                                                             setModalOpen(true);
+                                                            setLayout('center');
                                                         }}>
                                                             <EditIcon />
                                                         </Fab>
-
-
                                                     </Box>
                                                 </div>
                                             )}

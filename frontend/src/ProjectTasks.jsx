@@ -431,10 +431,12 @@ const ProjectTasks = () => {
                       handleCreateTask()
                     }
                   }}
-                >
+            >
                   {isEditing ? 'Update Task' : 'Add Task'}
-                </Button>
+            </Button>
+
           </div>
+          
         </Modal>
       )
       }

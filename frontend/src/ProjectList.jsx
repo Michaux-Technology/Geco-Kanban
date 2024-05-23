@@ -1,89 +1,94 @@
 // Imports
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'
 
-import { Avatar } from '@mui/material';
-import io from 'socket.io-client';
-import { IconButton } from '@mui/material';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Container from '@mui/material/Container';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from 'react-router-dom';
+import { Avatar } from '@mui/material'
+import io from 'socket.io-client'
+import { IconButton } from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import MenuItem from '@mui/material/MenuItem'
+import Menu from '@mui/material/Menu'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import Container from '@mui/material/Container'
+import MenuIcon from '@mui/icons-material/Menu'
+import { useNavigate } from 'react-router-dom'
 
-import './styles.css';
+//import './styles.css';
 
-import ProjectComponent from './ProjectComponent';
-import CollaboratorComponent from './CollaboratorComponent';
+import ProjectComponent from './ProjectComponent'
+import CollaboratorComponent from './CollaboratorComponent'
 
 
 const ProjectList = () => {
 
   //Definition des variables
-  const [email, setEmail] = useState(localStorage.getItem('email') || '');
-  const [firstnameuser, setFirstNameUser] = useState(localStorage.getItem('firstnameuser') || '');
-  const [lastnameuser, setLastNameUser] = useState(localStorage.getItem('lastnameuser') || '');
-  const [avataruser, setAvatarUser] = useState(localStorage.getItem('avataruser') || '');
-  const [value, setValue] = useState(0);
+  //const [email, setEmail] = useState(localStorage.getItem('email') || '')
+  const [firstnameuser, setFirstNameUser] = useState(localStorage.getItem('firstnameuser') || '')
+  const [lastnameuser, setLastNameUser] = useState(localStorage.getItem('lastnameuser') || '')
+  const [avataruser, setAvatarUser] = useState(localStorage.getItem('avataruser') || '')
+  const [value, setValue] = useState(0)
 
   const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+    setValue(newValue)
+  }
 
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
+
+  const [anchorElNav, setAnchorElNav] = React.useState(null)
 
   const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
+    setAnchorElNav(event.currentTarget)
+  }
+
   const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+    setAnchorElNav(null)
   };
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null)
   const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    setAnchorEl(event.currentTarget)
+  }
+
   const handleClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)
+  }
+
   const handleLogOut = () => {
-    setAnchorEl(null);
-    navigate('/');
-  };
-  const navigate = useNavigate();
+    setAnchorEl(null)
+    navigate('/')
+  }
+
+  const navigate = useNavigate()
 
   function stringToColor(string) {
-    let hash = 0;
-    let i;
-  
+    let hash = 0
+    let i
+
     for (i = 0; i < string.length; i += 1) {
-      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
     }
-  
-    let color = '#';
-  
+
+    let color = '#'
+
     for (i = 0; i < 3; i += 1) {
-      const value = (hash >> (i * 8)) & 0xff;
-      color += `00${value.toString(16)}`.slice(-2);
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
     }
-  
-    return color;
+
+    return color
   }
-  
+
   function stringAvatar(name) {
     return {
       sx: {
         bgcolor: stringToColor(name),
       },
       children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
-    };
+    }
   }
-  
+
   return (
 
     <div>
@@ -171,7 +176,7 @@ const ProjectList = () => {
                 value={value}
                 indicatorColor="white"
                 variant="fullWidth"
-                textColor="white"
+                textColor="inherit"
                 onChange={handleChange}
                 style={{ width: '100%' }}
               >
@@ -187,8 +192,7 @@ const ProjectList = () => {
                 {/* Tous Formats */}
 
                 {avataruser ? (
-
-                  <Avatar src={"./uploads/" + avataruser} onLoad={() => console.log("Avatar loaded:", avataruser)} />
+                  <Avatar src={"./uploads/" + avataruser} />
                 ) : (
                   <Avatar {...stringAvatar(`${firstnameuser} ${lastnameuser}`)} />
                 )}
@@ -224,7 +228,7 @@ const ProjectList = () => {
         <div>
           <ProjectComponent />
         </div>
-      )};
+      )}
 
       {value === 1 && (
         <div>
@@ -233,8 +237,8 @@ const ProjectList = () => {
       )}
 
     </div>
-  );
+  )
 
-};
+}
 
-export default ProjectList;
+export default ProjectList

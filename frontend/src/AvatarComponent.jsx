@@ -66,7 +66,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             variant="dot"
           >
-            <Avatar
+             <Avatar
               key={person._id}
               src={`./uploads/${person.avatar}`}
               alt={person.firstName}
@@ -74,7 +74,10 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
               sx={{
                 cursor: 'pointer',
               }}
-            />
+            /> 
+
+            {/* <Avatar sx={{ bgcolor: deepOrange[500] }}>T</Avatar> */}
+
           </StyledBadge>
         ) : (
           <Avatar
@@ -86,7 +89,8 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
               cursor: 'pointer',
             }}
           />
-        )}
+        )
+      }
     </>
   );
 };
