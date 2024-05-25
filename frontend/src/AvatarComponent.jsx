@@ -79,8 +79,6 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
               }}
             /> 
 
-            {/* <Avatar sx={{ bgcolor: deepOrange[500] }}>T</Avatar> */}
-
           </StyledBadge>
         ) : (
           <Avatar
