@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 
 import { Avatar } from '@mui/material'
-import io from 'socket.io-client'
 import { IconButton } from '@mui/material'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
@@ -26,9 +25,9 @@ const ProjectList = () => {
 
   //Definition des variables
   //const [email, setEmail] = useState(localStorage.getItem('email') || '')
-  const [firstnameuser, setFirstNameUser] = useState(localStorage.getItem('firstnameuser') || '')
-  const [lastnameuser, setLastNameUser] = useState(localStorage.getItem('lastnameuser') || '')
-  const [avataruser, setAvatarUser] = useState(localStorage.getItem('avataruser') || '')
+  const [firstnameuser] = useState(localStorage.getItem('firstnameuser') || '')
+  const [lastnameuser] = useState(localStorage.getItem('lastnameuser') || '')
+  const [avataruser] = useState(localStorage.getItem('avataruser') || '')
   const [value, setValue] = useState(0)
 
   const handleChange = (event, newValue) => {

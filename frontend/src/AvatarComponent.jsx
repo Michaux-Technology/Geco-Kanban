@@ -31,27 +31,30 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsersProject, handelUserExistInProject, addGreenBotton }) => {
-  const userExists = selectedUsersProject.includes(person._id);
+const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handelUserExistInProject, addGreenBotton }) => {
+  
+  console.log('selectedUsersDansAvatarComponent', selectedUsers)
+
+  const userExists = selectedUsers.some(user => user._id === person._id);
+  //si userExists est true alors il faut ajouter un point vert
+  // sinon (false) alors il faut enlever le point vers
 
 
   useEffect(() => {
-    //console.log('User exists in the component thanks useEffect: ', userExists)
-  }, [userExists])
+    
+    const fetchData = async () => {
 
-  const fetchData = async () => {
-
-    const result = await handelUserExistInProject(person._id, editingProject?._id);
-
-    if (result === true) {
-      // Chargement des parsticipants au projet present dans la base de données
-      addGreenBotton(person, editingProject?._id, false)
+      const result = await handelUserExistInProject(person._id, editingProject?._id);
+  
+      if (result === true) {
+        // Chargement des parsticipants au projet present dans la base de données
+        addGreenBotton(person, editingProject?._id, false)
+      }
     }
-  }
 
-  useEffect(() => {
     fetchData();
-  }, [editingProject?._id, person._id]);
+
+  }, [editingProject?._id, person._id, addGreenBotton, handelUserExistInProject, person]);
 
   const handleAvatarClickOn = useCallback(() => {
     handleAvatarClickOnChild(person, userExists);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Button, TextField, CssBaseline } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import GradeIcon from '@mui/icons-material/Grade';
@@ -43,20 +43,18 @@ const ProjectComponent = () => {
     const DEFAULT_IMAGE = "./img/gecko.jpg";
     const [preview, setPreview] = useState(DEFAULT_IMAGE);
 
-    const newProjectNameRef = useRef();
-    const listProjectUsers = useRef();
-    const newProjectDescriptionRef = useRef();
-
     const [listUsers, setListUsers] = useState([]);
     const [listUsersProject, setListUsersProject] = useState([]);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [selectedUsersProject, setSelectedUsersProject] = useState([]);
+    let updatedSelectedUsers = [];
+    let updatedSelectedUsersProject = [];
 
     let [projects, setProjects] = useState([]);
 
     const [newPeople, setNewPeople] = useState([]); // Définition de newPeople
-    const newProjectEnddateRef = useRef();
+
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
 
@@ -67,11 +65,6 @@ const ProjectComponent = () => {
         display: 'inline-flex',
         flexWrap: 'wrap'
     };
-
-    const flexGauche = {
-        paddingLeft: '100'
-    };
-
 
     const [isGreenBottonAdded, setIsGreenBottonAdded] = useState(false);
 
@@ -121,15 +114,15 @@ const ProjectComponent = () => {
             setListUsersProject(responseUsersProject.data);
         });
 
-        //         // Écoutez l'événement pour l'ajout d'un utilisateur au projet
-         socket.on('userAdded', (userProject) => {
-             setListUsersProject(prevListUsersProject => [...prevListUsersProject, userProject]);
-         });
+        // Écoutez l'événement pour l'ajout d'un utilisateur au projet
+        socket.on('userAdded', (userProject) => {
+            setListUsersProject(prevListUsersProject => [...prevListUsersProject, userProject]);
+        });
 
         // // Écoutez l'événement pour la suppression d'un utilisateur du projet
-         socket.on('userRemoved', (userId) => {
-             setListUsersProject(prevListUsersProject => prevListUsersProject.filter(userProject => userProject.userId !== userId));
-         });
+        socket.on('userRemoved', (userId) => {
+            setListUsersProject(prevListUsersProject => prevListUsersProject.filter(userProject => userProject.userId !== userId));
+        });
 
         // Écoutez l'événement pour les projets mis à jour en temps réel
         socket.on('projectUpdated', (updatedProject) => {
@@ -139,11 +132,6 @@ const ProjectComponent = () => {
                 )
             );
         });
-
-        // Écoutez l'événement pour les utilisateurs dans un projet
-        //socket.on('projectusers', (responseUsersProject) => {
-        //setListUsersProject(responseUsersProject.data);
-        //});
 
         // Nettoyez les écouteurs d'événements lorsque le composant se démonte
         return () => {
@@ -227,25 +215,9 @@ const ProjectComponent = () => {
                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
             }
 
-            //Si un user n'est pas dans selectedUser mais pas dans projectUsers
-            const checkMatchingIdAndProject = () => {
-                const isMatching = selectedUsers.some(selectedUser => {
-                    return !projectUsers.some(projectUser => {
-                        return (
-                            projectUser._id === selectedUser._id &&
-                            projectUser.projectId === selectedUser.projectId
-                        );
-                    });
-                });
-
-                if (isMatching) {
-                    console.log("DELETE");
-                }
-            };
-
-
             // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
             for (const person of selectedUsers) {
+                console.log(project._id, "/", person._id)
                 const response = await axios.get(`${API_URL}/projects/${project._id}/users/${person._id}`);
                 const userExists = response.data.exists;
 
@@ -293,10 +265,6 @@ const ProjectComponent = () => {
             console.error('Error updating project:', error);
         }
     }
-
-    const updatePeople = (updatedPeople) => {
-        setNewPeople(updatedPeople);
-    };
 
     const handleAddProject = useCallback(async () => {
         try {
@@ -374,10 +342,11 @@ const ProjectComponent = () => {
     //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
     const addGreenBotton = (person, project) => {
 
-        if (!isGreenBottonAdded) {
 
+        if (!isGreenBottonAdded || isGreenBottonAdded === false) {
+
+            console.log('GREEN ON')
             //Application d'un point vert
-            setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
             setSelectedUsers(prevSelectedUsers => [
                 ...prevSelectedUsers,
                 { _id: person._id, projectId: project }
@@ -387,46 +356,36 @@ const ProjectComponent = () => {
     }
 
     //renvoie le click de l'Avatar
-    const handleAvatarClickOn = useCallback((person, userExists) => {
+    const handleAvatarClickOn = useCallback((person) => {
 
-        //Ajout un point vert sur l'icone du participant au projet
-        if (userExists === false) {
-            if (selectedUsersProject.includes(person._id)) {
-                console.log("ajout de l'utilisateur du tableau SelectedUsers1")
-                setSelectedUsersProject(prevSelectedUsersProject => prevSelectedUsersProject.filter(user => user !== person._id));
-            } else {
-                console.log("ajout de l'utilisateur du tableau SelectedUsers2")
-                setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-                console.log("selectedUsersProject", selectedUsersProject)
-            }
-        }
+        //AJOUT ou SUPPRESSION un point vert sur l'icone du participant au projet
 
-        //Ajouter au Tableau d'utilisateurs
-        if (userExists === false) {
-            setSelectedUsers(prevSelectedUsers => {
-                const updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
-                return updatedSelectedUsers;
-            });
-            console.log("selectedUsers Ajout", selectedUsers)
-        }
+        console.log(updatedSelectedUsers)
+        if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
 
-        //Supprimer au Tableau d'utilisateurs
-        if (userExists === true) {
-            setSelectedUsers(prevSelectedUsers => {
-                const updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
-                return updatedSelectedUsers;
-            });
-            console.log("selectedUsers Suppression", selectedUsers);
-        }
-
-        // Supprimer un point vert sur l'icone du participant au projet
-        if (userExists === true) {
+            console.log('DELETE');
             console.log(person._id);
-            setSelectedUsersProject(prevSelectedUsersProject => {
-                return prevSelectedUsersProject.filter(user => user !== person._id);
+
+            setSelectedUsers(prevSelectedUsers => {
+                updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
+                console.log("updatedSelectedUsers", updatedSelectedUsers);
+                return updatedSelectedUsers;
             });
-            console.log("SelectedUsersProject", selectedUsersProject)
+
+        } else {
+            console.log('ADD');
+            console.log(person._id);
+
+            setSelectedUsers(prevSelectedUsers => {
+                updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
+                console.log("updatedSelectedUsers", updatedSelectedUsers);
+                return updatedSelectedUsers;
+            });
+
+            setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
+            console.log("updatedSelectedUsersProject", updatedSelectedUsersProject);
         }
+
 
     }, []);
 
@@ -449,160 +408,163 @@ const ProjectComponent = () => {
                     open={!!layout}
                     onClose={resetEditing}
                 >
-            <ModalDialog>
-          <div style={{
-            backgroundColor: '#ffffff',
-            display: 'flex',
-            flexDirection: 'column',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '10px',
-            width: '500px',
-            height: '700px',
-          }}
-          >
-
-                        <ModalClose onClick={() => setModalOpen(false)} />
-
-                        <Typography variant="caption" display="block" gutterBottom>
-                            Drag the image of your project here
-                        </Typography>
-                        <div
-                            onDrop={handleDrop}
-                            onDragOver={(event) => event.preventDefault()}
-                            style={{ width: '300px', height: '170px', position: 'relative' }}
+                    <ModalDialog>
+                        <div style={{
+                            backgroundColor: '#ffffff',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            flexWrap: 'wrap',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            padding: '10px',
+                            width: '500px',
+                            height: '700px',
+                        }}
                         >
-                            <img
-                                src={preview}
-                                alt="Uploaded preview"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
 
-                        </div>
-                        <Box
-                            component="form"
-                            sx={{
-                                '& .MuiTextField-root': { m: 1, width: '34ch' },
-                            }}
-                            noValidate
-                            autoComplete="off"
-                        >
-                            <TextField
-                                id="standard-basic"
-                                variant="standard"
-                                label="Project Name"
-                                type="text"
-                                value={editingProject ? editingProject.title : ''}
-                                onChange={(e) =>
-                                    setEditingProject({
-                                        ...editingProject,
-                                        title: e.target.value,
-                                    })
-                                }
-                            />
-                        </Box>
-                        <Box
-                            component="form"
-                            sx={{
-                                '& .MuiTextField-root': { m: 1, width: '34ch' },
-                            }}
-                            noValidate
-                            autoComplete="off"
-                        >
-                            <TextField
-                                id="outlined-multiline-flexible"
-                                label="Description"
-                                variant="standard"
-                                value={editingProject ? editingProject.description : ''}
-                                multiline
-                                //maxRows={4}
-                                onChange={(e) =>
-                                    setEditingProject({
-                                        ...editingProject,
-                                        description: e.target.value,
-                                    })
-                                }
-                            />
-                        </Box>
+                            <ModalClose onClick={() => setModalOpen(false)} />
 
-                        <Typography
-                            variant="caption"
-                            display="block"
-                            gutterBottom
-                        >
-                            Participants
-                        </Typography>
+                            <Typography variant="caption" display="block" gutterBottom>
+                                Drag the image of your project here
+                            </Typography>
+                            <div
+                                onDrop={handleDrop}
+                                onDragOver={(event) => event.preventDefault()}
+                                style={{ width: '300px', height: '170px', position: 'relative' }}
+                            >
+                                <img
+                                    src={preview}
+                                    alt="Uploaded preview"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
 
-                        <AvatarGroup sx={alignementGauche}>
-                            {/* Afficher les avatars de toutes les utilisateurs */}
-                            {listUsers.map((person) => {
-                                return (
-                                    person.avatar ? (
-                                        <AvatarComponent
-                                            key={person._id}
-                                            person={person}
-                                            handleAvatarClickOnChild={handleAvatarClickOn}
-                                            newPeople={newPeople}
-                                            setNewPeople={setNewPeople}
-                                            editingProject={editingProject}
-                                            selectedUsersProject={selectedUsersProject}
-                                            handelUserExistInProject={handelUserExistInProject}
-                                            addGreenBotton={addGreenBotton}
-                                        />
-                                    ) : (
-                                        <TextAvatarComponent
-                                            key={person._id}
-                                            person={person}
-                                            handleAvatarClickOnChild={handleAvatarClickOn}
-                                            newPeople={newPeople}
-                                            setNewPeople={setNewPeople}
-                                            editingProject={editingProject}
-                                            selectedUsersProject={selectedUsersProject}
-                                            handelUserExistInProject={handelUserExistInProject}
-                                        />
-                                    )
-                                );
-                            })}
-                        </AvatarGroup>
-
-                        <br></br>
-                        <div>
-                            <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
-                                <DatePicker
-                                    value={
-                                        (editingProject && editingProject.enddate && editingProject.enddate instanceof dayjs)
-                                            ? editingProject.enddate // utilise tel quel s'il s'agit déjà d'une instance de dayjs
-                                            : editingProject && editingProject.enddate
-                                                ? dayjs(editingProject.enddate) // convertit en instance de dayjs si ce n'est pas déjà une
-                                                : null // ou une autre valeur par défaut si non existant
-                                    }
-                                    onChange={(date) =>
+                            </div>
+                            <Box
+                                component="form"
+                                sx={{
+                                    '& .MuiTextField-root': { m: 1, width: '34ch' },
+                                }}
+                                noValidate
+                                autoComplete="off"
+                            >
+                                <TextField
+                                    id="standard-basic"
+                                    variant="standard"
+                                    label="Project Name"
+                                    type="text"
+                                    value={editingProject ? editingProject.title : ''}
+                                    onChange={(e) =>
                                         setEditingProject({
                                             ...editingProject,
-                                            enddate: date
+                                            title: e.target.value,
                                         })
                                     }
                                 />
+                            </Box>
+                            <Box
+                                component="form"
+                                sx={{
+                                    '& .MuiTextField-root': { m: 1, width: '34ch' },
+                                }}
+                                noValidate
+                                autoComplete="off"
+                            >
+                                <TextField
+                                    id="outlined-multiline-flexible"
+                                    label="Description"
+                                    variant="standard"
+                                    value={editingProject ? editingProject.description : ''}
+                                    multiline
+                                    onChange={(e) =>
+                                        setEditingProject({
+                                            ...editingProject,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                />
+                            </Box>
 
-                            </LocalizationProvider>
+                            <Typography
+                                variant="caption"
+                                display="block"
+                                gutterBottom
+                            >
+                                Participants
+                            </Typography>
+
+                            {/* Liste des avatars en modification ou en creation */}
+                            <AvatarGroup
+                                sx={alignementGauche}>
+                                {/* Afficher les avatars de toutes les utilisateurs */}
+                                {listUsers.map((person) => {
+                                    return (
+                                        person.avatar ? (
+                                            <AvatarComponent
+                                                key={person._id}
+                                                person={person}
+                                                handleAvatarClickOnChild={handleAvatarClickOn}
+                                                newPeople={newPeople}
+                                                setNewPeople={setNewPeople}
+                                                editingProject={editingProject}
+                                                selectedUsers={selectedUsers}
+                                                handelUserExistInProject={handelUserExistInProject}
+                                                addGreenBotton={addGreenBotton}
+
+                                            />
+                                        ) : (
+                                            // Afficher les utilisateurs qui n'ont pas d'avatar
+                                            <TextAvatarComponent
+                                                key={person._id}
+                                                person={person}
+                                                handleAvatarClickOnChild={handleAvatarClickOn}
+                                                newPeople={newPeople}
+                                                setNewPeople={setNewPeople}
+                                                editingProject={editingProject}
+                                                selectedUsersProject={selectedUsersProject}
+                                                handelUserExistInProject={handelUserExistInProject}
+                                            />
+                                        )
+                                    );
+                                })}
+                            </AvatarGroup>
+
+                            <br></br>
+                            <div>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
+                                    <DatePicker
+                                        value={
+                                            (editingProject && editingProject.enddate && editingProject.enddate instanceof dayjs)
+                                                ? editingProject.enddate // utilise tel quel s'il s'agit déjà d'une instance de dayjs
+                                                : editingProject && editingProject.enddate
+                                                    ? dayjs(editingProject.enddate) // convertit en instance de dayjs si ce n'est pas déjà une
+                                                    : null // ou une autre valeur par défaut si non existant
+                                        }
+                                        onChange={(date) =>
+                                            setEditingProject({
+                                                ...editingProject,
+                                                enddate: date
+                                            })
+                                        }
+                                    />
+
+                                </LocalizationProvider>
+                            </div>
+                            <br></br>
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+
+                                    if (isEditing) {
+                                        handleEditProject(editingProject);
+                                    } else {
+                                        handleAddProject();
+                                    }
+                                }}
+                            >
+                                {isEditing ? 'Update Project' : 'Add Project'}
+                            </Button>
+
                         </div>
-                        <br></br>
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-
-                                if (isEditing) {
-                                    handleEditProject(editingProject);
-                                } else {
-                                    handleAddProject();
-                                }
-                            }}
-                        >
-                            {isEditing ? 'Update Project' : 'Add Project'}
-                        </Button>
-
-                    </div>
                     </ModalDialog>
                 </Modal>
             )}
@@ -630,7 +592,7 @@ const ProjectComponent = () => {
 
                                             {!isModalOpen && (
                                                 <div>
-
+                                                    {/* Liste des projets avec affichage des avatars */}
                                                     <AvatarGroup>
                                                         {
                                                             listUsersProject.map(userProject => {
@@ -647,13 +609,13 @@ const ProjectComponent = () => {
                                                     </AvatarGroup>
 
                                                     <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                                                        <Fab size="small" color="primary" aria-label="edit" 
-                                                        onClick={() => {
-                                                            setEditingProject(project);
-                                                            setIsEditing(true);
-                                                            setModalOpen(true);
-                                                            setLayout('center');
-                                                        }}>
+                                                        <Fab size="small" color="primary" aria-label="edit"
+                                                            onClick={() => {
+                                                                setEditingProject(project);
+                                                                setIsEditing(true);
+                                                                setModalOpen(true);
+                                                                setLayout('center');
+                                                            }}>
                                                             <EditIcon />
                                                         </Fab>
                                                     </Box>

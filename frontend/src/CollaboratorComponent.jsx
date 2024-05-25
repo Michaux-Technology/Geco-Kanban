@@ -227,142 +227,142 @@ const CollaboratorComponent = () => {
           open={!!layout}
           id='modalCollab'
           onClose={resetEditingCollab}>
-            
-            <ModalDialog>
-          <div style={{
-            backgroundColor: '#ffffff',
-            display: 'flex',
-            flexDirection: 'column',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '10px',
-            width: '500px',
-            height: '700px',
-          }}
-          >
 
-           
-            <ModalClose
-              onClick={() => setModalOpenCollab(false)}
-            />
- 
-            <div
-              style={
-                {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  marginTop: '8vh',
-                }
-              }
+          <ModalDialog>
+            <div style={{
+              backgroundColor: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '10px',
+              width: '500px',
+              height: '700px',
+            }}
             >
 
 
-              <Avatar src={avatarCollab} style={{ backgroundColor: '#f50057', width: 80, height: 80 }}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                Collaborator
-              </Typography>
+              <ModalClose
+                onClick={() => setModalOpenCollab(false)}
+              />
 
-              <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmitCollab}>
+              <div
+                style={
+                  {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    marginTop: '8vh',
+                  }
+                }
+              >
 
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="E-mail address"
-                  name="email"
-                  autoComplete="email"
-                  value={emailCollab || ""}
-                  onChange={(e) => setEmailCollab(e.target.value)}
-                  inputRef={emailRef}
-                  autoFocus
-                />
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="lname"
-                  value={lastNameCollab || ""}
-                  inputRef={lastNameRef}
-                  onChange={(e) => setLastNameCollab(e.target.value)}
-                />
 
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="First Name"
-                  name="firstName"
-                  autoComplete="fname"
-                  value={firstNameCollab || ""}
-                  inputRef={firstNameRef}
-                  onChange={(e) => setFirstNameCollab(e.target.value)}
-                />
+                <Avatar src={avatarCollab} style={{ backgroundColor: '#f50057', width: 80, height: 80 }}>
+                  <LockOutlinedIcon />
+                </Avatar>
+                <Typography component="h1" variant="h5">
+                  Collaborator
+                </Typography>
 
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="position"
-                  label="Position"
-                  name="position"
-                  value={positionCollab || ""}
-                  inputRef={positionRef}
-                  onChange={(e) => setPositionCollab(e.target.value)}
-                />
-                <input
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  id="icon-button-file"
-                  type="file"
-                  onChange={handleAvatarChange}
-                />
-                <div sx={{ alignItems: 'middle' }}>
+                <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmitCollab}>
 
-                  <label htmlFor="icon-button-file">
-                    <IconButton
-                      color="primary"
-                      aria-label="upload picture"
-                      component="span"
-                      style={{ marginTop: '1rem' }}
-                    >
-                      <PhotoCamera />
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="E-mail address"
+                    name="email"
+                    autoComplete="email"
+                    value={emailCollab || ""}
+                    onChange={(e) => setEmailCollab(e.target.value)}
+                    inputRef={emailRef}
+                    autoFocus
+                  />
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="lastName"
+                    label="Last Name"
+                    name="lastName"
+                    autoComplete="lname"
+                    value={lastNameCollab || ""}
+                    inputRef={lastNameRef}
+                    onChange={(e) => setLastNameCollab(e.target.value)}
+                  />
 
-                    </IconButton >
-                  </label>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="firstName"
+                    label="First Name"
+                    name="firstName"
+                    autoComplete="fname"
+                    value={firstNameCollab || ""}
+                    inputRef={firstNameRef}
+                    onChange={(e) => setFirstNameCollab(e.target.value)}
+                  />
 
-                  <Typography>Upload Avatar</Typography>
-                </div>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  style={{ marginTop: '1rem' }}
-                  onClick={() => {
-                    if (isEditing) {
-                    } else {
-                      handleAddCollab()
-                    }
-                  }}
-                >
-                  Save
-                </Button>
-              </form>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="position"
+                    label="Position"
+                    name="position"
+                    value={positionCollab || ""}
+                    inputRef={positionRef}
+                    onChange={(e) => setPositionCollab(e.target.value)}
+                  />
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="icon-button-file"
+                    type="file"
+                    onChange={handleAvatarChange}
+                  />
+                  <div sx={{ alignItems: 'middle' }}>
+
+                    <label htmlFor="icon-button-file">
+                      <IconButton
+                        color="primary"
+                        aria-label="upload picture"
+                        component="span"
+                        style={{ marginTop: '1rem' }}
+                      >
+                        <PhotoCamera />
+
+                      </IconButton >
+                    </label>
+
+                    <Typography>Upload Avatar</Typography>
+                  </div>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    style={{ marginTop: '1rem' }}
+                    onClick={() => {
+                      if (isEditing) {
+                      } else {
+                        handleAddCollab()
+                      }
+                    }}
+                  >
+                    Save
+                  </Button>
+                </form>
+              </div>
             </div>
-          </div>
           </ModalDialog>
         </Modal>
       )
