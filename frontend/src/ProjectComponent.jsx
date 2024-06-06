@@ -15,8 +15,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import EditIcon from '@mui/icons-material/Edit';
-import { Avatar } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
+import Avatar from '@mui/material/Avatar';
 import Rating from '@mui/material/Rating';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -30,6 +30,7 @@ import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import ModalDialog from '@mui/joy/ModalDialog';
 
+
 const ProjectComponent = () => {
 
 
@@ -38,6 +39,7 @@ const ProjectComponent = () => {
 
     let [editingProject, setEditingProject] = useState(null);
     let [isEditing, setIsEditing] = useState(false);
+    let [isUserFromDB, setIsUserFromDB] = useState(false);
 
     let [tempImage, setTempImage] = useState(null);
     const DEFAULT_IMAGE = "./img/gecko.jpg";
@@ -52,8 +54,10 @@ const ProjectComponent = () => {
     let updatedSelectedUsersProject = [];
 
     let [projects, setProjects] = useState([]);
+    let i = 0;
+    let z = 0;
 
-    const [newPeople, setNewPeople] = useState([]); // Définition de newPeople
+    //const [newPeople, setNewPeople] = useState([]); // Définition de newPeople
 
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
@@ -201,8 +205,6 @@ const ProjectComponent = () => {
             const projectUsers = response.data.users;
 
             // Supprimer les utilisateurs qui ne sont pas dans la liste selectedUsers mais qui appartiennent au projet
-            console.log("selectedUsers final", selectedUsers)
-            console.log("projectUsers", projectUsers)
 
             const usersToDelete = projectUsers.filter(user =>
                 projectUsers.includes(user) && !selectedUsers.some(person => person._id === user.userId)
@@ -217,7 +219,7 @@ const ProjectComponent = () => {
 
             // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
             for (const person of selectedUsers) {
-                console.log(project._id, "/", person._id)
+                //console.log(project._id, "/", person._id)
                 const response = await axios.get(`${API_URL}/projects/${project._id}/users/${person._id}`);
                 const userExists = response.data.exists;
 
@@ -229,7 +231,6 @@ const ProjectComponent = () => {
                     socket.on('userProjectAdded', (person) => {
                         setListUsersProject(prevListUsersProject => [...prevListUsersProject, person]);
                     });
-
                 }
             }
         } catch (error) {
@@ -324,66 +325,78 @@ const ProjectComponent = () => {
         }
     };
 
-    const handelUserExistInProject = (personId, projectId) => {
+    const handelUserExistInProject = useCallback((personId, projectId) => {
         return axios
             .get(`${API_URL}/projects/${projectId}/users/${personId}`)
             .then((response) => {
-                if (response.data.message) {
-                    return true;
-                } else {
-                    return false;
+                //console.log('response.data.userId_test', response.data.userId);
+    
+                // Vérifier si l'utilisateur existe dans la base de données et s'il est sélectionné
+                if (response.data.userId === personId && response.data.isSelected) {
+                    setSelectedUsers(prevSelectedUsers => {
+                        // Vérifier si prevSelectedUsers est un tableau
+                        if (Array.isArray(prevSelectedUsers)) {
+                            const isUserIdPresent = prevSelectedUsers.some(user => user._id === personId);
+                            if (!isUserIdPresent) {
+                                const updatedSelectedUsers = [...prevSelectedUsers, { ...response.data, _id: response.data.userId }];
+                                return updatedSelectedUsers;
+                            }
+                        }
+                        return prevSelectedUsers;
+                    });
                 }
             })
             .catch((error) => {
                 throw error;
             });
-    };
+    }, []); // Ajoutez ici les dépendances nécessaires pour la fonction memoized
 
     //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
-    const addGreenBotton = (person, project) => {
+    // const addGreenBotton = (person, project) => {
 
+    //     console.log('test')
+    //     if (!isGreenBottonAdded) {
 
-        if (!isGreenBottonAdded || isGreenBottonAdded === false) {
+    //         console.log('GREEN ON')
+    //         //Application d'un point vert
+    //         setSelectedUsers(prevSelectedUsers => [
+    //             ...prevSelectedUsers,
+    //             { _id: person._id, projectId: project }
+    //         ]);
+    //         setIsGreenBottonAdded(true);
+    //     }
 
-            console.log('GREEN ON')
-            //Application d'un point vert
-            setSelectedUsers(prevSelectedUsers => [
-                ...prevSelectedUsers,
-                { _id: person._id, projectId: project }
-            ]);
-            setIsGreenBottonAdded(true);
-        }
-    }
+    // }
 
     //renvoie le click de l'Avatar
     const handleAvatarClickOn = useCallback((person) => {
 
         //AJOUT ou SUPPRESSION un point vert sur l'icone du participant au projet
 
-        console.log(updatedSelectedUsers)
+        //console.log(updatedSelectedUsers)
         if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
 
             console.log('DELETE');
-            console.log(person._id);
+            //console.log(person._id);
 
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
-                console.log("updatedSelectedUsers", updatedSelectedUsers);
+                //console.log("updatedSelectedUsers", updatedSelectedUsers);
                 return updatedSelectedUsers;
             });
 
         } else {
             console.log('ADD');
-            console.log(person._id);
+            //console.log(person._id);
 
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
-                console.log("updatedSelectedUsers", updatedSelectedUsers);
+                //console.log("updatedSelectedUsers", updatedSelectedUsers);
                 return updatedSelectedUsers;
             });
 
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-            console.log("updatedSelectedUsersProject", updatedSelectedUsersProject);
+            //console.log("updatedSelectedUsersProject", updatedSelectedUsersProject);
         }
 
 
@@ -493,7 +506,7 @@ const ProjectComponent = () => {
                             </Typography>
 
                             {/* Liste des avatars en modification ou en creation */}
-                            <AvatarGroup
+                            <AvatarGroup max={100}
                                 sx={alignementGauche}>
                                 {/* Afficher les avatars de toutes les utilisateurs */}
                                 {listUsers.map((person) => {
@@ -503,12 +516,12 @@ const ProjectComponent = () => {
                                                 key={person._id}
                                                 person={person}
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
-                                                newPeople={newPeople}
-                                                setNewPeople={setNewPeople}
+                                                //newPeople={newPeople}
+                                                //setNewPeople={setNewPeople}
                                                 editingProject={editingProject}
                                                 selectedUsers={selectedUsers}
                                                 handelUserExistInProject={handelUserExistInProject}
-                                                addGreenBotton={addGreenBotton}
+                                            //addGreenBotton={addGreenBotton}
 
                                             />
                                         ) : (
@@ -517,11 +530,12 @@ const ProjectComponent = () => {
                                                 key={person._id}
                                                 person={person}
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
-                                                newPeople={newPeople}
-                                                setNewPeople={setNewPeople}
+                                                //newPeople={newPeople}
+                                                //setNewPeople={setNewPeople}
                                                 editingProject={editingProject}
-                                                selectedUsersProject={selectedUsersProject}
+                                                selectedUsers={selectedUsers}
                                                 handelUserExistInProject={handelUserExistInProject}
+                                            //addGreenBotton={addGreenBotton}
                                             />
                                         )
                                     );
@@ -593,7 +607,11 @@ const ProjectComponent = () => {
                                             {!isModalOpen && (
                                                 <div>
                                                     {/* Liste des projets avec affichage des avatars */}
-                                                    <AvatarGroup>
+
+                                                    {/* BUGGGGGG */}
+
+
+                                                    <AvatarGroup max={100}>
                                                         {
                                                             listUsersProject.map(userProject => {
                                                                 return (

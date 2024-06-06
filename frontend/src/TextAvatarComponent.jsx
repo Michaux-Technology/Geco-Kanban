@@ -31,20 +31,22 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handleUserSelect, handelUserExistInProject, addGreenBotton }) => {
+const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handleUserSelect }) => {
 
-  //console.log("TextAvatarComponent")
 
-  const [userExists, setUserExists] = useState(null);
+
+  const userExists = selectedUsers.some(user => user._id === person._id);
+  //si userExists est true alors il faut ajouter un point vert
+  // sinon (false) alors il faut enlever le point vers
 
   const fetchData = async () => {
 
-    const result = await handelUserExistInProject(person._id, editingProject?._id);
+    //const result = await handelUserExistInProject(person._id, editingProject?._id);
 
-    if (result === true) {
-      // Chargement des parsticipants au projet present dans la base de données
-      addGreenBotton(person, editingProject?._id, false)
-    }
+    //  if (result === true) {
+    //    // Chargement des parsticipants au projet present dans la base de données
+    //    addGreenBotton(person, editingProject?._id, false)
+    //  }
   }
 
   useEffect(() => {

@@ -98,7 +98,7 @@ let namefile = '';
 
 //io.socket
 io.on('connection', socket => {
-  console.log('A user connected');
+  //console.log('A user connected');
 
   socket.on('updateTask', async ({ taskId, status, order }) => {
     try {
@@ -116,7 +116,7 @@ io.on('connection', socket => {
 
 
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    //console.log('User disconnected');
   });
 });
 
@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('taskUpdated', task);
   });
   socket.on('disconnect', () => {
-    console.log('User disconnected from projects');
+    //console.log('User disconnected from projects');
   });
 
   // Gérez les événements pour les projets ici
@@ -522,7 +522,7 @@ app.get('/projectusers', async (req, res) => {
     const projectUsers = await ProjectUsers.find()
       .populate({
         path: 'userId',
-        select: 'avatar',
+        select: 'avatar firstName lastName',
         model: 'User', // Assurez-vous d'utiliser le nom du modèle 'User' correct
       })
       .select('projectId userId');
@@ -549,12 +549,19 @@ app.get('/projects/:projectId/users', async (req, res) => {
 app.get('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
   try {
+    //console.log('/projects/:projectId/users/:personId ')
+
     const isSelected = await ProjectUsers.exists({
-      userId: personId,
-      projectId: projectId
+      projectId: projectId,
+      userId: personId
     });
 
-    res.json({ message: isSelected });
+    res.json({ 
+      userId: personId,
+      projectId: projectId,
+      isSelected: isSelected 
+    });
+
   } catch (error) {
     res.status(500).json({ error: 'An error occurred' });
   }
@@ -584,7 +591,7 @@ app.post('/projects/:projectId/users/:personId', async (req, res) => {
 
 app.delete('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
-  console.log("testBackend")
+  //console.log("testBackend")
   try {
     const deletedUser = await ProjectUsers.findOneAndDelete({ userId: personId, projectId: projectId });
     if (deletedUser) {
@@ -686,5 +693,5 @@ app.use((err, req, res, next) => {
 
 // Serveur
 server.listen(3001, () => {
-  console.log('Server is running on port 3001');
+  //console.log('Server is running on port 3001');
 });
