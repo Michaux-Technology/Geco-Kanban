@@ -23,7 +23,7 @@ The license available on Github is :
 This project was created in 🇫🇷 and 🇩🇪 
 
 ## ✅ Project status
-This project is currently being programmed, there are still a lot of blogs out there 
+This project is currently being programmed, there are still a lot of blugs out there 
 
 ## ✅ Make a donation
 
