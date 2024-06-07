@@ -31,27 +31,29 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handleUserSelect }) => {
+const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, selectedUsers, handleUserSelect, handelUserExistInProject }) => {
 
-
-
-  const userExists = selectedUsers.some(user => user._id === person._id);
-  //si userExists est true alors il faut ajouter un point vert
-  // sinon (false) alors il faut enlever le point vers
-
-  const fetchData = async () => {
-
-    //const result = await handelUserExistInProject(person._id, editingProject?._id);
-
-    //  if (result === true) {
-    //    // Chargement des parsticipants au projet present dans la base de données
-    //    addGreenBotton(person, editingProject?._id, false)
-    //  }
-  }
+  const [userExists, setUserExists] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, [person._id, editingProject]);
+    // resultat des utilisateurs affectées en db
+  handelUserExistInProject(person._id, editingProject._id)
+}, [editingProject, person._id,handelUserExistInProject]);
+
+
+useEffect(() => {
+if (selectedUsers.length > 0) {
+  const exists = selectedUsers.some(user => user._id === person._id);
+  if (exists === true) {
+    setUserExists(true);
+  }else{
+    setUserExists(false);
+  }
+}
+//si userExists est true alors il faut ajouter un point vert
+// sinon (false) alors il faut enlever le point vers
+
+}, [editingProject, person._id, selectedUsers]);
 
 
   const handleAvatarClickOn = useCallback(() => {
@@ -99,13 +101,9 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
   }
 
   return (
-
     <>
-
       {
-
         (userExists === true) ? (
-
           <StyledBadge
             overlap="circular"
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -138,9 +136,7 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
 
         )
       }
-
     </>
-
   );
 };
 

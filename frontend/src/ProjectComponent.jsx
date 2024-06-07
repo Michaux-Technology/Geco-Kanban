@@ -239,7 +239,7 @@ const ProjectComponent = () => {
     };
 
     // Modifiez la logique pour ouvrir le modal en mode édition
-    const handleEditProject = async (project) => {
+    const handleEditProject = useCallback(async (project) => {
         try {
             //Mise a jour des utilisateurs affecté au projet
             UpdateUserSelect(selectedUsers, project)
@@ -259,13 +259,15 @@ const ProjectComponent = () => {
             setProjects((prevProjects) =>
                 prevProjects.map((p) => (p._id === project._id ? { ...project } : p)));
 
+            // Mettre à jour la liste des avatars
+            fetchData();
             // Fermeture du modal
             setModalOpen(false);
 
         } catch (error) {
             console.error('Error updating project:', error);
         }
-    }
+    }, [selectedUsers, tempImage, onUpload, editingProject, setProjects, fetchData, socket]);
 
     const handleAddProject = useCallback(async () => {
         try {
@@ -330,7 +332,7 @@ const ProjectComponent = () => {
             .get(`${API_URL}/projects/${projectId}/users/${personId}`)
             .then((response) => {
                 //console.log('response.data.userId_test', response.data.userId);
-    
+
                 // Vérifier si l'utilisateur existe dans la base de données et s'il est sélectionné
                 if (response.data.userId === personId && response.data.isSelected) {
                     setSelectedUsers(prevSelectedUsers => {
