@@ -70,8 +70,6 @@ const ProjectComponent = () => {
         flexWrap: 'wrap'
     };
 
-    const [isGreenBottonAdded, setIsGreenBottonAdded] = useState(false);
-
     const fetchData = async () => {
         try {
 
@@ -148,7 +146,6 @@ const ProjectComponent = () => {
         setModalOpen(false);
         setSelectedUsers([]);
         setSelectedUsersProject([]);
-        setIsGreenBottonAdded(false);
         setIsEditing(false);
         setTempImage(null)
     };
@@ -288,7 +285,7 @@ const ProjectComponent = () => {
         } catch (error) {
             console.error('Error adding/editing project:', error);
         }
-    }, [editingProject, tempImage]);
+    }, [socket, editingProject, tempImage]);
 
     const handleDeleteProject = async (projectId) => {
         try {
@@ -331,7 +328,6 @@ const ProjectComponent = () => {
         return axios
             .get(`${API_URL}/projects/${projectId}/users/${personId}`)
             .then((response) => {
-                //console.log('response.data.userId_test', response.data.userId);
 
                 // Vérifier si l'utilisateur existe dans la base de données et s'il est sélectionné
                 if (response.data.userId === personId && response.data.isSelected) {
@@ -353,52 +349,29 @@ const ProjectComponent = () => {
             });
     }, []); // Ajoutez ici les dépendances nécessaires pour la fonction memoized
 
-    //Ajout un point vert sur l'icone du participant au projet au chargement de la page de modification.
-    // const addGreenBotton = (person, project) => {
-
-    //     console.log('test')
-    //     if (!isGreenBottonAdded) {
-
-    //         console.log('GREEN ON')
-    //         //Application d'un point vert
-    //         setSelectedUsers(prevSelectedUsers => [
-    //             ...prevSelectedUsers,
-    //             { _id: person._id, projectId: project }
-    //         ]);
-    //         setIsGreenBottonAdded(true);
-    //     }
-
-    // }
-
     //renvoie le click de l'Avatar
     const handleAvatarClickOn = useCallback((person) => {
 
         //AJOUT ou SUPPRESSION un point vert sur l'icone du participant au projet
 
-        //console.log(updatedSelectedUsers)
         if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
 
             console.log('DELETE');
-            //console.log(person._id);
 
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
-                //console.log("updatedSelectedUsers", updatedSelectedUsers);
                 return updatedSelectedUsers;
             });
 
         } else {
             console.log('ADD');
-            //console.log(person._id);
 
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
-                //console.log("updatedSelectedUsers", updatedSelectedUsers);
                 return updatedSelectedUsers;
             });
 
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
-            //console.log("updatedSelectedUsersProject", updatedSelectedUsersProject);
         }
 
 

@@ -36,24 +36,24 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
   const [userExists, setUserExists] = useState(false);
 
   useEffect(() => {
-      // resultat des utilisateurs affectées en db
+    // resultat des utilisateurs affectées en db
     handelUserExistInProject(person._id, editingProject._id)
-  }, [editingProject, person._id,handelUserExistInProject]);
+  }, [editingProject, person._id, handelUserExistInProject]);
 
 
   useEffect(() => {
-  if (selectedUsers.length > 0) {
-    const exists = selectedUsers.some(user => user._id === person._id);
-    if (exists === true) {
-      setUserExists(true);
-    }else{
-      setUserExists(false);
+    if (selectedUsers.length > 0) {
+      const exists = selectedUsers.some(user => user._id === person._id);
+      if (exists === true) {
+        setUserExists(true);
+      } else {
+        setUserExists(false);
+      }
     }
-  } 
-  //si userExists est true alors il faut ajouter un point vert
-  // sinon (false) alors il faut enlever le point vers
+    //si userExists est true alors il faut ajouter un point vert
+    // sinon (false) alors il faut enlever le point vers
 
-}, [editingProject, person._id, selectedUsers]);
+  }, [editingProject, person._id, selectedUsers]);
 
 
   console.log("userExists", userExists)
