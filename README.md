@@ -26,6 +26,11 @@ This project was created in 🇫🇷 and 🇩🇪
 ## ✅ Project status
 This project is currently being programmed, there are still a lot of blugs out there 
 
+Missing features : 
+- Deleting users
+- User modification
+- Unnamed avatars without photos
+
 ## ✅ Make a donation
 
 To obtain a license :
