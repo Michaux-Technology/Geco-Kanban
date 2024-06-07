@@ -11,6 +11,7 @@ The software is multi-user and changes are visible live, without the need to ref
 HTML
 React.js
 Node.js
+Express.js
 Mongodb
 
 ## ✅ Rights
@@ -23,7 +24,7 @@ The license available on Github is :
 This project was created in 🇫🇷 and 🇩🇪 
 
 ## ✅ Project status
-This project is currently being programmed, there are still a lot of blogs out there 
+This project is currently being programmed, there are still a lot of blugs out there 
 
 ## ✅ Make a donation
 
