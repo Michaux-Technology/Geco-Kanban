@@ -72,7 +72,6 @@ const ProjectComponent = () => {
 
     const fetchData = async () => {
         try {
-
             // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
             const responseUsers = await axios.get(`${API_URL}/users`)
             setListUsers(responseUsers.data);
@@ -229,6 +228,9 @@ const ProjectComponent = () => {
                         setListUsersProject(prevListUsersProject => [...prevListUsersProject, person]);
                     });
                 }
+
+                // Mettre à jour la liste des avatars
+                fetchData();
             }
         } catch (error) {
             console.error(error);
@@ -256,8 +258,6 @@ const ProjectComponent = () => {
             setProjects((prevProjects) =>
                 prevProjects.map((p) => (p._id === project._id ? { ...project } : p)));
 
-            // Mettre à jour la liste des avatars
-            fetchData();
             // Fermeture du modal
             setModalOpen(false);
 
