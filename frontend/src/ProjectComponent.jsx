@@ -51,14 +51,8 @@ const ProjectComponent = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [selectedUsersProject, setSelectedUsersProject] = useState([]);
     let updatedSelectedUsers = [];
-    let updatedSelectedUsersProject = [];
 
     let [projects, setProjects] = useState([]);
-    let i = 0;
-    let z = 0;
-
-    //const [newPeople, setNewPeople] = useState([]); // Définition de newPeople
-
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
 
@@ -79,7 +73,6 @@ const ProjectComponent = () => {
             // Recherche d'utilisateur(s) affecté(s) à un projet
             const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
             setListUsersProject(responseUsersProject.data);
-            //console.log(listUsersProject);
 
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);

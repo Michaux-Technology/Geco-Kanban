@@ -37,14 +37,15 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
 
   useEffect(() => {
     // resultat des utilisateurs affectées en db
-    if (person._id){
-  handelUserExistInProject(person._id, editingProject._id)
+    if (person && person._id && editingProject && editingProject._id) {
+      //console.log("person", person)
+      handelUserExistInProject(person._id, editingProject._id)
     }
-}, [editingProject, person._id,handelUserExistInProject]);
+    }, [editingProject, person, handelUserExistInProject]);
 
 
 useEffect(() => {
-if (selectedUsers.length > 0) {
+  if (selectedUsers.length > 0 && person) {
   const exists = selectedUsers.some(user => user._id === person._id);
   if (exists === true) {
     setUserExists(true);
@@ -55,7 +56,7 @@ if (selectedUsers.length > 0) {
 //si userExists est true alors il faut ajouter un point vert
 // sinon (false) alors il faut enlever le point vers
 
-}, [editingProject, person._id, selectedUsers]);
+}, [editingProject, person, selectedUsers]);
 
 
   const handleAvatarClickOn = useCallback(() => {
