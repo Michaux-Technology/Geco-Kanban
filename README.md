@@ -26,7 +26,7 @@ This project was created in 🇫🇷 and 🇩🇪
 ## ✅ Project status
 This project is currently being programmed, there are still a lot of blugs out there 
 
-Missing features : 
+Missing features für v. 2.3 : 
 - Deleting users
 - User modification
 - Unnamed avatars without photos
