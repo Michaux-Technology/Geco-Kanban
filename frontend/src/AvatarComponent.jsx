@@ -49,7 +49,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
     }else{
       setUserExists(false);
     }
-  }
+  } 
   //si userExists est true alors il faut ajouter un point vert
   // sinon (false) alors il faut enlever le point vers
 
