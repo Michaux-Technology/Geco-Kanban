@@ -11,6 +11,7 @@ The software is multi-user and changes are visible live, without the need to ref
 HTML
 React.js
 Node.js
+Express.js
 Mongodb
 
 ## ✅ Rights
