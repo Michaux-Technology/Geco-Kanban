@@ -99,8 +99,13 @@ const CollaboratorComponent = () => {
 
     socket.on('collaboratorAdded', (newCollaborator) => {
       setCollaborators((prevCollaborators) => [...prevCollaborators, newCollaborator])
-
     })
+
+    socket.on('collaboratorDeleted', (deletedCollaboratorId) => {
+      setCollaborators((prevCollaborators) =>
+        prevCollaborators.filter((collaborator) => collaborator.id !== deletedCollaboratorId)
+      );
+    });
 
   }, [])
 

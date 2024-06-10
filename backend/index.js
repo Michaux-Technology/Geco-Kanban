@@ -123,9 +123,11 @@ io.on('connection', socket => {
 
 // io.socket pour les projets (au lieu de socketIo)
 io.on('connection', (socket) => {
+
   socket.on('taskUpdated', (task) => {
     socket.broadcast.emit('taskUpdated', task);
   });
+
   socket.on('disconnect', () => {
     //console.log('User disconnected from projects');
   });
@@ -172,11 +174,11 @@ io.on('connection', (socket) => {
   socket.on('deleteUser', async (userId) => {
 
     try {
-      const validProjectId = new mongoose.Types.ObjectId(userId);
-      await User.findByIdAndDelete(validProjectId);
+      const validUserId = new mongoose.Types.ObjectId(userId);
+      await Project.findByIdAndDelete(validUserId);
       io.emit('userDeleted', userId);
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error('Error deleting user:', error);
     }
   });
 
@@ -663,7 +665,7 @@ app.delete('/users/:id', async (req, res) => {
     await User.findByIdAndDelete(id);
 
 
-    // Envoyer une notification que le projet a été supprimé
+    // Envoyer une notification que le collaborateur a été supprimé
     io.emit('userDeleted', { userId: id });
 
     // Renvoyer une réponse indiquant que la suppression a réussi
