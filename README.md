@@ -26,7 +26,7 @@ This project was created in 🇫🇷 and 🇩🇪
 ## ✅ Project status
 This project is currently being programmed, there are still a lot of blugs out there 
 
-Missing features für v. 2.3 : 
+Missing features für v. 2.3.5 : 
 - Refresh after creating a collaborator
 - No user modification
 - Unnamed avatars without photos
