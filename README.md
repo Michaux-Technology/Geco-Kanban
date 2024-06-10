@@ -28,7 +28,7 @@ This project is currently being programmed, there are still a lot of blugs out t
 
 Missing features für v. 2.3 : 
 - Refresh after creating a collaborator
-- User modification
+- No user modification
 - Unnamed avatars without photos
 
 ## ✅ Make a donation
