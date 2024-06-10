@@ -29,7 +29,7 @@ This project is currently being programmed, there are still a lot of blugs out t
 Missing features für v. 2.3.5 : 
 - Refresh after creating a collaborator
 - No user modification
-- Unnamed avatars without photos
+- avatars without a photo have no name in the project list
 
 ## ✅ Make a donation
 
