@@ -27,7 +27,7 @@ This project was created in 🇫🇷 and 🇩🇪
 This project is currently being programmed, there are still a lot of blugs out there 
 
 Missing features für v. 2.3 : 
-- Deleting users
+- Refresh after creating a collaborator
 - User modification
 - Unnamed avatars without photos
 
