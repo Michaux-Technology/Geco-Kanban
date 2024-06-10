@@ -169,6 +169,17 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('deleteUser', async (userId) => {
+
+    try {
+      const validProjectId = new mongoose.Types.ObjectId(userId);
+      await User.findByIdAndDelete(validProjectId);
+      io.emit('userDeleted', userId);
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
+  });
+
   socket.on('addCollab', async (collabData) => {
     try {
 
@@ -636,6 +647,33 @@ app.delete('/projects/:id', async (req, res) => {
   }
 });
 
+app.delete('/users/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Trouver le projet avec l'ID donné
+    const user = await User.findById(id);
+
+    // Si le projet n'est pas trouvé, renvoyer une erreur 404
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Supprimer le projet
+    await User.findByIdAndDelete(id);
+
+
+    // Envoyer une notification que le projet a été supprimé
+    io.emit('userDeleted', { userId: id });
+
+    // Renvoyer une réponse indiquant que la suppression a réussi
+    res.json({ message: 'User deleted successfully' });
+
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
 
 app.get('/user/:emailGroup/collaborators', async (req, res) => {
 

@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import io from 'socket.io-client'
 import axios from 'axios'
 
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShareIcon from '@mui/icons-material/Share'
 import { Avatar } from '@mui/material'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip, CssBaseline } from '@mui/material';
+import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip } from '@mui/material';
 import Fab from '@mui/material/Fab'
 import AddIcon from '@mui/icons-material/Add'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
@@ -179,8 +181,6 @@ const CollaboratorComponent = () => {
         await onUpload(tempImage); // Uploadez l'image
       }
 
-
-
       socket.emit('addCollab', {
         email: emailCollab,
         lastname: lastNameCollab,
@@ -190,8 +190,10 @@ const CollaboratorComponent = () => {
         password: "1234"
       });
 
-      tempImage(null)
+      setTempImage(null);
       setModalOpenCollab(false)
+      fetchData();
+
     } catch (error) {
       console.error('Error adding/editing Collaborator:', error);
     }
@@ -203,6 +205,21 @@ const CollaboratorComponent = () => {
 
   const [layout, setLayout] = React.useState(undefined);
 
+  const handleDeleteCollab = async (collabId) => {
+    try {
+      console.log('collabId', collabId)
+      // Effectuer une requête DELETE pour supprimer le collaborateur du backend
+      await axios.delete(`${API_URL}/users/${collabId}`);
+
+      // Mettre à jour la liste des collaborateurs
+      setCollaborators((prevCollaborators) => prevCollaborators.filter(collab => collab.id !== collabId));
+
+      fetchData();
+
+    } catch (error) {
+      console.error('Error deleting Collaborator:', error);
+    }
+  };
 
   return (
     <>
@@ -241,7 +258,6 @@ const CollaboratorComponent = () => {
               height: '700px',
             }}
             >
-
 
               <ModalClose
                 onClick={() => setModalOpenCollab(false)}
@@ -388,9 +404,18 @@ const CollaboratorComponent = () => {
                 secondary={`${collaborator.position} | ${collaborator.email}`}
               />
               <Tooltip>
-                <IconButton>
-                  <ShareIcon />
-                </IconButton>
+                <div style={{ display: "grid", gridAutoFlow: "column", gridGap: "8px" }}>
+                  <IconButton>
+                    <EditNoteIcon />
+                  </IconButton>
+                  <IconButton aria-label="delete"
+                    onClick={() => handleDeleteCollab(collaborator._id)}>
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                  <IconButton>
+                    <ShareIcon />
+                  </IconButton>
+                </div>
               </Tooltip>
             </ListItem>
           ))}

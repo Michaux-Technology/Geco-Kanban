@@ -38,7 +38,6 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
   useEffect(() => {
     // resultat des utilisateurs affectées en db
     if (person && person._id && editingProject && editingProject._id) {
-      //console.log("person", person)
       handelUserExistInProject(person._id, editingProject._id)
     }
     }, [editingProject, person, handelUserExistInProject]);
