@@ -4,6 +4,9 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
+
+import { API_URL } from './config';
+
 import './styles.css';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Box from '@mui/material/Box';
@@ -21,7 +24,7 @@ import dayjs from 'dayjs';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ChatIcon from '@mui/icons-material/Chat';
 
-const API_URL = 'http://localhost:3001';
+//const API_URL = 'http://localhost:3001';
 const socket = io(API_URL); // Connectez-vous au serveur WebSocket
 
 

@@ -92,13 +92,11 @@ const Collaborator = mongoose.model('Collaborator', CollaboratorSchema);
 
 // -------- Fin de Schemas ------------------------
 
-
-
 let namefile = '';
 
-//io.socket
-io.on('connection', socket => {
-  //console.log('A user connected');
+
+// io.socket 
+io.on('connection', (socket) => {
 
   socket.on('updateTask', async ({ taskId, status, order }) => {
     try {
@@ -114,23 +112,10 @@ io.on('connection', socket => {
     }
   });
 
-
-  socket.on('disconnect', () => {
-    //console.log('User disconnected');
-  });
-});
-
-
-// io.socket pour les projets (au lieu de socketIo)
-io.on('connection', (socket) => {
-
   socket.on('taskUpdated', (task) => {
     socket.broadcast.emit('taskUpdated', task);
   });
 
-  socket.on('disconnect', () => {
-    //console.log('User disconnected from projects');
-  });
 
   // Gérez les événements pour les projets ici
   socket.on('addProject', async (projectData) => {
@@ -149,12 +134,47 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('addCollab', async (collabData) => {
+    try {
+
+      const collaborator = new User({
+        email: collabData.email,
+        lastName: collabData.lastname,
+        firstName: collabData.firstname,
+        position: collabData.position,
+        company: collabData.company,
+        password: collabData.password,
+        avatar: namefile
+      });
+
+      await collaborator.save();
+
+      io.emit('CollaboratorAdded', collaborator);
+
+    } catch (error) {
+      console.error('Error adding Collaborator:', error);
+    }
+  });
+
   socket.on('updateProject', async (projectData) => {
     try {
       const { _id, title, description, enddate } = projectData;
 
       await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
       io.emit('projectUpdated', projectData);
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  });
+
+  socket.on('updateCollaborators', async (userData) => {
+    try {
+      const { _id, email, compagny, lastName, firstName, position, avatar } = userData;
+
+      await User.findByIdAndUpdate(_id, { email: email, compagny: compagny, lastName: lastName, firstName: firstName, position: position, avatar: avatar });
+      io.emit('collaboratorsUpdated ', userData);
+      console.log('test')
+      console.log("userData", userData)
     } catch (error) {
       console.error('Error updating project:', error);
     }
@@ -172,33 +192,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('deleteUser', async (userId) => {
-
     try {
       const validUserId = new mongoose.Types.ObjectId(userId);
-      await Project.findByIdAndDelete(validUserId);
+      await User.findByIdAndDelete(validUserId);
       io.emit('userDeleted', userId);
     } catch (error) {
       console.error('Error deleting user:', error);
     }
+
   });
 
-  socket.on('addCollab', async (collabData) => {
-    try {
-
-      const collaborator = new User({
-        email: collabData.email,
-        lastName: collabData.lastname,
-        firstName: collabData.firstname,
-        position: collabData.position,
-        company: collabData.company,
-        password: collabData.password,
-        avatar: namefile
-      });
-      await collaborator.save();
-      io.emit('CollaboratorAdded', collaborator);
-    } catch (error) {
-      console.error('Error adding Collaborator:', error);
-    }
+  socket.on('disconnect', () => {
   });
 
 });
@@ -390,6 +394,16 @@ app.get('/users', async (req, res) => {
   }
 });
 
+app.get('/projectUsers', async (req, res) => {
+
+  try {
+    const users = await ProjectUsers.find();
+    res.json(users); // Retourne simplement une liste vide si aucune tâche n'est trouvée
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
+
 app.put('/tasks/reorder', async (req, res) => {
   const updatedTasks = req.body;
 
@@ -540,7 +554,6 @@ app.get('/projectusers', async (req, res) => {
       })
       .select('projectId userId');
 
-    console.log(projectUsers);
     res.json(projectUsers);
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -562,17 +575,16 @@ app.get('/projects/:projectId/users', async (req, res) => {
 app.get('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
   try {
-    //console.log('/projects/:projectId/users/:personId ')
 
     const isSelected = await ProjectUsers.exists({
       projectId: projectId,
       userId: personId
     });
 
-    res.json({ 
+    res.json({
       userId: personId,
       projectId: projectId,
-      isSelected: isSelected 
+      isSelected: isSelected
     });
 
   } catch (error) {
@@ -604,7 +616,6 @@ app.post('/projects/:projectId/users/:personId', async (req, res) => {
 
 app.delete('/projects/:projectId/users/:personId', async (req, res) => {
   const { projectId, personId } = req.params;
-  //console.log("testBackend")
   try {
     const deletedUser = await ProjectUsers.findOneAndDelete({ userId: personId, projectId: projectId });
     if (deletedUser) {
@@ -653,19 +664,18 @@ app.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Trouver le projet avec l'ID donné
+    // Trouver l'utilisateur avec l'ID donné
     const user = await User.findById(id);
 
-    // Si le projet n'est pas trouvé, renvoyer une erreur 404
+    // Si l'utilisateur n'est pas trouvé, renvoyer une erreur 404
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Supprimer le projet
+    // Supprimer l'utilisateur
     await User.findByIdAndDelete(id);
 
-
-    // Envoyer une notification que le collaborateur a été supprimé
+    // Envoyer une notification que l'utilisateur a été supprimé
     io.emit('userDeleted', { userId: id });
 
     // Renvoyer une réponse indiquant que la suppression a réussi
@@ -730,8 +740,8 @@ app.use((err, req, res, next) => {
   next();
 });
 
-
 // Serveur
 server.listen(3001, () => {
-  //console.log('Server is running on port 3001');
+  console.log('Server is running on port 3001');
 });
+

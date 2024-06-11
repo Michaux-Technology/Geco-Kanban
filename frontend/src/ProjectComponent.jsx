@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 
+import { API_URL } from './config';
+
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button, TextField } from '@mui/material';
@@ -56,7 +58,7 @@ const ProjectComponent = () => {
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
 
-    const API_URL = 'http://localhost:3001';
+    //const API_URL = 'http://localhost:3001';
     const socket = io(API_URL); // Connectez-vous au serveur WebSocket
 
     const alignementGauche = {
@@ -287,6 +289,7 @@ const ProjectComponent = () => {
                 const taskDeletionPromises = tasks.map(task =>
                     axios.delete(`${API_URL}/tasks/${task._id}`)
                 );
+
                 await Promise.all(taskDeletionPromises);
 
             } catch (error) {

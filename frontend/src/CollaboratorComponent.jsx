@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import io from 'socket.io-client'
 import axios from 'axios'
+import { API_URL } from './config';
 
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -18,7 +19,6 @@ import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
 
-
 const CollaboratorComponent = () => {
 
   //Definition des variables
@@ -34,13 +34,14 @@ const CollaboratorComponent = () => {
   const [email, setEmail] = useState(localStorage.getItem('email') || '');
   let [isEditing, setIsEditing] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const API_URL = 'http://localhost:3001' // Adresse du serveur
   const socket = io(API_URL); // Se connecter au serveur WebSocket
 
   const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '')
 
   const resetEditingCollab = () => {
+    resetErrorMessage()
     setEditingCollab(null)
     setModalOpenCollab(false)
     setEmailCollab(null)
@@ -70,6 +71,10 @@ const CollaboratorComponent = () => {
     }
   };
 
+  const resetErrorMessage = () => {
+    setErrorMessage('');
+  };
+
   const handleChange = () => {
     setEmailCollab(emailRef.current.value);
     setFirstNameCollab(firstNameRef.current.value);
@@ -94,18 +99,24 @@ const CollaboratorComponent = () => {
   };
 
   useEffect(() => {
+    
 
     fetchData();
 
-    socket.on('collaboratorAdded', (newCollaborator) => {
-      setCollaborators((prevCollaborators) => [...prevCollaborators, newCollaborator])
-    })
-
-    socket.on('collaboratorDeleted', (deletedCollaboratorId) => {
-      setCollaborators((prevCollaborators) =>
-        prevCollaborators.filter((collaborator) => collaborator.id !== deletedCollaboratorId)
-      );
+    // Écoutez l'événement pour les projets ajoutés en temps réel
+    socket.on('CollaboratorAdded', (newUser) => {
+      setCollaborators((prevCollaborators) => [...prevCollaborators, newUser]);
     });
+
+    // Écoutez l'événement pour les projets supprimés en temps réel
+    socket.on('userDeleted', (deletedUserId) => {
+      setCollaborators((prevCollaborators) => prevCollaborators.filter((collaborator) => collaborator._id !== deletedUserId));
+    });
+
+    return () => {
+      resetErrorMessage()
+      socket.disconnect();
+    };
 
   }, [])
 
@@ -178,7 +189,7 @@ const CollaboratorComponent = () => {
   const handleAddCollab = async (e) => {
 
     try {
-
+      resetErrorMessage()
       // Réinitialisez les champs
       resetEditingCollab();
 
@@ -205,6 +216,7 @@ const CollaboratorComponent = () => {
   }
 
   const handleSubmitCollab = async (e) => {
+    resetErrorMessage()
     e.preventDefault()
   }
 
@@ -212,15 +224,26 @@ const CollaboratorComponent = () => {
 
   const handleDeleteCollab = async (collabId) => {
     try {
-      console.log('collabId', collabId)
-      // Effectuer une requête DELETE pour supprimer le collaborateur du backend
-      await axios.delete(`${API_URL}/users/${collabId}`);
+      console.log('collabId', collabId);
 
-      // Mettre à jour la liste des collaborateurs
-      setCollaborators((prevCollaborators) => prevCollaborators.filter(collab => collab.id !== collabId));
+      // Effectuer une requête GET pour obtenir la liste des projectUsers depuis le backend
+      const responseProjectUsers = await axios.get(`${API_URL}/projectUsers`);
+      const projectUsers = responseProjectUsers.data;
 
-      fetchData();
+      // Vérifier si le collabId se trouve dans la liste des userId des projectUsers
+      const isCollabInProjects = projectUsers.some((projectUser) => projectUser.userId === collabId);
 
+      if (isCollabInProjects) {
+        setErrorMessage("The collaborator exists in a project and cannot be deleted.");
+      } else {
+        setErrorMessage('');
+        // Effectuer une requête DELETE pour supprimer le collaborateur du backend
+        await axios.delete(`${API_URL}/users/${collabId}`);
+
+        fetchData();
+
+        socket.emit('deleteUser', collabId);
+      }
     } catch (error) {
       console.error('Error deleting Collaborator:', error);
     }
@@ -389,9 +412,16 @@ const CollaboratorComponent = () => {
       )
       }
       <div style={{ maxWidth: '600px' }}>
+
         <List>
-          {collaborators.map(collaborator => (
+          <p style={{ marginLeft:"20px", marginRight:"20px"  }}>
+            <span style={{ fontSize:'2rem', fontWeight: 'bold', color: 'red' }}>
+            The collaborator exists in a project and cannot be deleted
+            </span>
+          </p>
+          {collaborators && collaborators.map(collaborator => (
             <ListItem key={collaborator._id}>
+
               <ListItemAvatar>
 
                 {collaborator.avatar ? (
