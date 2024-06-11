@@ -99,7 +99,7 @@ const CollaboratorComponent = () => {
   };
 
   useEffect(() => {
-    
+
 
     fetchData();
 
@@ -224,7 +224,8 @@ const CollaboratorComponent = () => {
 
   const handleDeleteCollab = async (collabId) => {
     try {
-      console.log('collabId', collabId);
+      console.log('handleDeleteCollab');
+      console.log('ErrorMessage');
 
       // Effectuer une requête GET pour obtenir la liste des projectUsers depuis le backend
       const responseProjectUsers = await axios.get(`${API_URL}/projectUsers`);
@@ -264,7 +265,6 @@ const CollaboratorComponent = () => {
           </Box>
         )
       }
-
 
       {isModalOpenCollab && (
 
@@ -414,9 +414,9 @@ const CollaboratorComponent = () => {
       <div style={{ maxWidth: '600px' }}>
 
         <List>
-          <p style={{ marginLeft:"20px", marginRight:"20px"  }}>
-            <span style={{ fontSize:'2rem', fontWeight: 'bold', color: 'red' }}>
-            The collaborator exists in a project and cannot be deleted
+          <p style={{ marginLeft: "20px", marginRight: "20px" }}>
+            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'red' }}>
+            {errorMessage}
             </span>
           </p>
           {collaborators && collaborators.map(collaborator => (

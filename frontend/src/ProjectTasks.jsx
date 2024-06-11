@@ -24,9 +24,7 @@ import dayjs from 'dayjs';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ChatIcon from '@mui/icons-material/Chat';
 
-//const API_URL = 'http://localhost:3001';
 const socket = io(API_URL); // Connectez-vous au serveur WebSocket
-
 
 const Modal = React.memo(({ onClose, children }) => {
   return (

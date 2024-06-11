@@ -1,6 +1,5 @@
 // Imports
-import React, { useEffect, useState } from 'react'
-import io from 'socket.io-client'
+import React, { useState } from 'react'
 
 import { Avatar } from '@mui/material'
 import { IconButton } from '@mui/material'
@@ -58,6 +57,11 @@ const ProjectList = () => {
   const handleLogOut = () => {
     setAnchorEl(null)
     navigate('/')
+  }
+
+  const handleEdit = () => {
+    //setAnchorEl(null)
+    //navigate('/')
   }
 
   const navigate = useNavigate()
@@ -217,7 +221,7 @@ const ProjectList = () => {
               onClose={handleClose}
             >
               <MenuItem onClick={handleLogOut}>Logout</MenuItem>
-              {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
+              <MenuItem onClick={handleEdit}>My account</MenuItem>
             </Menu>
           </Toolbar>
         </Container>
