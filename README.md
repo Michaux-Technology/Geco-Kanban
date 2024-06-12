@@ -26,9 +26,8 @@ This project was created in 🇫🇷 and 🇩🇪
 ## ✅ Project status
 This project is currently being programmed, there are still a lot of blugs out there 
 
-Missing features für v. 2.3.6 : 
+Missing features für v. 2.3.7 : 
 - No user modification
-- avatars without a photo in the project list
 
 ## ✅ Make a donation
 
