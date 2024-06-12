@@ -40,22 +40,22 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
     if (person && person._id && editingProject && editingProject._id) {
       handelUserExistInProject(person._id, editingProject._id)
     }
-    }, [editingProject, person, handelUserExistInProject]);
+  }, [editingProject, person, handelUserExistInProject]);
 
 
-useEffect(() => {
-  if (selectedUsers.length > 0 && person) {
-  const exists = selectedUsers.some(user => user._id === person._id);
-  if (exists === true) {
-    setUserExists(true);
-  }else{
-    setUserExists(false);
-  }
-}
-//si userExists est true alors il faut ajouter un point vert
-// sinon (false) alors il faut enlever le point vers
+  useEffect(() => {
+    if (selectedUsers.length > 0 && person) {
+      const exists = selectedUsers.some(user => user._id === person._id);
+      if (exists === true) {
+        setUserExists(true);
+      } else {
+        setUserExists(false);
+      }
+    }
+    //si userExists est true alors il faut ajouter un point vert
+    // sinon (false) alors il faut enlever le point vers
 
-}, [editingProject, person, selectedUsers]);
+  }, [editingProject, person, selectedUsers]);
 
 
   const handleAvatarClickOn = useCallback(() => {
@@ -117,9 +117,7 @@ useEffect(() => {
               key={person._id}
               alt={person.firstName}
               onClick={handleAvatarClickOn}
-              sx={{
-                cursor: 'pointer',
-              }}
+              sx={stringAvatar(`${person.firstName} ${person.lastName}`).sx} 
             />
 
           </StyledBadge>
@@ -131,9 +129,7 @@ useEffect(() => {
             key={person._id}
             alt={person.firstName}
             onClick={handleAvatarClickOn}
-            sx={{
-              cursor: 'pointer',
-            }}
+            sx={stringAvatar(`${person.firstName} ${person.lastName}`).sx} 
           />
 
         )

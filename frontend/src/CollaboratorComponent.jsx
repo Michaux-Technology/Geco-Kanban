@@ -57,11 +57,11 @@ const CollaboratorComponent = () => {
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const positionRef = useRef();
-  const iconRef = useRef();
+  //const iconRef = useRef();
 
   const fetchData = async () => {
+    
     try {
-
       // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
       const responseCollaborators = await axios.get(`${API_URL}/users`)
       setCollaborators(responseCollaborators.data)

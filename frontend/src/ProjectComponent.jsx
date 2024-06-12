@@ -41,7 +41,7 @@ const ProjectComponent = () => {
 
     let [editingProject, setEditingProject] = useState(null);
     let [isEditing, setIsEditing] = useState(false);
-    let [isUserFromDB, setIsUserFromDB] = useState(false);
+    //let [isUserFromDB, setIsUserFromDB] = useState(false);
 
     let [tempImage, setTempImage] = useState(null);
     const DEFAULT_IMAGE = "./img/gecko.jpg";
@@ -58,7 +58,6 @@ const ProjectComponent = () => {
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
 
-    //const API_URL = 'http://localhost:3001';
     const socket = io(API_URL); // Connectez-vous au serveur WebSocket
 
     const alignementGauche = {
@@ -73,8 +72,23 @@ const ProjectComponent = () => {
             setListUsers(responseUsers.data);
 
             // Recherche d'utilisateur(s) affecté(s) à un projet
-            const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
-            setListUsersProject(responseUsersProject.data);
+            //const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
+            //setListUsersProject(responseUsersProject.data);
+
+            // Recherche d'utilisateur(s) affecté(s) à un projet
+            const responseUsersProject = await axios.get(`${API_URL}/projectusers`);
+            setListUsersProject(responseUsersProject.data.map(userProject => {
+                const matchingUser = responseUsers.data.find(user => user._id === userProject.userId);
+                return {
+                    ...userProject,
+                    avatar: matchingUser ? matchingUser.avatar : null,
+                    firstName: matchingUser ? matchingUser.firstName : null,
+                    lastName: matchingUser ? matchingUser.lastName : null,
+                    // Ajoutez d'autres champs de responseUsers.data que vous souhaitez insérer ici
+                };
+            }));
+
+            console.log("avatarNonVisible", listUsersProject)
 
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);
@@ -375,6 +389,34 @@ const ProjectComponent = () => {
 
     const [layout, setLayout] = React.useState(undefined);
 
+    function stringAvatar(name) {
+        return {
+          sx: {
+            bgcolor: stringToColor(name),
+          },
+          children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
+        };
+      }
+
+      function stringToColor(string) {
+        let hash = 0;
+        let i;
+    
+        for (i = 0; i < string.length; i += 1) {
+          hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        }
+    
+        let color = '#';
+    
+        for (i = 0; i < 3; i += 1) {
+          const value = (hash >> (i * 8)) & 0xff;
+          color += `00${value.toString(16)}`.slice(-2);
+        }
+    
+        return color;
+      }
+
+
     return (
         <>
             {!isModalOpen && (
@@ -579,23 +621,27 @@ const ProjectComponent = () => {
                                                 <div>
                                                     {/* Liste des projets avec affichage des avatars */}
 
-                                                    {/* BUGGGGGG */}
-
-
                                                     <AvatarGroup max={100}>
-                                                        {
-                                                            listUsersProject.map(userProject => {
-                                                                return (
-                                                                    userProject.projectId === project._id && (
-                                                                        <Avatar
-                                                                            key={userProject._id}
-                                                                            src={`./uploads/${userProject.userId.avatar}`}
-                                                                            alt={userProject.name}
-                                                                        />
-                                                                    )
-                                                                );
-                                                            })}
-                                                    </AvatarGroup>
+  {listUsersProject.map(userProject => {
+    return (
+      userProject.projectId === project._id && (
+        userProject.avatar ? (
+          <Avatar
+            key={userProject._id}
+            src={`./uploads/${userProject.avatar}`}
+            alt={userProject.name}
+          />
+        ) : (
+          <Avatar
+            key={userProject._id}
+            {...stringAvatar(`${userProject.firstName} ${userProject.lastName}`)}
+            alt={userProject.name}
+          />
+        )
+      )
+    );
+  })}
+</AvatarGroup>
 
                                                     <Box sx={{ '& > :not(style)': { m: 1 } }}>
                                                         <Fab size="small" color="primary" aria-label="edit"
