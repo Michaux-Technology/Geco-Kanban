@@ -4,6 +4,7 @@ import AuthPage from './AuthPage';
 import ProjectList from './ProjectList';
 import ProjectTasks from './ProjectTasks';
 import SignIn from './SignIn';
+import AccountEdit from './AccountEdit';
 import UserList from './UserList';
 import './styles.css';
 import UserContext from './UserContext';
@@ -15,7 +16,6 @@ const App = () => {
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
  
-
   return (
     <Router>
       <UserContext.Provider value={{ email, setEmail,avatar, setAvatar, setFirstname, setLastname  }}>
@@ -23,6 +23,7 @@ const App = () => {
           <Route path="/" element={<AuthPage />} />
           <Route path="/projectList" element={<ProjectList />} />
           <Route path="/signIn" element={<SignIn />} />
+          <Route path="/AccountEdit" element={<AccountEdit />} />
           <Route path="/userList" element={<UserList />} />
           <Route path="/projects/:projectId" element={<ProjectTasks />} />
         </Routes>

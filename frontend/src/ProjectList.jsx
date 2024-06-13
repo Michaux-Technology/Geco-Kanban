@@ -15,8 +15,6 @@ import Container from '@mui/material/Container'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router-dom'
 
-//import './styles.css';
-
 import ProjectComponent from './ProjectComponent'
 import CollaboratorComponent from './CollaboratorComponent'
 
@@ -24,7 +22,8 @@ import CollaboratorComponent from './CollaboratorComponent'
 const ProjectList = () => {
 
   //Definition des variables
-  //const [email, setEmail] = useState(localStorage.getItem('email') || '')
+  const [userId, setUserId] = useState(localStorage.getItem('id') || '')
+  const [id, setId] = useState(localStorage.getItem('id') || '')
   const [firstnameuser] = useState(localStorage.getItem('firstnameuser') || '')
   const [lastnameuser] = useState(localStorage.getItem('lastnameuser') || '')
   const [avataruser] = useState(localStorage.getItem('avataruser') || '')
@@ -60,8 +59,7 @@ const ProjectList = () => {
   }
 
   const handleEdit = () => {
-    //setAnchorEl(null)
-    //navigate('/')
+    navigate('/AccountEdit')
   }
 
   const navigate = useNavigate()
@@ -221,7 +219,11 @@ const ProjectList = () => {
               onClose={handleClose}
             >
               <MenuItem onClick={handleLogOut}>Logout</MenuItem>
-              <MenuItem onClick={handleEdit}>My account</MenuItem>
+              <MenuItem
+                onClick={handleEdit}
+                id={userId}>
+                My account
+              </MenuItem>
             </Menu>
           </Toolbar>
         </Container>

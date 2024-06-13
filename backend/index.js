@@ -296,6 +296,40 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+app.put('/user/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Extract the updated user information from the request body
+    const { email, company, lastName, firstName, position } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    // Update the user information
+    user.email = email;
+    user.company = company;
+    user.lastName = lastName;
+    user.firstName = firstName;
+    user.position = position;
+
+    await user.save();
+
+    res.status(200).send({ message: 'User successfully updated!' });
+
+  } catch (error) {
+    res.status(500).send({ message: 'Could not update user.' });
+  }
+});
+
+
+
+
+
 
 app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
@@ -383,6 +417,20 @@ app.get('/user', async (req, res) => {
   }
 });
 
+app.get('/user/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
 
 app.get('/users', async (req, res) => {
 

@@ -10,6 +10,7 @@ function AuthPage() {
     const API_URL = 'http://localhost:3001';
 
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
+    const [id, setId] = useState(localStorage.getItem('id') || '');
     const [avatar, setAvatar] = useState(localStorage.getItem('avataruser') || '');
     const [lastname, setLastname] = useState(localStorage.getItem('lastnameuser') || '');
     const [firstname, setFirstname] = useState(localStorage.getItem('firstnameuser') || '');
@@ -25,8 +26,8 @@ function AuthPage() {
             const response = await axios.post(`${API_URL}/login`, { email, password });
 
             if (response.data && response.data.message === 'Login successful') {
-                //console.log('test')
                 const responseUser = await axios.get(`${API_URL}/user`, { email });
+                setId(responseUser.data._id);
                 setAvatar(responseUser.data.avatar);
                 setLastname(responseUser.data.lastName);
                 setFirstname(responseUser.data.firstName);
@@ -36,10 +37,15 @@ function AuthPage() {
 
                 //passage des Localstarage sous forme de fonction car sans fonction ca créé un bug
                 //Probleme de rapidité 
+                saveIdToLocalStorage(responseUser.data._id);
                 saveAvatarToLocalStorage(responseUser.data.avatar);
                 savefirstnameToLocalStorage(responseUser.data.firstname);
                 savelastnameToLocalStorage(responseUser.data.lastname);
                 saveCompanyToLocalStorage(responseUser.data.company);
+
+                function saveIdToLocalStorage(_id) {
+                    localStorage.setItem('id', _id);
+                }
 
                 function saveAvatarToLocalStorage(avatar) {
                     localStorage.setItem('avataruser', avatar);
@@ -57,7 +63,6 @@ function AuthPage() {
                     localStorage.setItem('lastnameuser', lastname);
                 }
 
-                //console.log(responseUser.data.avatar)
                 navigate('/projectList'); // Redirection vers la page projectList
             } else {
                 console.error(response.data.message);

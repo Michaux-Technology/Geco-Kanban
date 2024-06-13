@@ -72,10 +72,6 @@ const ProjectComponent = () => {
             setListUsers(responseUsers.data);
 
             // Recherche d'utilisateur(s) affecté(s) à un projet
-            //const responseUsersProject = await axios.get(`${API_URL}/projectusers`)
-            //setListUsersProject(responseUsersProject.data);
-
-            // Recherche d'utilisateur(s) affecté(s) à un projet
             const responseUsersProject = await axios.get(`${API_URL}/projectusers`);
             setListUsersProject(responseUsersProject.data.map(userProject => {
                 const matchingUser = responseUsers.data.find(user => user._id === userProject.userId);
@@ -391,30 +387,30 @@ const ProjectComponent = () => {
 
     function stringAvatar(name) {
         return {
-          sx: {
-            bgcolor: stringToColor(name),
-          },
-          children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
+            sx: {
+                bgcolor: stringToColor(name),
+            },
+            children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
         };
-      }
+    }
 
-      function stringToColor(string) {
+    function stringToColor(string) {
         let hash = 0;
         let i;
-    
+
         for (i = 0; i < string.length; i += 1) {
-          hash = string.charCodeAt(i) + ((hash << 5) - hash);
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
         }
-    
+
         let color = '#';
-    
+
         for (i = 0; i < 3; i += 1) {
-          const value = (hash >> (i * 8)) & 0xff;
-          color += `00${value.toString(16)}`.slice(-2);
+            const value = (hash >> (i * 8)) & 0xff;
+            color += `00${value.toString(16)}`.slice(-2);
         }
-    
+
         return color;
-      }
+    }
 
 
     return (
@@ -447,7 +443,6 @@ const ProjectComponent = () => {
                             height: '700px',
                         }}
                         >
-
                             <ModalClose onClick={() => setModalOpen(false)} />
 
                             <Typography variant="caption" display="block" gutterBottom>
@@ -463,8 +458,8 @@ const ProjectComponent = () => {
                                     alt="Uploaded preview"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
-
                             </div>
+                            
                             <Box
                                 component="form"
                                 sx={{
@@ -622,26 +617,26 @@ const ProjectComponent = () => {
                                                     {/* Liste des projets avec affichage des avatars */}
 
                                                     <AvatarGroup max={100}>
-  {listUsersProject.map(userProject => {
-    return (
-      userProject.projectId === project._id && (
-        userProject.avatar ? (
-          <Avatar
-            key={userProject._id}
-            src={`./uploads/${userProject.avatar}`}
-            alt={userProject.name}
-          />
-        ) : (
-          <Avatar
-            key={userProject._id}
-            {...stringAvatar(`${userProject.firstName} ${userProject.lastName}`)}
-            alt={userProject.name}
-          />
-        )
-      )
-    );
-  })}
-</AvatarGroup>
+                                                        {listUsersProject.map(userProject => {
+                                                            return (
+                                                                userProject.projectId === project._id && (
+                                                                    userProject.avatar ? (
+                                                                        <Avatar
+                                                                            key={userProject._id}
+                                                                            src={`./uploads/${userProject.avatar}`}
+                                                                            alt={userProject.name}
+                                                                        />
+                                                                    ) : (
+                                                                        <Avatar
+                                                                            key={userProject._id}
+                                                                            {...stringAvatar(`${userProject.firstName} ${userProject.lastName}`)}
+                                                                            alt={userProject.name}
+                                                                        />
+                                                                    )
+                                                                )
+                                                            );
+                                                        })}
+                                                    </AvatarGroup>
 
                                                     <Box sx={{ '& > :not(style)': { m: 1 } }}>
                                                         <Fab size="small" color="primary" aria-label="edit"
