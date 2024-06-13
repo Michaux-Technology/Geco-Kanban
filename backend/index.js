@@ -793,3 +793,6 @@ server.listen(3001, () => {
   console.log('Server is running on port 3001');
 });
 
+// Application created by Valery-Jerome Michaux
+// Copyrights can be viewed on Github
+// https://github.com/Michaux-Technology/Geco-Kanban

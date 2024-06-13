@@ -33,3 +33,9 @@ const App = () => {
 };
 
 export default App;
+
+// **************************************************
+//
+// Application created by Valery-Jerome Michaux
+//
+// **************************************************

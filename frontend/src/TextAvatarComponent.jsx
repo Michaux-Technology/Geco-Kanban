@@ -139,3 +139,7 @@ const TextAvatarComponent = ({ person, editingProject, handleAvatarClickOnChild,
 };
 
 export default TextAvatarComponent;
+
+// Application created by Valery-Jerome Michaux
+// Copyrights can be viewed on Github
+// https://github.com/Michaux-Technology/Geco-Kanban

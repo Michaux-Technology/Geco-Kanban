@@ -6,3 +6,9 @@ test('renders learn react link', () => {
   const linkElement = screen.getByText(/learn react/i);
   expect(linkElement).toBeInTheDocument();
 });
+
+// **************************************************
+//
+// Application created by Valery-Jerome Michaux
+//
+// **************************************************

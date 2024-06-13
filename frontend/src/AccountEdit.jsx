@@ -271,3 +271,9 @@ function AccountEdit() {
 }
 
 export default AccountEdit;
+
+// **************************************************
+//
+// Application created by Valery-Jerome Michaux
+//
+// **************************************************

@@ -42,3 +42,7 @@ passport.deserializeUser(async (id, done) => {
         done(error);
     }
 });
+
+// Application created by Valery-Jerome Michaux
+// Copyrights can be viewed on Github
+// https://github.com/Michaux-Technology/Geco-Kanban
