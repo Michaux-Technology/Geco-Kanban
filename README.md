@@ -24,7 +24,6 @@ The license available on Github is :
 This project was created in 🇫🇷 and 🇩🇪 
 
 ## ✅ Project status
-This project is currently being programmed, there are still a lot of blugs out there 
 
 Missing features für v. 2.3.7 : 
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
