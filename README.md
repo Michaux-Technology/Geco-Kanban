@@ -30,6 +30,7 @@ Missing features für v. 2.3.7 :
 - Problem refreshing the avatar list in the project list. 
 - Modification of "My account" not yet active.
 - Modification of other accounts not yet active. 
+- Multi-user real-time refresh problem for project and user modifications.  
 
 ## ✅ Make a donation
 
