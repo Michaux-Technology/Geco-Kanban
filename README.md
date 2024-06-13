@@ -27,7 +27,9 @@ This project was created in 🇫🇷 and 🇩🇪
 This project is currently being programmed, there are still a lot of blugs out there 
 
 Missing features für v. 2.3.7 : 
-- No user modification
+- Problem refreshing the avatar list in the project list. 
+- Modification of "My account" not yet active.
+- Modification of other accounts not yet active. 
 
 ## ✅ Make a donation
 
