@@ -27,10 +27,10 @@ This project was created in 🇫🇷 and 🇩🇪
 This project is currently being programmed, there are still a lot of blugs out there 
 
 Missing features für v. 2.3.7 : 
-- Problem refreshing the avatar list in the project list. 
+- Problem refreshing the avatar list in the project list. (You must use the F5 key)
 - Modification of "My account" not yet active.
 - Modification of other accounts not yet active. 
-- Multi-user real-time refresh problem for project and user modifications.  
+- Multi-user real-time refresh problem for project and user modifications.  (Websocket)
 
 ## ✅ Make a donation
 
