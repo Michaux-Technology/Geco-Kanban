@@ -24,11 +24,12 @@ The license available on Github is :
 This project was created in 🇫🇷 and 🇩🇪 
 
 ## ✅ Project status
-This project is currently being programmed, there are still a lot of blugs out there 
 
-Missing features für v. 2.3.6 : 
-- No user modification
-- avatars without a photo in the project list
+Missing features für v. 2.3.7 : 
+- Problem refreshing the avatar list in the project list. (You must use the F5 key)
+- Modification of "My account" not yet active.
+- Modification of other accounts not yet active. 
+- Multi-user real-time refresh problem for project and user modifications.  (Websocket)
 
 ## ✅ Make a donation
 
