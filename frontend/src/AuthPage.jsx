@@ -1,8 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { Container, TextField, Button, Typography, Link, CssBaseline, Avatar, Grid } from '@mui/material';
+import { Container, TextField, Button, Link, CssBaseline, Avatar, Grid } from '@mui/material';
+import Typography from '@mui/joy/Typography';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
 import axios from 'axios';
+import Chip from '@mui/joy/Chip';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -161,11 +163,37 @@ function AuthPage() {
                             </Link>
                         </Grid>
                     </Grid>
-
+                    <Typography
+                        justifyContent="center"
+                        color="primary"
+                        level="body-xs"
+                        noWrap={false}
+                        variant="plain"
+                        endDecorator={
+                            <Chip 
+                            component="span" 
+                            size="sm"
+                            color="primary">
+                                Valéry-Jérôme Michaux
+                            </Chip>}
+                            style={{ marginTop: '2rem' }}
+                    >
+                        Application created by 
+                    </Typography >
+                    <Typography
+                        justifyContent="center"
+                        color="primary"
+                        level="body-xs"
+                        noWrap={false}
+                        variant="plain"
+                        style={{ width: '100%', textAlign: 'center' }}
+                    >
+                        <a href="https://github.com/Michaux-Technology/Geco-Kanban">Geco Kanban</a>
+                         
+                    </Typography >
                 </form>
             </div>
-
-        </Container>
+        </Container >
     );
 }
 

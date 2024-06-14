@@ -230,7 +230,6 @@ function SignInPage() {
                                 <Link href="/" variant="body2">
                                     {"Login"}
                                 </Link>
-
                             </Typography>
                         </Grid>
                     </Grid>
