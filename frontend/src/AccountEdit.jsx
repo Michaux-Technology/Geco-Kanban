@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from './config';
+import { useLocation } from 'react-router-dom';
 
 import {
     Container,
@@ -16,6 +17,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 function AccountEdit() {
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [lastName, setLastName] = useState('');
@@ -28,11 +30,27 @@ function AccountEdit() {
     const navigate = useNavigate();
     const [userId, setUserId] = useState(localStorage.getItem('id') || '')
 
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const idListUsers = searchParams.get('id');
+
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
+
+                console.log("idListUsers", idListUsers)
                 console.log("userId", userId)
-                const response = await axios.get(`${API_URL}/user/${userId}`);
+
+                let response;
+
+                if (idListUsers) {
+                    response = await axios.get(`${API_URL}/user/${idListUsers}`);
+                } else {
+                    response = await axios.get(`${API_URL}/user/${userId}`);
+                }
+
                 const userData = response.data;
 
                 // Mettre à jour les valeurs des champs de l'utilisateur avec les données récupérées
@@ -93,7 +111,7 @@ function AccountEdit() {
         }
     }
 
-    const handleSubmit = useCallback(async (e, userId) => {
+    const handleSubmit = useCallback(async (e, userId, idListUsers) => {
         e.preventDefault();
 
         if (tempImage) {
@@ -102,15 +120,26 @@ function AccountEdit() {
 
         const password = e.target.password.value !== '' ? e.target.password.value : undefined;
 
-        const response = await axios.put(`${API_URL}/user/${userId}`, {
-            email: email,
-            company: company,
-            lastName: lastName,
-            firstName: firstName,
-            position: position,
-             ...(password && { password: password }),
-        });
-
+        let response;
+        if (idListUsers) {
+             response = await axios.put(`${API_URL}/user/${idListUsers}`, {
+                email: email,
+                company: company,
+                lastName: lastName,
+                firstName: firstName,
+                position: position,
+                ...(password && { password: password }),
+            });
+        } else {
+             response = await axios.put(`${API_URL}/user/${userId}`, {
+                email: email,
+                company: company,
+                lastName: lastName,
+                firstName: firstName,
+                position: position,
+                ...(password && { password: password }),
+            });
+        }
         const data = response.data.message;
         setMessage(data);
 
@@ -124,7 +153,7 @@ function AccountEdit() {
 
     const goToProjectList = () => {
         navigate('/ProjectList');
-      };
+    };
 
     return (
 
@@ -147,7 +176,7 @@ function AccountEdit() {
                 </Typography>
                 <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={(e) => {
 
-                    handleSubmit(e, userId);
+                    handleSubmit(e, userId, idListUsers);
                 }}>
                     {message && <p style={{ width: '100%', marginTop: '1rem', color: 'red' }}>** {message} **</p>}
                     <TextField
@@ -163,8 +192,6 @@ function AccountEdit() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
-
-
                     <TextField
                         variant="outlined"
                         margin="normal"

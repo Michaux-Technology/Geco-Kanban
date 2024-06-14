@@ -60,7 +60,7 @@ const CollaboratorComponent = () => {
   //const iconRef = useRef();
 
   const fetchData = async () => {
-    
+
     try {
       // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
       const responseCollaborators = await axios.get(`${API_URL}/users`)
@@ -250,6 +250,11 @@ const CollaboratorComponent = () => {
     }
   };
 
+  const handleEditCollab = (collabId) => {
+    // Redirection vers la page /AccountEdit avec l'envoi de l'ID du collaborateur
+    window.location.href = `/AccountEdit?id=${collabId}`;
+  };
+
   return (
     <>
       {!isModalOpenCollab
@@ -416,7 +421,7 @@ const CollaboratorComponent = () => {
         <List>
           <p style={{ marginLeft: "20px", marginRight: "20px" }}>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'red' }}>
-            {errorMessage}
+              {errorMessage}
             </span>
           </p>
           {collaborators && collaborators.map(collaborator => (
@@ -440,7 +445,7 @@ const CollaboratorComponent = () => {
               />
               <Tooltip>
                 <div style={{ display: "grid", gridAutoFlow: "column", gridGap: "8px" }}>
-                  <IconButton>
+                  <IconButton onClick={() => handleEditCollab(collaborator._id)}>
                     <EditNoteIcon />
                   </IconButton>
                   <IconButton aria-label="delete"

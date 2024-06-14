@@ -188,7 +188,7 @@ function AuthPage() {
                         variant="plain"
                         style={{ width: '100%', textAlign: 'center' }}
                     >
-                        <a href="https://github.com/Michaux-Technology/Geco-Kanban">Geco Kanban</a>
+                        <a href="https://github.com/Michaux-Technology/Geco-Kanban">Kanban Geco</a>
                          
                     </Typography >
                 </form>
