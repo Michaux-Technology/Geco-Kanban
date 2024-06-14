@@ -100,13 +100,15 @@ function AccountEdit() {
             await onUpload(tempImage);
         }
 
+        const password = e.target.password.value !== '' ? e.target.password.value : undefined;
+
         const response = await axios.put(`${API_URL}/user/${userId}`, {
             email: email,
             company: company,
             lastName: lastName,
             firstName: firstName,
             position: position,
-            password: e.target.password.value
+             ...(password && { password: password }),
         });
 
         const data = response.data.message;
@@ -166,7 +168,6 @@ function AccountEdit() {
                     <TextField
                         variant="outlined"
                         margin="normal"
-                        required
                         fullWidth
                         name="password"
                         label="Password"
