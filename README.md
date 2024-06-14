@@ -32,8 +32,8 @@ Missing features für v. 2.4.0 :
 ## ✅ Make a donation
 
 To obtain a license :
-- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.de)
-- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.de)
+- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
+- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.en)
   
 make the [right](https://github.com/sponsors/Michaux-Technology) donation
 
