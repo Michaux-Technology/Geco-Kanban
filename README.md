@@ -25,9 +25,8 @@ This project was created in 🇫🇷 and 🇩🇪
 
 ## ✅ Project status
 
-Missing features für v. 2.3.8 : 
+Missing features für v. 2.3.9 : 
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
-- Changing the password in "My account" is not yet active.
 - Modification of other accounts not yet active. 
 - Multi-user real-time refresh problem for project and user modifications.  (Websocket)
 
