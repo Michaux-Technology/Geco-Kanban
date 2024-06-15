@@ -29,6 +29,11 @@ Missing features für v. 2.4.0 :
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
 - Multi-user real-time refresh problem for project and user modifications.  (Websocket)
 
+## ✅ Questions / Answers
+
+Ask your questions, let us know about bugs...
+[Click here]([https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.en](https://github.com/Michaux-Technology/Geco-Kanban/discussions))
+
 ## ✅ Make a donation
 
 To obtain a license :
