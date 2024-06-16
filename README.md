@@ -50,7 +50,7 @@ Ask your questions, let us know about bugs...
 
 5. install the project in the command prompt :
 
-npm install
+   npm install
 
 6. Launch the backend under ./backend : 
 
