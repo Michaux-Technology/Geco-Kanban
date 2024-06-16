@@ -42,11 +42,11 @@ Ask your questions, let us know about bugs...
 
 3. Configure your backend so that it can read this collection under : 
 
-/backend/config.js
+   /backend/config.js
 
 4. Then configure your React.js frontend so that it can read your backend server: 
 
-/frontend/config.jsx
+   /frontend/config.jsx
 
 5. install the project in the command prompt :
 
@@ -54,11 +54,11 @@ npm install
 
 6. Launch the backend under ./backend : 
 
-node index.js
+   node index.js
 
 7. Run the frontend under ./frontend : 
 
-npm start
+   npm start
 
 
 ## ✅ Make a donation
