@@ -53,7 +53,7 @@ Launch the backend under ./backend :
 node index.js
 
 Run the frontend under ./frontend : 
- npm start
+npm start
 
 
 ## ✅ Make a donation
