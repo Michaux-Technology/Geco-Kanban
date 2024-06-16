@@ -34,6 +34,28 @@ Missing features für v. 2.4.0 :
 Ask your questions, let us know about bugs...
 [Click here](https://github.com/Michaux-Technology/Geco-Kanban/discussions)
 
+## ✅ Setup
+
+Install your Mongodb server and create your collection with a name such as "Kanban". 
+
+Install Node.js and npm.
+
+Configure your backend so that it can read this collection under : 
+/backend/config.js
+
+Then configure your React.js frontend so that it can read your backend server: 
+/frontend/config.jsx
+
+install the project in the command prompt :
+npm install
+
+Launch the backend under ./backend : 
+node index.js
+
+Run the frontend under ./frontend : 
+ npm start
+
+
 ## ✅ Make a donation
 
 To obtain a license :
