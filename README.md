@@ -18,23 +18,54 @@ Mongodb
 
 The license available on Github is : 
 
-[CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de)
+[CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.en)
 
 ## ✅ Origin of the project
 This project was created in 🇫🇷 and 🇩🇪 
 
 ## ✅ Project status
 
-Missing features für v. 2.3.9 : 
+Missing features für v. 2.4.0 : 
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
-- Modification of other accounts not yet active. 
 - Multi-user real-time refresh problem for project and user modifications.  (Websocket)
+
+## ✅ Questions / Answers
+
+Ask your questions, let us know about bugs...
+[Click here](https://github.com/Michaux-Technology/Geco-Kanban/discussions)
+
+## ✅ Setup
+
+1. Install your Mongodb server and create your collection with a name such as "Kanban". 
+
+2. Install Node.js and npm.
+
+3. Configure your backend so that it can read this collection under : 
+
+/backend/config.js
+
+4. Then configure your React.js frontend so that it can read your backend server: 
+
+/frontend/config.jsx
+
+5. install the project in the command prompt :
+
+npm install
+
+6. Launch the backend under ./backend : 
+
+node index.js
+
+7. Run the frontend under ./frontend : 
+
+npm start
+
 
 ## ✅ Make a donation
 
 To obtain a license :
-- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.de)
-- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.de)
+- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
+- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.en)
   
 make the [right](https://github.com/sponsors/Michaux-Technology) donation
 
