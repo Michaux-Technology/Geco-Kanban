@@ -36,27 +36,27 @@ Ask your questions, let us know about bugs...
 
 ## ✅ Setup
 
-Install your Mongodb server and create your collection with a name such as "Kanban". 
+1. Install your Mongodb server and create your collection with a name such as "Kanban". 
 
-Install Node.js and npm.
+2. Install Node.js and npm.
 
-Configure your backend so that it can read this collection under : 
+3. Configure your backend so that it can read this collection under : 
 
 /backend/config.js
 
-Then configure your React.js frontend so that it can read your backend server: 
+4. Then configure your React.js frontend so that it can read your backend server: 
 
 /frontend/config.jsx
 
-install the project in the command prompt :
+5. install the project in the command prompt :
 
 npm install
 
-Launch the backend under ./backend : 
+6. Launch the backend under ./backend : 
 
 node index.js
 
-Run the frontend under ./frontend : 
+7. Run the frontend under ./frontend : 
 
 npm start
 
