@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
+const config = require('./config.js');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -20,12 +21,12 @@ const server = http.createServer(app);
 // Utilisation de la configuration CORS avec socket.io
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:3000', // URL de votre frontend
+    origin: config.api, // URL de votre frontend
     methods: ['GET', 'POST', 'PUT'],
   },
 });
 
-mongoose.connect('mongodb://192.168.1.104:27017/kanban', {
+mongoose.connect(config.db, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

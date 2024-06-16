@@ -6,10 +6,10 @@ import GoogleIcon from '@mui/icons-material/Google';
 import axios from 'axios';
 import Chip from '@mui/joy/Chip';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from './config';
 
 
 function AuthPage() {
-    const API_URL = 'http://localhost:3001';
 
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
     const [id, setId] = useState(localStorage.getItem('id') || '');
