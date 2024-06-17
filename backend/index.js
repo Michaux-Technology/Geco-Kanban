@@ -162,31 +162,37 @@ io.on('connection', (socket) => {
       const { _id, title, description, enddate } = projectData;
 
       await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
+
       io.emit('projectUpdated', projectData);
+
     } catch (error) {
       console.error('Error updating project:', error);
     }
   });
 
-  socket.on('updateRating', async (ratingData) => {
+  socket.on('updateRatingProject', async (projectData) => {
     try {
-      const { _id, rating } = ratingData;
+      const { _id, rating } = projectData;
+      console.log('projectData', projectData)
 
-      await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
-      io.emit('projectUpdated', projectData);
+      await Project.findByIdAndUpdate(_id, { rating: rating });
+
+      io.emit('projectRatingUpdated', projectData);
+
     } catch (error) {
+      
       console.error('Error updating project:', error);
     }
   });
+
 
   socket.on('updateCollaborators', async (userData) => {
     try {
       const { _id, email, compagny, lastName, firstName, position, avatar } = userData;
 
       await User.findByIdAndUpdate(_id, { email: email, compagny: compagny, lastName: lastName, firstName: firstName, position: position, avatar: avatar });
-      io.emit('collaboratorsUpdated ', userData);
-      console.log('test')
-      console.log("userData", userData)
+      io.emit('collaboratorsUpdated', userData);
+
     } catch (error) {
       console.error('Error updating project:', error);
     }

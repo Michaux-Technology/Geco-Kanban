@@ -14,7 +14,7 @@ import Tab from '@mui/material/Tab'
 import Container from '@mui/material/Container'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router-dom'
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'
 
 import ProjectComponent from './ProjectComponent'
 import CollaboratorComponent from './CollaboratorComponent'
@@ -40,11 +40,10 @@ const ProjectList = () => {
 //retour de AccountEdit
   useEffect(() => {
     if (menu){
-      console.log('test')
       handleChange(null, 1)
     }
-
   }, [])
+  
   const [anchorElNav, setAnchorElNav] = React.useState(null)
 
   const handleOpenNavMenu = (event) => {

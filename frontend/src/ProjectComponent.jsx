@@ -55,6 +55,7 @@ const ProjectComponent = () => {
     let updatedSelectedUsers = [];
 
     let [projects, setProjects] = useState([]);
+    let [ratingProjects, setRatingProjects] = useState([]);
 
     const [rating, setRating] = useState(0.5); // 0.5 est la valeur par défaut
 
@@ -84,7 +85,7 @@ const ProjectComponent = () => {
                 };
             }));
 
-            console.log("avatarNonVisible", listUsersProject)
+            //console.log("avatarNonVisible", listUsersProject)
 
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);
@@ -99,6 +100,10 @@ const ProjectComponent = () => {
             console.error('Error fetching projects:', error);
         }
     };
+
+    useEffect(() => {
+        console.log('ratingProjects', ratingProjects);
+      }, [ratingProjects]);
 
     useEffect(() => {
         fetchData();
@@ -134,20 +139,15 @@ const ProjectComponent = () => {
         socket.on('projectUpdated', (updatedProject) => {
             setProjects((prevProjects) =>
                 prevProjects.map((project) =>
-                    project._id === updatedProject._id ? { ...project, title: updatedProject.title, description: updatedProject.description, enddate: updatedProject.enddate } : project
+                    project._id === updatedProject._id ? { ...project, title: updatedProject.title, description: updatedProject.description, enddate: updatedProject.enddate} : project
                 )
             );
         });
 
-        // Écoutez l'événement Rating en temps réel
-        socket.on('ratingUpdated', (updatedRating) => {
-            setProjects((prevRating) =>
-                prevRating.map((rate) =>
-                    rating._id === updatedRating._id ? { ...rate, rating: updatedRating.rating } : rate
-                )
-            );
+        // Écoutez l'événement pour les projets mis à jour en temps réel concernant le rating
+        socket.on('projectRatingUpdated', (updatedRatingProject) => {
+            setRating(prevState => ({ ...prevState, [updatedRatingProject._id]: updatedRatingProject.rating }));
         });
-
 
         // Nettoyez les écouteurs d'événements lorsque le composant se démonte
         return () => {
@@ -330,11 +330,19 @@ const ProjectComponent = () => {
 
     const handleRatingChange = async (projectId, newRating) => {
         try {
+
+
+            // Enregistrez la nouvelle note dans la base de données
+            //await axios.patch(`${API_URL}/projects/${projectId}/rating`, { rating: newRating });
+
+            socket.emit('updateRatingProject', {
+                _id: projectId,
+                rating: newRating
+            });
+
             // Mettez à jour l'état local avec la nouvelle note
             setRating(prevState => ({ ...prevState, [projectId]: newRating }));
 
-            // Enregistrez la nouvelle note dans la base de données
-            await axios.patch(`${API_URL}/projects/${projectId}/rating`, { rating: newRating });
         } catch (error) {
             console.error('Error saving rating:', error);
         }
