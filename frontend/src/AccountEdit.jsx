@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from './config';
@@ -34,14 +34,9 @@ function AccountEdit() {
     const searchParams = new URLSearchParams(location.search);
     const idListUsers = searchParams.get('id');
 
-
-
     useEffect(() => {
         const fetchData = async () => {
             try {
-
-                console.log("idListUsers", idListUsers)
-                console.log("userId", userId)
 
                 let response;
 
@@ -67,6 +62,11 @@ function AccountEdit() {
 
         fetchData();
     }, []);
+
+    //retour vers projectList
+    const handleGoBack = () => {
+        window.location.href = `/projectList?menu=1`;
+      };
 
     const handleAvatarChange = (event) => {
         event.preventDefault();
@@ -150,10 +150,6 @@ function AccountEdit() {
         }
 
     }, [email, password, company, lastName, firstName, position, navigate, tempImage]);
-
-    const goToProjectList = () => {
-        navigate('/ProjectList');
-    };
 
     return (
 
@@ -289,7 +285,7 @@ function AccountEdit() {
                     variant="contained"
                     color="primary"
                     style={{ marginTop: '1rem' }}
-                    onClick={goToProjectList}
+                    onClick={handleGoBack}
                 >
                     Return
                 </Button>

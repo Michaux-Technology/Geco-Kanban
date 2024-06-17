@@ -1,5 +1,5 @@
 // Imports
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Avatar } from '@mui/material'
 import { IconButton } from '@mui/material'
@@ -14,6 +14,7 @@ import Tab from '@mui/material/Tab'
 import Container from '@mui/material/Container'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom';
 
 import ProjectComponent from './ProjectComponent'
 import CollaboratorComponent from './CollaboratorComponent'
@@ -28,12 +29,22 @@ const ProjectList = () => {
   const [lastnameuser] = useState(localStorage.getItem('lastnameuser') || '')
   const [avataruser] = useState(localStorage.getItem('avataruser') || '')
   const [value, setValue] = useState(0)
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const menu = searchParams.get('menu');
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
   }
 
+//retour de AccountEdit
+  useEffect(() => {
+    if (menu){
+      console.log('test')
+      handleChange(null, 1)
+    }
 
+  }, [])
   const [anchorElNav, setAnchorElNav] = React.useState(null)
 
   const handleOpenNavMenu = (event) => {

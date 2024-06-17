@@ -168,6 +168,17 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('updateRating', async (ratingData) => {
+    try {
+      const { _id, rating } = ratingData;
+
+      await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
+      io.emit('projectUpdated', projectData);
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  });
+
   socket.on('updateCollaborators', async (userData) => {
     try {
       const { _id, email, compagny, lastName, firstName, position, avatar } = userData;

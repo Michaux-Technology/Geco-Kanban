@@ -134,10 +134,20 @@ const ProjectComponent = () => {
         socket.on('projectUpdated', (updatedProject) => {
             setProjects((prevProjects) =>
                 prevProjects.map((project) =>
-                    project._id === updatedProject._id ? { ...project, title: updatedProject.title } : project
+                    project._id === updatedProject._id ? { ...project, title: updatedProject.title, description: updatedProject.description, enddate: updatedProject.enddate } : project
                 )
             );
         });
+
+        // Écoutez l'événement Rating en temps réel
+        socket.on('ratingUpdated', (updatedRating) => {
+            setProjects((prevRating) =>
+                prevRating.map((rate) =>
+                    rating._id === updatedRating._id ? { ...rate, rating: updatedRating.rating } : rate
+                )
+            );
+        });
+
 
         // Nettoyez les écouteurs d'événements lorsque le composant se démonte
         return () => {
@@ -524,8 +534,6 @@ const ProjectComponent = () => {
                                                 key={person._id}
                                                 person={person}
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
-                                                //newPeople={newPeople}
-                                                //setNewPeople={setNewPeople}
                                                 editingProject={editingProject}
                                                 selectedUsers={selectedUsers}
                                                 handelUserExistInProject={handelUserExistInProject}
@@ -538,12 +546,9 @@ const ProjectComponent = () => {
                                                 key={person._id}
                                                 person={person}
                                                 handleAvatarClickOnChild={handleAvatarClickOn}
-                                                //newPeople={newPeople}
-                                                //setNewPeople={setNewPeople}
                                                 editingProject={editingProject}
                                                 selectedUsers={selectedUsers}
                                                 handelUserExistInProject={handelUserExistInProject}
-                                            //addGreenBotton={addGreenBotton}
                                             />
                                         )
                                     );

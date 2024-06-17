@@ -224,7 +224,6 @@ const CollaboratorComponent = () => {
 
   const handleDeleteCollab = async (collabId) => {
     try {
-      console.log('handleDeleteCollab');
       console.log('ErrorMessage');
 
       // Effectuer une requête GET pour obtenir la liste des projectUsers depuis le backend

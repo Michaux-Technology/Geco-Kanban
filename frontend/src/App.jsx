@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import AuthPage from './AuthPage';
 import ProjectList from './ProjectList';
 import ProjectTasks from './ProjectTasks';
@@ -8,6 +8,7 @@ import AccountEdit from './AccountEdit';
 import UserList from './UserList';
 import './styles.css';
 import UserContext from './UserContext';
+
 
 const App = () => {
 
@@ -19,23 +20,17 @@ const App = () => {
   return (
     <Router>
       <UserContext.Provider value={{ email, setEmail,avatar, setAvatar, setFirstname, setLastname  }}>
-        <Routes>
-          <Route path="/" element={<AuthPage />} />
-          <Route path="/projectList" element={<ProjectList />} />
-          <Route path="/signIn" element={<SignIn />} />
-          <Route path="/AccountEdit" element={<AccountEdit />} />
-          <Route path="/userList" element={<UserList />} />
-          <Route path="/projects/:projectId" element={<ProjectTasks />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<AuthPage />} />
+            <Route path="/projectList" element={<ProjectList />} />
+            <Route path="/signIn" element={<SignIn />} />
+            <Route path="/AccountEdit" element={<AccountEdit />} />
+            <Route path="/userList" element={<UserList />} />
+            <Route path="/projects/:projectId" element={<ProjectTasks />} />
+          </Routes>
       </UserContext.Provider>
     </Router>
   );
 };
 
 export default App;
-
-// **************************************************
-//  
-// Application created by Valery-Jerome Michaux
-//
-// **************************************************
