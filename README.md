@@ -25,9 +25,8 @@ This project was created in 🇫🇷 and 🇩🇪
 
 ## ✅ Project status
 
-Missing features für v. 2.4.2 : 
+Missing features für v. 2.4.3 : 
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
-- Multi-user real-time refresh problem for project and user modifications.  (Websocket)
 
 ## ✅ Questions / Answers
 
