@@ -29,7 +29,7 @@ by <b>Valéry-Jérôme Michaux</b>
 Missing features für v. 2.4.3 : 
 - Problem refreshing the avatar list in the project list. (You must use the F5 key)
 This Bug with fix in v. 2.4.4
-- New users created in List of collaborators have the password 1234
+- New users created in List of collaborators have the password: 1234
 
 ## ✅ Questions / Answers
 
