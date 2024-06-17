@@ -173,7 +173,6 @@ io.on('connection', (socket) => {
   socket.on('updateRatingProject', async (projectData) => {
     try {
       const { _id, rating } = projectData;
-      console.log('projectData', projectData)
 
       await Project.findByIdAndUpdate(_id, { rating: rating });
 
@@ -812,5 +811,5 @@ server.listen(3001, () => {
 });
 
 // Application created by Valery-Jerome Michaux
-// Copyrights can be viewed on Github
+// Copyrights can be viewed on Github:
 // https://github.com/Michaux-Technology/Geco-Kanban

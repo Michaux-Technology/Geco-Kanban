@@ -255,6 +255,7 @@ const ProjectComponent = () => {
     // Modifiez la logique pour ouvrir le modal en mode édition
     const handleEditProject = useCallback(async (project) => {
         try {
+            resetEditing()
             //Mise a jour des utilisateurs affecté au projet
             UpdateUserSelect(selectedUsers, project)
 
