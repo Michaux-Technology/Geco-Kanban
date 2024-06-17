@@ -22,6 +22,7 @@ The license available on Github is :
 
 ## ✅ Origin of the project
 This project was created in 🇫🇷 and 🇩🇪 
+by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
