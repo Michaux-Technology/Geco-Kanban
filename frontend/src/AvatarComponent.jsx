@@ -44,7 +44,8 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
 
 
   useEffect(() => {
-    if (selectedUsers.length > 0 && person) {
+
+    if (selectedUsers.length >= 0 && person) {
       const exists = selectedUsers.some(user => user._id === person._id);
       if (exists === true) {
         setUserExists(true);
@@ -57,8 +58,6 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
 
   }, [editingProject, person, selectedUsers]);
 
-
-  console.log("userExists", userExists)
 
   const handleAvatarClickOn = useCallback(() => {
     handleAvatarClickOnChild(person, userExists);

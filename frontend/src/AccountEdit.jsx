@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from './config';
 import { useLocation } from 'react-router-dom';
+import io from 'socket.io-client';
+
 
 import {
     Container,
@@ -29,7 +31,7 @@ function AccountEdit() {
     let [tempImage, setTempImage] = useState(null);
     const navigate = useNavigate();
     const [userId, setUserId] = useState(localStorage.getItem('id') || '')
-
+    const socket = io(API_URL); // Connectez-vous au serveur WebSocket
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const idListUsers = searchParams.get('id');
@@ -130,8 +132,30 @@ function AccountEdit() {
                 position: position,
                 ...(password && { password: password }),
             });
+
+            socket.emit('updateCollaborator', {
+                _id: idListUsers,
+                email: email,
+                company: company,
+                lastName: lastName,
+                firstName: firstName,
+                position: position,
+                ...(password && { password: password }),
+            });
+
         } else {
              response = await axios.put(`${API_URL}/user/${userId}`, {
+                email: email,
+                company: company,
+                lastName: lastName,
+                firstName: firstName,
+                position: position,
+                ...(password && { password: password }),
+            });
+
+            
+            socket.emit('updateCollaborator', {
+                _id: userId,
                 email: email,
                 company: company,
                 lastName: lastName,

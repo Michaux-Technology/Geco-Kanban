@@ -113,6 +113,17 @@ const CollaboratorComponent = () => {
       setCollaborators((prevCollaborators) => prevCollaborators.filter((collaborator) => collaborator._id !== deletedUserId));
     });
 
+
+        // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
+        socket.on('userUpdated', (updatedUser) => {
+          setCollaborators((prevCollaborators) =>
+            prevCollaborators.map((collaborator) =>
+              collaborator._id === updatedUser._id ? { ...collaborator, title: updatedUser.title, description: updatedUser.description, enddate: updatedUser.enddate} : collaborator
+              )
+          );
+      });
+
+
     return () => {
       resetErrorMessage()
       socket.disconnect();

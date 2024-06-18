@@ -226,6 +226,7 @@ const ProjectComponent = () => {
                 //console.log("selectedUsers", selectedUsers);
 
                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
+                fetchData();
             }
 
             // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
@@ -247,6 +248,8 @@ const ProjectComponent = () => {
                 // Mettre à jour la liste des avatars
                 fetchData();
             }
+
+            
         } catch (error) {
             console.error(error);
         }
@@ -399,6 +402,7 @@ const ProjectComponent = () => {
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
         }
 
+        console.log('updatedSelectedUsers', updatedSelectedUsers)
 
     }, []);
 

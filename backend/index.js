@@ -185,6 +185,20 @@ io.on('connection', (socket) => {
   });
 
 
+  socket.on('updateCollaborator', async (collaboratorData) => {
+    try {
+      const { _id, email, company, lastName, firstName, position, password } = collaboratorData;
+
+      await Project.findByIdAndUpdate(_id, { email: email, company: company, lastName: lastName, firstName: firstName, position: position, password: password, });
+
+      io.emit('projectUpdated', collaboratorData);
+
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  });
+
+
   socket.on('updateCollaborators', async (userData) => {
     try {
       const { _id, email, compagny, lastName, firstName, position, avatar } = userData;
