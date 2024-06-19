@@ -26,8 +26,7 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 2.4.4 : 
-- In project creation mode, participants are not added. 
+Missing features für v. 2.4.5 : 
 - New users created in List of collaborators have the password: 1234. 
 Der Nutzer muss sein Passwort ändern. 
 
