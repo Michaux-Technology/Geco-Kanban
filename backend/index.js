@@ -129,7 +129,18 @@ io.on('connection', (socket) => {
       });
 
       await project.save();
-      io.emit('projectAdded', project);
+
+      // Récupérez l'ID généré du projet
+      console.log("project._id", project._id)
+
+      const projectId = { _id: project._id };;
+
+      // Envoyez une notification à tous les clients connectés que le projet a été ajouté avec succès
+      io.emit('addProjectResponse', projectId);
+
+      // Retournez l'ID du projet pour une utilisation ultérieure
+      return projectId;
+
     } catch (error) {
       console.error('Error adding project:', error);
     }
@@ -575,6 +586,7 @@ app.post('/projects', async (req, res) => {
 
     io.emit('projectAdded', project);
     res.status(201).json(project);
+
   } catch (error) {
     console.error('Error adding project:', error);
     res.status(500).json({ error: 'An error occurred while adding the project.' });

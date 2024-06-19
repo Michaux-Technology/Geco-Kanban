@@ -226,6 +226,8 @@ const ProjectComponent = () => {
                 //console.log("selectedUsers", selectedUsers);
 
                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
+
+                // Mettre à jour la liste des avatars
                 fetchData();
             }
 
@@ -259,6 +261,7 @@ const ProjectComponent = () => {
     const handleEditProject = useCallback(async (project) => {
         try {
             resetEditing()
+
             //Mise a jour des utilisateurs affecté au projet
             UpdateUserSelect(selectedUsers, project)
 
@@ -266,7 +269,6 @@ const ProjectComponent = () => {
                 await onUpload(tempImage); // Uploadez l'image
             }
 
-            //await new Promise((resolve, reject) => {
             socket.emit('updateProject', {
                 _id: project._id,
                 title: editingProject.title,
@@ -287,18 +289,28 @@ const ProjectComponent = () => {
 
     const handleAddProject = useCallback(async () => {
         try {
-            resetEditing()
-
+            resetEditing();
+    
             if (tempImage) {
                 await onUpload(tempImage);
             }
-
+    
             socket.emit('addProject', {
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
             });
+            
+            function handleAddProjectCallback(project) {
+                console.log('ProjectId:', project);
+                console.log('selectedUsers:', selectedUsers);
+            
+                // Appelez la fonction pour insérer les utilisateurs dans le projet en utilisant l'ID du projet
+                UpdateUserSelect(selectedUsers, project);
+            }
 
+            socket.on('addProjectResponse', handleAddProjectCallback);
+    
             // Réinitialisez les champs si nécessaire, mais ne le faites pas ici
             setModalOpen(false);
         } catch (error) {
