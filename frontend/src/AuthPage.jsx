@@ -141,28 +141,23 @@ function AuthPage() {
                     </Button>
 
                     {/* Ajout du bouton de connexion Google */}
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<GoogleIcon />}
-                        style={{ marginTop: '1rem' }}
-                        onClick={handleGoogleLogin}
-                    >
-                        Login with Google
-                    </Button>
 
-                    <Grid container style={{ marginTop: '1rem' }}>
-                        <Grid item xs>
-                            <Link href="#" variant="body2">
-                                Password forgotten?
-                            </Link>
-                        </Grid>
-                        <Grid item>
-                            <Link href="signIn" variant="body2">
-                                {"No account yet? Sign in"}
-                            </Link>
-                        </Grid>
-                    </Grid>
+
+
+
+                    <Typography
+                        justifyContent="center"
+                        color="primary"
+                        level="body-xs"
+                        noWrap={false}
+                        variant="plain"
+                        style={{ marginTop:'1.5rem', width: '100%', textAlign: 'center' }}
+                    >
+                        <Link href="signIn" variant="body2">
+                            {"No account yet? Sign in"}
+                        </Link>
+                    </Typography>
+
                     <Typography
                         justifyContent="center"
                         color="primary"
@@ -170,15 +165,15 @@ function AuthPage() {
                         noWrap={false}
                         variant="plain"
                         endDecorator={
-                            <Chip 
-                            component="span" 
-                            size="sm"
-                            color="primary">
+                            <Chip
+                                component="span"
+                                size="sm"
+                                color="primary">
                                 Valéry-Jérôme Michaux
                             </Chip>}
-                            style={{ marginTop: '2rem' }}
+                        style={{ marginTop: '2rem' }}
                     >
-                        Application created by 
+                        Application created by
                     </Typography >
                     <Typography
                         justifyContent="center"
@@ -189,7 +184,7 @@ function AuthPage() {
                         style={{ width: '100%', textAlign: 'center' }}
                     >
                         <a href="https://github.com/Michaux-Technology/Geco-Kanban">Kanban Geco</a>
-                         
+
                     </Typography >
                 </form>
             </div>
