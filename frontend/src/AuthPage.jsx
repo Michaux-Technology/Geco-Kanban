@@ -142,16 +142,13 @@ function AuthPage() {
 
                     {/* Ajout du bouton de connexion Google */}
 
-
-
-
                     <Typography
                         justifyContent="center"
                         color="primary"
                         level="body-xs"
                         noWrap={false}
                         variant="plain"
-                        style={{ marginTop:'1.5rem', width: '100%', textAlign: 'center' }}
+                        style={{ marginTop: '1.5rem', width: '100%', textAlign: 'center' }}
                     >
                         <Link href="signIn" variant="body2">
                             {"No account yet? Sign in"}
