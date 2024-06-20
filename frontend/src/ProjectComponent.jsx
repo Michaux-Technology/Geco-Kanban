@@ -85,8 +85,6 @@ const ProjectComponent = () => {
                 };
             }));
 
-            //console.log("avatarNonVisible", listUsersProject)
-
             const response = await axios.get(`${API_URL}/projects`);
             setProjects(response.data);
 
@@ -102,8 +100,11 @@ const ProjectComponent = () => {
     };
 
     useEffect(() => {
-        console.log('ratingProjects', ratingProjects);
-      }, [ratingProjects]);
+    }, [ratingProjects]);
+
+    useEffect(() => {
+        fetchData()
+    }, [isModalOpen]);
 
     useEffect(() => {
         fetchData();
@@ -121,7 +122,6 @@ const ProjectComponent = () => {
         // Écoutez l'événement pour les utilisateurs dans un projet
 
         socket.on('projectusers', (responseUsersProject) => {
-            console.log(responseUsersProject);
             setListUsersProject(responseUsersProject.data);
         });
 
@@ -139,7 +139,7 @@ const ProjectComponent = () => {
         socket.on('projectUpdated', (updatedProject) => {
             setProjects((prevProjects) =>
                 prevProjects.map((project) =>
-                    project._id === updatedProject._id ? { ...project, title: updatedProject.title, description: updatedProject.description, enddate: updatedProject.enddate} : project
+                    project._id === updatedProject._id ? { ...project, title: updatedProject.title, description: updatedProject.description, enddate: updatedProject.enddate } : project
                 )
             );
         });
@@ -156,17 +156,19 @@ const ProjectComponent = () => {
     }, []);
 
     const resetEditing = () => {
+        setPreview(DEFAULT_IMAGE)
         setEditingProject(null);
         setModalOpen(false);
         setSelectedUsers([]);
         setSelectedUsersProject([]);
         setIsEditing(false);
         setTempImage(null)
+
     };
 
     const handleDrop = (event) => {
         event.preventDefault();
-        const file = event.dataTransfer.files[0];
+        let file = event.dataTransfer.files[0];
         handleFile(file);
     };
 
@@ -190,6 +192,9 @@ const ProjectComponent = () => {
             const response = await axios.post(`${API_URL}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data', },
             });
+
+            file = null;
+
         } catch (error) {
             console.error('Erreur lors de l’appel axios:', error);
             if (error.response) {
@@ -213,7 +218,7 @@ const ProjectComponent = () => {
         try {
 
             const response = await axios.get(`${API_URL}/projects/${project._id}/users`);
-            const projectUsers = response.data.users;
+            let projectUsers = response.data.users;
 
             // Supprimer les utilisateurs qui ne sont pas dans la liste selectedUsers mais qui appartiennent au projet
 
@@ -223,7 +228,6 @@ const ProjectComponent = () => {
 
             for (const user of usersToDelete) {
                 console.log("DELETE");
-                //console.log("selectedUsers", selectedUsers);
 
                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
 
@@ -233,7 +237,6 @@ const ProjectComponent = () => {
 
             // Ajouter les utilisateurs de la liste selectedUsers qui n'appartiennent pas encore au projet
             for (const person of selectedUsers) {
-                //console.log(project._id, "/", person._id)
                 const response = await axios.get(`${API_URL}/projects/${project._id}/users/${person._id}`);
                 const userExists = response.data.exists;
 
@@ -251,7 +254,7 @@ const ProjectComponent = () => {
                 fetchData();
             }
 
-            
+
         } catch (error) {
             console.error(error);
         }
@@ -260,6 +263,7 @@ const ProjectComponent = () => {
     // Modifiez la logique pour ouvrir le modal en mode édition
     const handleEditProject = useCallback(async (project) => {
         try {
+
             resetEditing()
 
             //Mise a jour des utilisateurs affecté au projet
@@ -273,7 +277,8 @@ const ProjectComponent = () => {
                 _id: project._id,
                 title: editingProject.title,
                 description: editingProject.description,
-                enddate: editingProject.enddate
+                enddate: editingProject.enddate,
+                tempImage: tempImage
             });
 
             setProjects((prevProjects) =>
@@ -290,27 +295,26 @@ const ProjectComponent = () => {
     const handleAddProject = useCallback(async () => {
         try {
             resetEditing();
-    
+
             if (tempImage) {
                 await onUpload(tempImage);
             }
-    
+
             socket.emit('addProject', {
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
+                tempImage: tempImage
             });
-            
+
             function handleAddProjectCallback(project) {
-                console.log('ProjectId:', project);
-                console.log('selectedUsers:', selectedUsers);
-            
+
                 // Appelez la fonction pour insérer les utilisateurs dans le projet en utilisant l'ID du projet
                 UpdateUserSelect(selectedUsers, project);
             }
 
             socket.on('addProjectResponse', handleAddProjectCallback);
-    
+
             // Réinitialisez les champs si nécessaire, mais ne le faites pas ici
             setModalOpen(false);
         } catch (error) {
@@ -349,8 +353,6 @@ const ProjectComponent = () => {
 
 
             // Enregistrez la nouvelle note dans la base de données
-            //await axios.patch(`${API_URL}/projects/${projectId}/rating`, { rating: newRating });
-
             socket.emit('updateRatingProject', {
                 _id: projectId,
                 rating: newRating
@@ -413,8 +415,6 @@ const ProjectComponent = () => {
 
             setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
         }
-
-        console.log('updatedSelectedUsers', updatedSelectedUsers)
 
     }, []);
 
@@ -489,12 +489,12 @@ const ProjectComponent = () => {
                                 style={{ width: '300px', height: '170px', position: 'relative' }}
                             >
                                 <img
-                                    src={preview}
+                                    src={editingProject ? (editingProject.image ? "./uploads/" + editingProject.image : "./img/gecko.jpg") : "./img/gecko.jpg"}
                                     alt="Uploaded preview"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             </div>
-                            
+
                             <Box
                                 component="form"
                                 sx={{

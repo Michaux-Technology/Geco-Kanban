@@ -121,18 +121,26 @@ io.on('connection', (socket) => {
   // Gérez les événements pour les projets ici
   socket.on('addProject', async (projectData) => {
     try {
-      const project = new Project({
-        title: projectData.title,
-        description: projectData.description,
-        enddate: projectData.enddate,
-        image: namefile
-      });
+      let project = ''
+      if (projectData.tempImage) {
+        project = new Project({
+          title: projectData.title,
+          description: projectData.description,
+          enddate: projectData.enddate,
+          image: namefile
+        });
+      } else {
+        project = new Project({
+          title: projectData.title,
+          description: projectData.description,
+          enddate: projectData.enddate,
+          image: ''
+        });
+      }
 
       await project.save();
 
       // Récupérez l'ID généré du projet
-      console.log("project._id", project._id)
-
       const projectId = { _id: project._id };;
 
       // Envoyez une notification à tous les clients connectés que le projet a été ajouté avec succès
@@ -170,9 +178,22 @@ io.on('connection', (socket) => {
 
   socket.on('updateProject', async (projectData) => {
     try {
-      const { _id, title, description, enddate } = projectData;
+      const { _id, title, description, enddate, tempImage } = projectData;
 
-      await Project.findByIdAndUpdate(_id, { title: title, description: description, enddate: enddate });
+      if (tempImage) {
+        await Project.findByIdAndUpdate(_id, {
+          title: title,
+          description: description,
+          enddate: enddate,
+          image: namefile
+        });
+      } else {
+        await Project.findByIdAndUpdate(_id, {
+          title: title,
+          description: description,
+          enddate: enddate
+        });
+      }
 
       io.emit('projectUpdated', projectData);
 
@@ -190,7 +211,7 @@ io.on('connection', (socket) => {
       io.emit('projectRatingUpdated', projectData);
 
     } catch (error) {
-      
+
       console.error('Error updating project:', error);
     }
   });
@@ -794,6 +815,7 @@ app.get('/user/:emailGroup/collaborators', async (req, res) => {
 // Configuration de stockage de Multer
 
 const storage = multer.diskStorage({
+
   destination: function (req, file, cb) {
     cb(null, '../frontend/public/uploads/'); // le dossier où le fichier sera stocké
   },
@@ -804,7 +826,6 @@ const storage = multer.diskStorage({
 }
 );
 
-
 const upload = multer({ storage: storage });
 
 app.post('/upload', upload.single('image'), (req, res) => {
@@ -812,6 +833,8 @@ app.post('/upload', upload.single('image'), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
+
+    file = null;
 
     return res.status(200).json({ message: 'File uploaded successfully.' });
   } catch (error) {

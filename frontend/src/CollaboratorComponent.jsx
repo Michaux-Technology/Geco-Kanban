@@ -114,14 +114,14 @@ const CollaboratorComponent = () => {
     });
 
 
-        // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
-        socket.on('userUpdated', (updatedUser) => {
-          setCollaborators((prevCollaborators) =>
-            prevCollaborators.map((collaborator) =>
-              collaborator._id === updatedUser._id ? { ...collaborator, title: updatedUser.title, description: updatedUser.description, enddate: updatedUser.enddate} : collaborator
-              )
-          );
-      });
+    // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
+    socket.on('userUpdated', (updatedUser) => {
+      setCollaborators((prevCollaborators) =>
+        prevCollaborators.map((collaborator) =>
+          collaborator._id === updatedUser._id ? { ...collaborator, title: updatedUser.title, description: updatedUser.description, enddate: updatedUser.enddate } : collaborator
+        )
+      );
+    });
 
 
     return () => {
