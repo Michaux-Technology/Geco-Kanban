@@ -156,7 +156,7 @@ const ProjectComponent = () => {
     }, []);
 
     const resetEditing = () => {
-        //setPreview(DEFAULT_IMAGE)
+        setPreview(DEFAULT_IMAGE)
         setEditingProject(null);
         setModalOpen(false);
         setSelectedUsers([]);
