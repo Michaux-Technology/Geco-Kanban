@@ -64,7 +64,7 @@ Ask your questions, let us know about bugs...
    npm start
 
 ## ✅ Video
-[![Afj3HvWFUZc](https://img.youtube.com/vi/Afj3HvWFUZc)](https://www.youtube.com/watch?v=Afj3HvWFUZc)
+[![Afj3HvWFUZc](https://img.youtube.com/vi/Afj3HvWFUZc/0.jpg)](https://www.youtube.com/watch?v=Afj3HvWFUZc)
 
 ## ✅ Make a donation
 
