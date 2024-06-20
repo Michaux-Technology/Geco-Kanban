@@ -99,8 +99,8 @@ const ProjectComponent = () => {
         }
     };
 
-    useEffect(() => {
-    }, [ratingProjects]);
+    // useEffect(() => {
+    // }, [ratingProjects]);
 
     useEffect(() => {
         fetchData()
@@ -156,7 +156,7 @@ const ProjectComponent = () => {
     }, []);
 
     const resetEditing = () => {
-        setPreview(DEFAULT_IMAGE)
+        //setPreview(DEFAULT_IMAGE)
         setEditingProject(null);
         setModalOpen(false);
         setSelectedUsers([]);
@@ -489,7 +489,7 @@ const ProjectComponent = () => {
                                 style={{ width: '300px', height: '170px', position: 'relative' }}
                             >
                                 <img
-                                    src={editingProject ? (editingProject.image ? "./uploads/" + editingProject.image : "./img/gecko.jpg") : "./img/gecko.jpg"}
+                                    src={preview}
                                     alt="Uploaded preview"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
@@ -675,6 +675,16 @@ const ProjectComponent = () => {
                                                                 setIsEditing(true);
                                                                 setModalOpen(true);
                                                                 setLayout('center');
+                                                                if (project) {
+                                                                    if (project.image) {
+                                                                        setPreview("./uploads/" + project.image)
+                                                                    } else {
+                                                                        setPreview("./img/gecko.jpg")
+                                                                    }
+                                                                } else {
+                                                                    setPreview("./img/gecko.jpg")
+                                                                }
+
                                                             }}>
                                                             <EditIcon />
                                                         </Fab>
