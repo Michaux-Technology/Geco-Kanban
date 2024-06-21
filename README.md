@@ -1,4 +1,4 @@
-*** Programming break due to school holidays ***
+*** Break in programming due to the summer school holidays ***
 
 # ✅ Project management software Open Source
 
