@@ -1,3 +1,5 @@
+*** Programming break due to school holidays ***
+
 # ✅ Project management software Open Source
 
 [![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
@@ -30,7 +32,8 @@ by <b>Valéry-Jérôme Michaux</b>
 
 Missing features für v. 2.4.6 : 
 - New users created in List of collaborators have the password: 1234. 
-Der Nutzer muss sein Passwort ändern. 
+The user must change their password. 
+- After this solar holiday break, we'll be back to checking messages and likes.
 
 
 ## ✅ Questions / Answers
