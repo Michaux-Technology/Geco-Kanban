@@ -1,4 +1,7 @@
+
 # ✅ Project management software Open Source
+
+[![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
 
 ## ✅ Description
 
@@ -26,9 +29,10 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 2.4.6 : 
+Missing features für v. 2.4.7 : 
 - New users created in List of collaborators have the password: 1234. 
-Der Nutzer muss sein Passwort ändern. 
+The user must change their password. 
+- we'll be back to checking our posts and "Likes".
 
 
 ## ✅ Questions / Answers
