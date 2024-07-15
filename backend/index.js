@@ -373,7 +373,7 @@ app.put('/user/:id', async (req, res) => {
     const userId = req.params.id;
 
     // Extract the updated user information from the request body
-    const { email, company, lastName, firstName, position } = req.body;
+    const { email, company, lastName, firstName, position, password } = req.body;
 
     // Find the user by ID
     const user = await User.findById(userId);
@@ -382,12 +382,17 @@ app.put('/user/:id', async (req, res) => {
       return res.status(404).send({ message: 'User not found' });
     }
 
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Update the user information
     user.email = email;
     user.company = company;
     user.lastName = lastName;
     user.firstName = firstName;
     user.position = position;
+    user.password = hashedPassword;
 
     await user.save();
 
@@ -397,10 +402,6 @@ app.put('/user/:id', async (req, res) => {
     res.status(500).send({ message: 'Could not update user.' });
   }
 });
-
-
-
-
 
 
 app.get('/auth/google', passport.authenticate('google', {
