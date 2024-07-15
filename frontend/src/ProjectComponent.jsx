@@ -447,7 +447,6 @@ const ProjectComponent = () => {
         return color;
     }
 
-
     return (
         <>
             {!isModalOpen && (

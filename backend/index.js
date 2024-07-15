@@ -157,13 +157,17 @@ io.on('connection', (socket) => {
   socket.on('addCollab', async (collabData) => {
     try {
 
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(collabData.password, salt);
+
       const collaborator = new User({
         email: collabData.email,
         lastName: collabData.lastname,
         firstName: collabData.firstname,
         position: collabData.position,
         company: collabData.company,
-        password: collabData.password,
+        password: hashedPassword,
         avatar: namefile
       });
 
@@ -219,9 +223,14 @@ io.on('connection', (socket) => {
 
   socket.on('updateCollaborator', async (collaboratorData) => {
     try {
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
       const { _id, email, company, lastName, firstName, position, password } = collaboratorData;
 
-      await Project.findByIdAndUpdate(_id, { email: email, company: company, lastName: lastName, firstName: firstName, position: position, password: password, });
+      await Project.findByIdAndUpdate(_id, { email: email, company: company, lastName: lastName, firstName: firstName, position: position, password: hashedPassword, });
 
       io.emit('projectUpdated', collaboratorData);
 
