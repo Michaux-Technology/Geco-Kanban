@@ -1,4 +1,3 @@
-*** Break in programming due to the summer school holidays ***
 
 # ✅ Project management software Open Source
 
@@ -30,10 +29,10 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 2.4.6 : 
+Missing features für v. 2.4.7 : 
 - New users created in List of collaborators have the password: 1234. 
 The user must change their password. 
-- After this summer break, we'll be back to checking our posts and "Likes".
+- we'll be back to checking our posts and "Likes".
 
 
 ## ✅ Questions / Answers
