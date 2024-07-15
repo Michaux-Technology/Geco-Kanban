@@ -13,7 +13,7 @@ function AuthPage() {
 
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
     const [id, setId] = useState(localStorage.getItem('id') || '');
-    const [avatar, setAvatar] = useState(localStorage.getItem('avataruser') || '');
+    const [avatar, setAvatar] = useState('');
     const [lastname, setLastname] = useState(localStorage.getItem('lastnameuser') || '');
     const [firstname, setFirstname] = useState(localStorage.getItem('firstnameuser') || '');
     const [company, setCompany] = useState(localStorage.getItem('companyuser') || '');
@@ -25,10 +25,11 @@ function AuthPage() {
         e.preventDefault();
 
         try {
+            console.log('email:', email);
             const response = await axios.post(`${API_URL}/login`, { email, password });
 
             if (response.data && response.data.message === 'Login successful') {
-                const responseUser = await axios.get(`${API_URL}/user`, { email });
+                const responseUser = await axios.get(`${API_URL}/user/email/${email}`);
                 setId(responseUser.data._id);
                 setAvatar(responseUser.data.avatar);
                 setLastname(responseUser.data.lastName);
@@ -51,6 +52,7 @@ function AuthPage() {
 
                 function saveAvatarToLocalStorage(avatar) {
                     localStorage.setItem('avataruser', avatar);
+                    console.log('avatar in saveAvatarToLocalStorage:', avatar);
                 }
 
                 function savefirstnameToLocalStorage(firstname) {
@@ -72,11 +74,6 @@ function AuthPage() {
         } catch (error) {
             console.error('Erreur d\'authentification', error);
         }
-    };
-
-    const handleGoogleLogin = () => {
-        // Votre logique pour la connexion avec Google
-        window.location.href = '/api/auth/google';
     };
 
     const handleEmailChange = (e) => {

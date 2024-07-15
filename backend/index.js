@@ -382,11 +382,7 @@ app.put('/user/:id', async (req, res) => {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    console.log('password', password)
-
     if (password === undefined) {
-
-
 
       // Update the user information
       user.email = email;
@@ -494,11 +490,13 @@ app.get('/tasks', async (req, res) => {
   }
 });
 
-app.get('/user', async (req, res) => {
+app.get('/user/email/:email', async (req, res) => {
   const emailUser = req.params.email;
+  console.log(emailUser)
 
   try {
-    const user = await User.findOne(emailUser);
+    const user = await User.findOne({email: emailUser})
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred' });

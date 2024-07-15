@@ -153,7 +153,6 @@ function AccountEdit() {
                 ...(password && { password: password }),
             });
 
-            
             socket.emit('updateCollaborator', {
                 _id: userId,
                 email: email,
