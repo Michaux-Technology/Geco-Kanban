@@ -382,17 +382,32 @@ app.put('/user/:id', async (req, res) => {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('password', password)
 
-    // Update the user information
-    user.email = email;
-    user.company = company;
-    user.lastName = lastName;
-    user.firstName = firstName;
-    user.position = position;
-    user.password = hashedPassword;
+    if (password === undefined) {
+
+
+
+      // Update the user information
+      user.email = email;
+      user.company = company;
+      user.lastName = lastName;
+      user.firstName = firstName;
+      user.position = position;
+
+    } else {
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      user.email = email;
+      user.company = company;
+      user.lastName = lastName;
+      user.firstName = firstName;
+      user.position = position;
+      user.password = hashedPassword;
+    }
 
     await user.save();
 
