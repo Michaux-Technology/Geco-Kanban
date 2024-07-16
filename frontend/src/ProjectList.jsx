@@ -1,6 +1,9 @@
 // Imports
 import React, { useEffect, useState } from 'react'
 
+import axios from 'axios';
+import { API_URL } from './config';
+
 import { Avatar } from '@mui/material'
 import { IconButton } from '@mui/material'
 import AppBar from '@mui/material/AppBar'
@@ -25,13 +28,22 @@ const ProjectList = () => {
   //Definition des variables
   const [userId, setUserId] = useState(localStorage.getItem('id') || '')
   const [id, setId] = useState(localStorage.getItem('id') || '')
-  const [firstnameuser] = useState(localStorage.getItem('firstnameuser') || '')
-  const [lastnameuser] = useState(localStorage.getItem('lastnameuser') || '')
+  const [firstname, setFirstname] = useState('')
+  const [lastname, setLastname] = useState('')
   const [avataruser] = useState(localStorage.getItem('avataruser') || '')
   const [value, setValue] = useState(0)
   const location = useLocation();
+  
   const searchParams = new URLSearchParams(location.search);
   const menu = searchParams.get('menu');
+
+const getIduser = searchParams.get('user');
+
+const getUserInfo = async (e) => {
+  const responseUser = await axios.get(`${API_URL}/user/${getIduser}`);
+  setFirstname(responseUser.data.firstName);
+  setLastname(responseUser.data.lastName);
+}
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
@@ -42,6 +54,7 @@ const ProjectList = () => {
     if (menu){
       handleChange(null, 1)
     }
+    getUserInfo()
   }, [])
   
   const [anchorElNav, setAnchorElNav] = React.useState(null)
@@ -206,7 +219,7 @@ const ProjectList = () => {
                 {avataruser ? (
                   <Avatar src={"./uploads/" + avataruser} />
                 ) : (
-                  <Avatar {...stringAvatar(`${firstnameuser} ${lastnameuser}`)} />
+                  <Avatar {...stringAvatar(`${firstname} ${lastname}`)} />
                 )}
 
                 {/* <Avatar src={avataruser} /> */}

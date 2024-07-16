@@ -14,9 +14,9 @@ function AuthPage() {
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
     const [id, setId] = useState(localStorage.getItem('id') || '');
     const [avatar, setAvatar] = useState('');
-    const [lastname, setLastname] = useState(localStorage.getItem('lastnameuser') || '');
-    const [firstname, setFirstname] = useState(localStorage.getItem('firstnameuser') || '');
-    const [company, setCompany] = useState(localStorage.getItem('companyuser') || '');
+    const [lastname, setLastname] = useState('');
+    const [firstname, setFirstname] = useState('');
+    const [company, setCompany] = useState('');
 
     let [password, setPassword] = useState('');
     let navigate = useNavigate();
@@ -40,6 +40,7 @@ function AuthPage() {
 
                 //passage des Localstarage sous forme de fonction car sans fonction ca créé un bug
                 //Probleme de rapidité 
+                
                 saveIdToLocalStorage(responseUser.data._id);
                 saveAvatarToLocalStorage(responseUser.data.avatar);
                 savefirstnameToLocalStorage(responseUser.data.firstname);
@@ -52,7 +53,6 @@ function AuthPage() {
 
                 function saveAvatarToLocalStorage(avatar) {
                     localStorage.setItem('avataruser', avatar);
-                    console.log('avatar in saveAvatarToLocalStorage:', avatar);
                 }
 
                 function savefirstnameToLocalStorage(firstname) {
@@ -67,7 +67,8 @@ function AuthPage() {
                     localStorage.setItem('lastnameuser', lastname);
                 }
 
-                navigate('/projectList'); // Redirection vers la page projectList
+                navigate(`/projectList?user=${responseUser.data._id}`); // Redirection vers la page projectList
+
             } else {
                 console.error(response.data.message);
             }
