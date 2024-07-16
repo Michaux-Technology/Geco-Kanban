@@ -67,7 +67,7 @@ function AccountEdit() {
 
     //retour vers projectList
     const handleGoBack = () => {
-        window.location.href = `/projectList?menu=1`;
+        window.location.href = `/projectList?menu=1&user=${userId}`;
       };
 
     const handleAvatarChange = (event) => {
