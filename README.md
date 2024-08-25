@@ -1,3 +1,4 @@
+<img src="https://github.com/trobonox/kanri/assets/57040351/39aae8cf-f9bc-4e9e-821b-78c61a0fcb1d" alt="Kanri banner" />
 
 # ✅ Project management software Open Source
 
