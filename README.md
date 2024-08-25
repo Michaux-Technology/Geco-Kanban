@@ -1,5 +1,4 @@
-<img src="https://github.com/trobonox/kanri/assets/57040351/39aae8cf-f9bc-4e9e-821b-78c61a0fcb1d" alt="Kanri banner" />
-![gecoKanban](https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a)
+<img src="(https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a" alt="Kanri banner" />
 # ✅ Project management software Open Source
 
 [![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
