@@ -2,8 +2,6 @@
 
 # ✅ Project management software Open Source
 
-[![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
-
 ## ✅ Description
 
 This software lets you manage projects using Kanban.
@@ -67,6 +65,7 @@ Ask your questions, let us know about bugs...
 
    npm start
 
+[![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
 
 ## ✅ Make a donation
 
