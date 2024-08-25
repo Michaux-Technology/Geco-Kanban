@@ -1,6 +1,7 @@
 <p align="center">
 <img src="https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a" alt="Kanri banner" />
 </p>
+
 # ✅ Project management software Open Source
 
 ## ✅ Description
