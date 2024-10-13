@@ -30,10 +30,12 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 2.4.8 : 
+Missing features für v. 2.4.9 : 
+- The bug in the comments and likes recordings has been corrected. 
+- Soon you'll be able to change column names and add new columns. 
+- The task modification function does not work.
 - New users created in List of collaborators have the password: 1234. 
 The user must change their password. 
-- we'll be back to checking our posts and "Likes".
 
 
 ## ✅ Questions / Answers
