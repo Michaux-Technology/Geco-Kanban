@@ -1,7 +1,8 @@
+<p align="center">
+<img src="https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a" alt="Kanri banner" />
+</p>
 
 # ✅ Project management software Open Source
-
-[![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
 
 ## ✅ Description
 
@@ -66,6 +67,7 @@ Ask your questions, let us know about bugs...
 
    npm start
 
+[![Alv_3hkBI8Q](https://img.youtube.com/vi/Alv_3hkBI8Q/0.jpg)](https://www.youtube.com/watch?v=Alv_3hkBI8Q)
 
 ## ✅ Make a donation
 
