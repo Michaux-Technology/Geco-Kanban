@@ -1,0 +1,176 @@
+/* Dans votre fichier CSS */
+
+
+.columns-CreateTask {
+  display: flex;
+  flex-direction: row;
+  z-index: 2;
+}
+.column-CreateTask {
+  flex: 1;
+}
+
+@media screen and (max-width: 640px) {
+  /* Styles spécifiques pour les petits écrans */
+  .columns-CreateTask {
+    flex-direction: column;
+  }
+}
+
+.columns-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.column {
+  display: block;
+  background-color: #c2c2c2fe;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin: 8px;
+  padding: 16px;
+}
+
+.columnTitleDescription {
+  display: block;
+  flex: 1;
+  min-width: 320px;
+  padding: 16px;
+
+}
+
+.columnTitle1 {
+  display: inline-block;
+  background-color: #18cb21;
+  color: #f0f0f0;
+  height: 75px;
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.columnTitle2 {
+  display: inline-block;
+  background-color: #d22a2a;
+  color: #f0f0f0;
+  height: 75px;
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+:root {
+  --task-background-color: #c33f3f; /* Couleur de fond par défaut */
+}
+
+.task[data-color] {
+  background-color: var(--task-background-color, #FFFFFF);
+}
+
+.columnTitle3 {
+  display: inline-block;
+  background-color: #03509c;
+  color: #f0f0f0;
+  height: 75px;
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.button-flex {
+  width: 320px;
+  display: flex;
+  justify-content: space-between;
+  align-self: center
+}
+
+.card {
+  margin: 18px;
+}
+
+.card-container {
+  display: flex;
+  /* or inline-flex */
+  flex-wrap: wrap;
+}
+
+.task-list {
+  min-height: 100px;
+  /* Pour garantir une hauteur minimale pour la zone droppable */
+}
+
+.task {
+  background-color: #ffffff; 
+  border: 1px solid hsl(0, 0%, 15%);
+  color: #656565;
+  padding: 8px;
+  margin: 8px 0;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  cursor: grab;
+  
+}
+
+.selected-avatar {
+  border: 5px solid #ff0000;
+}
+
+.task:hover {
+  background-color: #f0f0f0;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow-y: auto
+}
+
+.modal-content {
+  /* background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fefefe;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  margin-right: 1.5rem;
+  font-size: 38px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.edit-icon,
+.add-icon {
+  z-index: 900;
+  /* Ou toute valeur inférieure à 1000 */
+}
