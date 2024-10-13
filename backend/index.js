@@ -365,7 +365,7 @@ app.post('/tasks/:taskId/comments', async (req, res) => {
     const newComment = {
       user: userId,
       content: content,
-      createdAt: new Date()
+      createdAt: new Date() 
     };
 
     // Fetch user details

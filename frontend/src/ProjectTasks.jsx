@@ -622,7 +622,7 @@ const ProjectTasks = () => {
                                 {showMessaging && (
                                   <div>
                                     <TextField
-                                      variant="outlined"
+                                      variant="outlined" 
                                       fullWidth
                                       multiline
                                       rows={3}
