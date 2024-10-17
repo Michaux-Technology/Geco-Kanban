@@ -351,6 +351,40 @@ app.post('/tasks/:taskId/userId/:userId/like', async (req, res) => {
   }
 });
 
+app.put('/tasks/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const updatedTask2 = req.body;
+    
+    console.log('Updating task:', taskId, 'with data:', updatedTask2);
+    
+    const task = await Task.findByIdAndUpdate(taskId, updatedTask2, { new: true, runValidators: true });
+    
+    if (!task) {
+      console.log('Task not found:', taskId);
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    console.log('Task updated successfully:', task);
+    res.json(task);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({ message: 'Error updating task', error: error.message });
+  }
+});
+
+app.get('/tasks/:taskId', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.taskId);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching task', error: error.message });
+  }
+});
+
 app.post('/tasks/:taskId/comments', async (req, res) => {
   const { taskId } = req.params;
   const { userId, content } = req.body;
@@ -611,7 +645,7 @@ app.get('/projectUsers', async (req, res) => {
   }
 });
 
-app.put('/tasks/reorder', async (req, res) => {
+app.put('/task/reorder', async (req, res) => {
   const updatedTasks = req.body;
 
   try {

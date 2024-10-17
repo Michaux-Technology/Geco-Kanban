@@ -39,6 +39,7 @@ const Modal = React.memo(({ onClose, children }) => {
 });
 
 const ProjectTasks = () => {
+  const [editingTask, setEditingTask] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [userId, setUserId] = useState(localStorage.getItem('id') || '')
   const { projectId } = useParams();
@@ -179,7 +180,7 @@ const ProjectTasks = () => {
   };
 
   const handleComment = async (taskId) => {
-    
+
     if (commentText.trim()) {
       try {
         const response = await axios.post(`${API_URL}/tasks/${taskId}/comments`, {
@@ -189,18 +190,73 @@ const ProjectTasks = () => {
 
         const newComment = response.data;
 
-      setTasks(prevTasks => prevTasks.map(task => 
-        task._id === taskId 
-          ? { ...task, comments: [...(task.comments || []), newComment] }
-          : task
-      ));
+        setTasks(prevTasks => prevTasks.map(task =>
+          task._id === taskId
+            ? { ...task, comments: [...(task.comments || []), newComment] }
+            : task
+        ));
 
-      setCommentText('');
+        setCommentText('');
 
       } catch (error) {
         console.error('Error adding comment:', error);
       }
     }
+  };
+
+  const handleEditTask = async (taskId) => {
+    try {
+      const response = await axios.get(`${API_URL}/tasks/${taskId}`);
+      const task = response.data;
+
+      setEditingTask(task);
+      setNewTaskTitle(task.title);
+      setNewTaskDescription(task.description);
+      setNewTaskStatus(task.status);
+      setNewTaskPriority(task.priority);
+      setNewTaskBeginDate(dayjs(task.begindate));
+      setNewTaskEndDate(dayjs(task.enddate));
+      setSelectedColor(task.color);
+      setIsEditing(true);
+      setModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching task for editing:', error);
+    }
+  };
+
+  const handleUpdateTask = async () => {
+    try {
+      const updatedTask = {
+        title: newTaskTitle,
+        status: newTaskStatus,
+        description: newTaskDescription,
+        priority: newTaskPriority,
+        begindate: newTaskBeginDate,
+        enddate: newTaskEndDate,
+        color: selectedColor,
+      };
+
+      const response = await axios.put(`${API_URL}/tasks/${editingTask._id}`, updatedTask);
+
+      setTasks(tasks.map(task => task._id === editingTask._id ? response.data : task));
+
+      resetEditing();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const resetEditingTask = () => {
+    setModalOpen(false);
+    setIsEditing(false);
+    setEditingTask(null);
+    setNewTaskTitle('');
+    setNewTaskDescription('');
+    setNewTaskStatus('todo');
+    setNewTaskPriority('');
+    setNewTaskBeginDate(null);
+    setNewTaskEndDate(null);
+    setSelectedColor("#000000");
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -322,7 +378,7 @@ const ProjectTasks = () => {
     setTasks(updatedTasks);
 
     // Effectuez les mises à jour nécessaires dans votre base de données
-    await axios.put(`${API_URL}/tasks/reorder`, updatedTasks);
+    await axios.put(`${API_URL}/task/reorder`, updatedTasks);
 
     // Émettez un événement pour chaque tâche mise à jour
     updatedTasks.forEach(task => {
@@ -367,8 +423,9 @@ const ProjectTasks = () => {
 
           <div className="create-task">
 
-            <h2>Create New Task</h2>
-            {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}> */}
+            {isEditing ? <h2>Edit Task</h2> : <h2>Create New Task</h2>}
+
+
             <div className="columns-CreateTask">
 
               {/* Colonne de gauche */}
@@ -485,7 +542,7 @@ const ProjectTasks = () => {
               variant="contained"
               onClick={() => {
                 if (isEditing) {
-                  // handleEditProject(editingProject);
+                  handleUpdateTask()
                 } else {
                   handleCreateTask()
                 }
@@ -506,27 +563,31 @@ const ProjectTasks = () => {
           <MyThemeComponent> <h2>Project name: {projectTitle}</h2></MyThemeComponent><br></br>
         </ThemeProvider>
 
-        {/* <Box sx={{ '& > :not(style)': { m: 1 }, zIndex: 1 }}>
-          <Fab color="primary" aria-label="add" onClick={() => { setIsEditing(false); setModalOpen(true); }}>
-            <AddIcon />
-          </Fab>
-        </Box> */}
 
         {!isModalOpen && (
           <Box sx={{ '& > :not(style)': { m: 1 } }}>
-            <Fab color="primary" aria-label="add" onClick={() => { setIsEditing(false); setModalOpen(true); }}>
+            <Fab color="primary" aria-label="add" onClick={() => {
+              setIsEditing(false);
+              setNewTaskTitle('');
+              setNewTaskDescription('');
+              setNewTaskStatus('todo');
+              setNewTaskPriority('');
+              setNewTaskBeginDate(null);
+              setNewTaskEndDate(null);
+              setSelectedColor("#000000");
+              setModalOpen(true);
+            }}>
               <AddIcon />
             </Fab>
           </Box>
         )}
 
-        {isModalOpen && (
+        {/*         {isModalOpen && (
           <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 2 }}>
             <Modal onClose={resetEditing}>
-              {/* Contenu du modal */}
             </Modal>
           </Box>
-        )}
+        )} */}
 
         <div className="columns-container">
 
@@ -563,7 +624,7 @@ const ProjectTasks = () => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span><b>{task.title}</b></span>
                                   <div>
-                                    <button onClick={() => handleDeleteTask(task._id)}><EditIcon /></button>
+                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
                                     <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
                                   </div>
                                 </div>
@@ -622,7 +683,7 @@ const ProjectTasks = () => {
                                 {showMessaging && (
                                   <div>
                                     <TextField
-                                      variant="outlined" 
+                                      variant="outlined"
                                       fullWidth
                                       multiline
                                       rows={3}
@@ -643,16 +704,16 @@ const ProjectTasks = () => {
                                     {task.comments && task.comments.map((comment, index) => (
                                       <ListItem key={index}>
                                         <ListItemText
-                                            primary={
-                                              <Typography variant="body2">
-                                                {comment.content}
-                                              </Typography>
-                                            }
-                                            secondary={
-                                              <Typography variant="caption">
-                                                 By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
-                                              </Typography>
-                                            }
+                                          primary={
+                                            <Typography variant="body2">
+                                              {comment.content}
+                                            </Typography>
+                                          }
+                                          secondary={
+                                            <Typography variant="caption">
+                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
+                                            </Typography>
+                                          }
                                         />
                                       </ListItem>
                                     ))}
@@ -701,7 +762,7 @@ const ProjectTasks = () => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span><b>{task.title}</b></span>
                                   <div>
-                                    <button onClick={() => handleDeleteTask(task._id)}><EditIcon /></button>
+                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
                                     <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
                                   </div>
 
@@ -756,7 +817,7 @@ const ProjectTasks = () => {
                                     style={{ verticalAlign: 'middle' }}
                                   >
 
-<ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
+                                    <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
                                   </Button>
                                 </div>
                                 {showMessaging && (
@@ -783,9 +844,16 @@ const ProjectTasks = () => {
                                     {task.comments && task.comments.map((comment, index) => (
                                       <ListItem key={index}>
                                         <ListItemText
-                                          primary={comment.content}
-                                          secondary={`By ${comment.user} on ${new Date(comment.createdAt).toLocaleString()}`}
-
+                                          primary={
+                                            <Typography variant="body2">
+                                              {comment.content}
+                                            </Typography>
+                                          }
+                                          secondary={
+                                            <Typography variant="caption">
+                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
+                                            </Typography>
+                                          }
                                         />
                                       </ListItem>
                                     ))}
@@ -830,7 +898,7 @@ const ProjectTasks = () => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span><b>{task.title}</b></span>
                                   <div>
-                                    <button onClick={() => handleDeleteTask(task._id)}><EditIcon /></button>
+                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
                                     <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
                                   </div>
 
@@ -911,8 +979,16 @@ const ProjectTasks = () => {
                                     {task.comments && task.comments.map((comment, index) => (
                                       <ListItem key={index}>
                                         <ListItemText
-                                          primary={comment.content}
-                                          secondary={`By ${comment.user} on ${new Date(comment.createdAt).toLocaleString()}`}
+                                          primary={
+                                            <Typography variant="body2">
+                                              {comment.content}
+                                            </Typography>
+                                          }
+                                          secondary={
+                                            <Typography variant="caption">
+                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
+                                            </Typography>
+                                          }
                                         />
                                       </ListItem>
                                     ))}
