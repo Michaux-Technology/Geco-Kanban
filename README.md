@@ -30,10 +30,12 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 2.4.8 : 
-- New users created in List of collaborators have the password: 1234. 
-The user must change their password. 
-- we'll be back to checking our posts and "Likes".
+Missing features für v. 2.50 : 
+1. New users created in List of collaborators have the password: 1234. 
+The user must change their password.
+2. Upcoming features : 
+- Column name change
+- Add columns
 
 
 ## ✅ Questions / Answers
