@@ -14,7 +14,7 @@ function AuthPage() {
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
     const [id, setId] = useState(localStorage.getItem('id') || '');
     const [avatar, setAvatar] = useState('');
-    const [lastname, setLastname] = useState('');
+    const [lastName, setLastName] = useState('');
     const [firstname, setFirstname] = useState('');
     const [company, setCompany] = useState('');
 
@@ -32,7 +32,7 @@ function AuthPage() {
                 const responseUser = await axios.get(`${API_URL}/user/email/${email}`);
                 setId(responseUser.data._id);
                 setAvatar(responseUser.data.avatar);
-                setLastname(responseUser.data.lastName);
+                setLastName(responseUser.data.lastName);
                 setFirstname(responseUser.data.firstName);
                 setCompany(responseUser.data.company);
 
@@ -43,8 +43,8 @@ function AuthPage() {
                 
                 saveIdToLocalStorage(responseUser.data._id);
                 saveAvatarToLocalStorage(responseUser.data.avatar);
-                savefirstnameToLocalStorage(responseUser.data.firstname);
-                savelastnameToLocalStorage(responseUser.data.lastname);
+                savefirstnameToLocalStorage(responseUser.data.firstName);
+                saveLastNameToLocalStorage(responseUser.data.lastName);
                 saveCompanyToLocalStorage(responseUser.data.company);
 
                 function saveIdToLocalStorage(_id) {
@@ -59,12 +59,12 @@ function AuthPage() {
                     localStorage.setItem('firstnameuser', firstname);
                 }
 
-                function savelastnameToLocalStorage(company) {
-                    localStorage.setItem('companyuser', company);
+                function saveLastNameToLocalStorage(lastName) {
+                    localStorage.setItem('lastnameuser', lastName);
                 }
 
-                function saveCompanyToLocalStorage(lastname) {
-                    localStorage.setItem('lastnameuser', lastname);
+                function saveCompanyToLocalStorage(company) {
+                    localStorage.setItem('companyuser', company);
                 }
 
                 navigate(`/projectList?user=${responseUser.data._id}`); // Redirection vers la page projectList

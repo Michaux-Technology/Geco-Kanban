@@ -1,29 +1,27 @@
 // ProjectTasks.js
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext } from 'react-beautiful-dnd';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
 
 import { API_URL } from './config';
 
+import Column from './Column';
+
 import './styles.css';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Box from '@mui/material/Box';
+import { IconButton } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { styled, createTheme, ThemeProvider } from '@mui/system';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, FormControl, Select, MenuItem, TextField, InputLabel, ListItemIcon, List, ListItem } from '@mui/material';
 import { SketchPicker } from 'react-color';
-import EditIcon from '@mui/icons-material/Edit';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ChatIcon from '@mui/icons-material/Chat';
-import { ListItemText } from '@mui/material';
 
 const socket = io(API_URL); // Connectez-vous au serveur WebSocket
 
@@ -38,10 +36,20 @@ const Modal = React.memo(({ onClose, children }) => {
   );
 });
 
+
 const ProjectTasks = () => {
+
+  const [columnNames, setColumnNames] = useState({
+    todo: 'Todo',
+    inProgress: 'In Progress',
+    done: 'Done'
+  });
+
   const [editingTask, setEditingTask] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [userId, setUserId] = useState(localStorage.getItem('id') || '')
+  const [firstName, setFirstName] = useState(localStorage.getItem('firstnameuser') || '')
+  const [lastName, setLastName] = useState(localStorage.getItem('lastnameuser') || '')
   const { projectId } = useParams();
   const [projectTitle, setProjectTitle] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -58,29 +66,91 @@ const ProjectTasks = () => {
 
   const [commentsCount, setCommentsCount] = useState(0);
   const [likes, setLikes] = useState(0);
-  const [comments, setComments] = useState([]);
-  const [currentComment, setCurrentComment] = useState('');
+  // const [comments, setComments] = useState([]);
+  // const [currentComment, setCurrentComment] = useState('');
   const [showMessaging, setShowMessaging] = useState(false);
 
   const [totalLikes, setTotalLikes] = useState(0);
+
+  const [editingColumn, setEditingColumn] = useState(null);
+
+  const [newColumnName, setNewColumnName] = useState('');
 
   const resetEditing = () => {
     setModalOpen(false);
   };
 
-  const fetchTasks = async () => {
+  const handleAddColumn = async () => {
+    if (newColumnName.trim()) {
+      try {
+        const response = await axios.put(`${API_URL}/projects/${projectId}/columns`, { name: newColumnName });
+        setColumnNames(prev => ({ ...prev, [response.data.id]: newColumnName }));
+        setNewColumnName('');
+      } catch (error) {
+        console.error('Error adding new column:', error);
+      }
+    }
+  };
+
+  const handleColumnNameChange = async (columnId, newName) => {
     try {
-      const response = await axios.get(`${API_URL}/tasks/project/${projectId}`); // Modifiez l'URL pour obtenir les tâches spécifiques au projet
-      setTasks(response.data);
+      await axios.put(`${API_URL}/projects/${projectId}/columns/${columnId}`, { name: newName });
+      setColumnNames(prev => ({ ...prev, [columnId]: newName }));
+    } catch (error) {
+      console.error('Error updating column name:', error);
+    }
+  };
 
-      const response2 = await axios.get(`${API_URL}/tasks/project/${projectId}`);
-      const fetchedTasks = response2.data;
-      setTasks(fetchedTasks);
+  const handleColumnNameEdit = (columnId) => {
+    setEditingColumn(columnId);
+  };
 
-      // Calculate total likes
-      const totalLikes = fetchedTasks.reduce((sum, task) => sum + (task.likes ? task.likes.length : 0), 0);
+  const handleColumnNameSave = (columnId, newName) => {
+    handleColumnNameChange(columnId, newName);
+    setEditingColumn(null);
+  };
+
+  const [messagingStates, setMessagingStates] = useState({});
+
+  const toggleMessaging = (taskId) => {
+    setMessagingStates(prevState => ({
+      ...prevState,
+      [taskId]: !prevState[taskId]
+    }));
+  };
+
+  const fetchUpdatedTaskData = async (taskId) => {
+    try {
+      const response = await axios.get(`${API_URL}/tasks/${taskId}`, {
+
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching updated task data:', error);
+      return null;
+    }
+  };
+
+  const fetchTasks = async () => {
+    let totalLikes = 0;  // Initialize totalLikes here
+    try {
+
+      const response = await axios.get(`${API_URL}/tasks/project/${projectId}`);
+      const tasksData = response.data;
+
+      const updatedTasks = tasksData.map(task => {
+        const taskLikes = task.likes ? task.likes.length : 0;
+        totalLikes += taskLikes;
+        console.log('Task Likes:', taskLikes);
+        console.log('Total Likes:', totalLikes);
+        return {
+          ...task,
+          totalLikes: taskLikes
+        };
+      });
+
+      setTasks(updatedTasks);
       setTotalLikes(totalLikes);
-
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
@@ -94,6 +164,22 @@ const ProjectTasks = () => {
       console.error('Error fetching project:', error);
     }
   };
+
+
+  const fetchColumnNames = async () => {
+    try {
+      console.log('test1', projectId);
+      const response = await axios.get(`${API_URL}/projects/${projectId}/columns`);
+      console.log('test2', response.data);
+      setColumnNames(response.data);
+    } catch (error) {
+      console.error('Error fetching column names:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchColumnNames();
+  }, [projectId]);
 
   useEffect(() => {
     fetchTasks();
@@ -158,11 +244,11 @@ const ProjectTasks = () => {
 
       setTasks(prevTasks => {
         const newTasks = prevTasks.map(task =>
-          task._id === taskId ? { ...task, likes: updatedLikes } : task
+          task._id === taskId ? { ...task, likes: response.data.likes } : task
         );
 
         // Recalculate total likes
-        const newTotalLikes = newTasks.reduce((sum, task) => sum + (task.likes || 0), 0);
+        const newTotalLikes = newTasks.reduce((sum, task) => sum + (Array.isArray(task.likes) ? task.likes.length : 0), 0);
         setTotalLikes(newTotalLikes);
 
         return newTasks;
@@ -179,28 +265,34 @@ const ProjectTasks = () => {
     setLikes(commentsCount + 1);
   };
 
-  const handleComment = async (taskId) => {
+  const handleComment = async (taskId, commentText) => {
+    try {
 
-    if (commentText.trim()) {
-      try {
-        const response = await axios.post(`${API_URL}/tasks/${taskId}/comments`, {
-          userId: userId,
-          content: commentText
-        });
+      const response = await axios.post(`${API_URL}/tasks/comment`, {
+        taskId,
+        comment: commentText,
+        firstName: firstName || '',
+        lastName: lastName || ''
+      });
 
-        const newComment = response.data;
+      if (response.status === 200) {
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            task._id === taskId
+              ? { ...task, comments: [...task.comments, response.data] }
+              : task
+          )
+        );
 
+        // After successful comment addition:
+        const updatedTask = await fetchUpdatedTaskData(taskId);
         setTasks(prevTasks => prevTasks.map(task =>
-          task._id === taskId
-            ? { ...task, comments: [...(task.comments || []), newComment] }
-            : task
+          task._id === taskId ? updatedTask : task
         ));
 
-        setCommentText('');
-
-      } catch (error) {
-        console.error('Error adding comment:', error);
       }
+    } catch (error) {
+      console.error('Error adding comment:', error);
     }
   };
 
@@ -244,19 +336,6 @@ const ProjectTasks = () => {
     } catch (error) {
       console.error('Error updating task:', error);
     }
-  };
-
-  const resetEditingTask = () => {
-    setModalOpen(false);
-    setIsEditing(false);
-    setEditingTask(null);
-    setNewTaskTitle('');
-    setNewTaskDescription('');
-    setNewTaskStatus('todo');
-    setNewTaskPriority('');
-    setNewTaskBeginDate(null);
-    setNewTaskEndDate(null);
-    setSelectedColor("#000000");
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -322,70 +401,31 @@ const ProjectTasks = () => {
     const destinationIndex = destination.index;
     const destinationDroppableId = destination.droppableId;
 
-    let updatedTasksTodo = tasks.filter(task => task.status === 'todo');
-    let updatedTasksInProgress = tasks.filter(task => task.status === 'inProgress');
-    let updatedTasksDone = tasks.filter(task => task.status === 'done');
-    let movedTask = '';
+    let updatedTasks = [...tasks];
+    const [movedTask] = updatedTasks.splice(updatedTasks.findIndex(task => task.status === sourceDroppableId && task.order === sourceIndex), 1);
 
-    // delete
-    if (sourceDroppableId === 'todo') {
-      movedTask = updatedTasksTodo.splice(sourceIndex, 1)[0];
-    }
-    if (sourceDroppableId === 'inProgress') {
-      movedTask = updatedTasksInProgress.splice(sourceIndex, 1)[0];
-    }
-    if (sourceDroppableId === 'done') {
-      movedTask = updatedTasksDone.splice(sourceIndex, 1)[0];
-    }
+    movedTask.status = destinationDroppableId;
+    updatedTasks.splice(updatedTasks.findIndex(task => task.status === destinationDroppableId && task.order >= destinationIndex), 0, movedTask);
 
-    //insert
-    if (destinationDroppableId === 'todo') {
+    // Update order for all tasks in affected columns
+    updatedTasks = updatedTasks.map((task, index) => ({
+      ...task,
+      order: task.status === sourceDroppableId || task.status === destinationDroppableId ?
+        updatedTasks.filter(t => t.status === task.status).indexOf(task) :
+        task.order
+    }));
 
-      movedTask.status = 'todo';
-      updatedTasksTodo.splice(destinationIndex, 0, movedTask);
-
-    }
-    if (destinationDroppableId === 'inProgress') {
-
-      movedTask.status = 'inProgress';
-      updatedTasksInProgress.splice(destinationIndex, 0, movedTask);
-
-    }
-    if (destinationDroppableId === 'done') {
-
-      movedTask.status = 'done';
-      updatedTasksDone.splice(destinationIndex, 0, movedTask);
-
-    }
-
-
-    // Mettez à jour l'ordre de chaque tâche dans chaque tableau séparément
-    updatedTasksTodo.forEach((task, index) => {
-      task.order = index;
-    });
-    updatedTasksInProgress.forEach((task, index) => {
-      task.order = index;
-    });
-    updatedTasksDone.forEach((task, index) => {
-      task.order = index;
-    });
-
-
-    // Fusionner les trois tableaux pour obtenir la nouvelle liste de tâches
-    const updatedTasks = [...updatedTasksTodo, ...updatedTasksInProgress, ...updatedTasksDone];
-
-    // Mettez à jour l'état local avec les tâches mises à jour
     setTasks(updatedTasks);
 
-    // Effectuez les mises à jour nécessaires dans votre base de données
+    // Update database
     await axios.put(`${API_URL}/task/reorder`, updatedTasks);
 
-    // Émettez un événement pour chaque tâche mise à jour
+    // Emit socket event for each updated task
     updatedTasks.forEach(task => {
       socket.emit('taskUpdated', { taskId: task._id, status: task.status, order: task.order });
     });
-
   };
+
 
   const customTheme = createTheme({
     palette: {
@@ -404,8 +444,6 @@ const ProjectTasks = () => {
       borderRadius: 1,
     }),
   );
-
-
 
   return (
 
@@ -448,11 +486,10 @@ const ProjectTasks = () => {
                     label="Status"
                     value={newTaskStatus}
                     onChange={(e) => setNewTaskStatus(e.target.value)}
-
                   >
-                    <MenuItem value="todo">To Do</MenuItem>
-                    <MenuItem value="inProgress">In Progress</MenuItem>
-                    <MenuItem value="done">Done</MenuItem>
+                    {Object.entries(columnNames).map(([status, name]) => (
+                      <MenuItem key={status} value={status}>{name}</MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
 
@@ -563,7 +600,6 @@ const ProjectTasks = () => {
           <MyThemeComponent> <h2>Project name: {projectTitle}</h2></MyThemeComponent><br></br>
         </ThemeProvider>
 
-
         {!isModalOpen && (
           <Box sx={{ '& > :not(style)': { m: 1 } }}>
             <Fab color="primary" aria-label="add" onClick={() => {
@@ -582,436 +618,74 @@ const ProjectTasks = () => {
           </Box>
         )}
 
-        {/*         {isModalOpen && (
-          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 2 }}>
-            <Modal onClose={resetEditing}>
-            </Modal>
-          </Box>
-        )} */}
-
         <div className="columns-container">
+          {Object.entries(columnNames).map(([status, title]) => (
+            <Column
+              key={status}
+              status={status}
+              title={title}
+              tasks={tasks.filter(task => task.status === status)}
+              editingColumn={editingColumn}
+              projectId={projectId}
+              handleColumnNameEdit={handleColumnNameEdit}
+              handleColumnNameSave={handleColumnNameSave}
+              columnNames={columnNames}
+              handleEditTask={handleEditTask}
+              handleDeleteTask={handleDeleteTask}
+              handleLike={handleLike}
+              setShowMessaging={setShowMessaging}
+              handleCommentCount={handleCommentCount}
+              totalLikes={totalLikes}
+              showMessaging={showMessaging}
+              commentText={commentText}
+              handleCommentChange={handleCommentChange}
+              handleComment={handleComment}
+              toggleMessaging={toggleMessaging}
+              messagingStates={messagingStates}
+              setColumnNames={setColumnNames}
+              setTasks={setTasks}
+            />
+          ))}
 
-          {/* Column: Todo */}
-          <div className="columnTitleDescription">
-
-            <div className="columnTitle1">
-              <h2>Todo</h2>
-            </div>
-
-            <div className="column">
-
-              <Droppable droppableId="todo" direction="vertical">
-                {provided => (
-                  <div ref={provided.innerRef} className="task-list">
-                    {tasks
-                      .filter(task => task.status === 'todo')
-                      .sort((a, b) => a.order - b.order) // Tri des tâches par ordre
-                      .map((task, index) => (
-
-                        <Draggable key={task._id} draggableId={task._id} index={index}>
-                          {provided => (
-
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-
-                            >
-                              <div
-                                className="task"
-                              >
-                                <div style={{ backgroundColor: task.color }} className="task"></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span><b>{task.title}</b></span>
-                                  <div>
-                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
-                                    <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
-                                  </div>
-                                </div>
-                                <div>
-                                  <Box component="div">
-                                    <Typography display="block" sx={{ fontSize: 12 }}>
-                                      {task.description}
-                                    </Typography>
-                                  </Box>
-                                </div>
-                                <div>
-                                  <Typography display="block" sx={{ fontSize: 12, display: 'flex', alignItems: 'middle' }}>{task.priority ? 'Priority:' : ''}
-                                    <ListItemIcon>
-                                      <div style={{ marginLeft: '10px', width: '100%', height: '14px', backgroundColor: task.priority }}></div>
-                                    </ListItemIcon>
-                                  </Typography>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <Box component="div" sx={{ marginTop: 2 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      Starting Date : <b>{Date.parse(task.begindate) ? new Date(task.begindate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                  <Box component="div" sx={{ marginTop: 2, fontSize: 10 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      End Date : <b>{Date.parse(task.enddate) ? new Date(task.enddate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                </div>
-                                <div>
-                                  <Button
-                                    sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      console.log('Task ID before handleLike:', task._id);
-                                      handleLike(task._id);
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-                                  >
-                                    <ThumbUpIcon sx={{ fontSize: 17 }} />
-                                    {totalLikes}
-                                  </Button>
-
-                                  <Button sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      setShowMessaging(!showMessaging);
-                                      handleCommentCount();
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-
-                                  >
-                                    <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
-                                  </Button>
-                                </div>
-                                {showMessaging && (
-                                  <div>
-                                    <TextField
-                                      variant="outlined"
-                                      fullWidth
-                                      multiline
-                                      rows={3}
-                                      label="Write a comment"
-                                      value={commentText}
-                                      onChange={handleCommentChange}
-                                      style={{ marginTop: 20 }}
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => handleComment(task._id)}
-                                      style={{ marginTop: 20 }}
-                                    >
-                                      Comment
-                                    </Button>
-
-                                    {task.comments && task.comments.map((comment, index) => (
-                                      <ListItem key={index}>
-                                        <ListItemText
-                                          primary={
-                                            <Typography variant="body2">
-                                              {comment.content}
-                                            </Typography>
-                                          }
-                                          secondary={
-                                            <Typography variant="caption">
-                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
-                                            </Typography>
-                                          }
-                                        />
-                                      </ListItem>
-                                    ))}
-                                  </div>)}
-
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-
-            </div>
-          </div>
-
-
-          {/* Column: In Progress */}
-          <div className="columnTitleDescription">
-            <div className="columnTitle2">
-              <h2 className="columnTitle">In Progress</h2>
-            </div>
-            <div className="column">
-              <Droppable droppableId="inProgress" direction="vertical">
-                {provided => (
-                  <div ref={provided.innerRef} className="task-list">
-                    {tasks
-                      .filter(task => task.status === 'inProgress')
-                      .sort((a, b) => a.order - b.order) // Tri des tâches par ordre
-                      .map((task, index) => (
-                        <Draggable key={task._id} draggableId={task._id} index={index}>
-                          {provided => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-
-                            >
-                              <div
-                                className="task"
-                              >
-                                <div style={{ backgroundColor: task.color }} className="task">
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span><b>{task.title}</b></span>
-                                  <div>
-                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
-                                    <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
-                                  </div>
-
-                                </div>
-                                <div>
-                                  <Box component="div">
-                                    <Typography display="block" sx={{ fontSize: 12 }}>
-                                      {task.description}
-                                    </Typography>
-                                  </Box>
-                                </div>
-                                <div>
-                                  <Typography display="block" sx={{ fontSize: 12, display: 'flex', alignItems: 'middle' }}>{task.priority ? 'Priority:' : ''}
-                                    <ListItemIcon>
-                                      <div style={{ marginLeft: '10px', width: '100%', height: '14px', backgroundColor: task.priority }}></div>
-                                    </ListItemIcon>
-                                  </Typography>
-                                </div>
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <Box component="div" sx={{ marginTop: 2 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      Starting Date : <b>{Date.parse(task.begindate) ? new Date(task.begindate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                  <Box component="div" sx={{ marginTop: 2, fontSize: 10 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      End Date : <b>{Date.parse(task.enddate) ? new Date(task.enddate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                </div>
-                                <div>
-                                  <Button
-                                    sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      console.log('Task ID before handleLike:', task._id);
-                                      handleLike(task._id);
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-                                  >
-                                    <ThumbUpIcon sx={{ fontSize: 17 }} />
-                                    {totalLikes}
-                                  </Button>
-
-                                  <Button sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      setShowMessaging(!showMessaging);
-                                      handleCommentCount();
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-                                  >
-
-                                    <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
-                                  </Button>
-                                </div>
-                                {showMessaging && (
-                                  <div>
-                                    <TextField
-                                      variant="outlined"
-                                      fullWidth
-                                      multiline
-                                      rows={3}
-                                      label="Write a comment"
-                                      value={commentText}
-                                      onChange={handleCommentChange}
-                                      style={{ marginTop: 20 }}
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => handleComment(task._id)}
-                                      style={{ marginTop: 20 }}
-                                    >
-                                      Comment
-                                    </Button>
-
-                                    {task.comments && task.comments.map((comment, index) => (
-                                      <ListItem key={index}>
-                                        <ListItemText
-                                          primary={
-                                            <Typography variant="body2">
-                                              {comment.content}
-                                            </Typography>
-                                          }
-                                          secondary={
-                                            <Typography variant="caption">
-                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
-                                            </Typography>
-                                          }
-                                        />
-                                      </ListItem>
-                                    ))}
-                                  </div>)}
-                              </div></div>
-                          )}
-                        </Draggable>
-                      ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          </div>
-
-
-          {/* Column: done */}
-          <div className="columnTitleDescription">
-            <div className="columnTitle3">
-              <h2 className="columnTitle">Done</h2>
-            </div>
-            <div className="column">
-              <Droppable droppableId="done" direction="vertical">
-                {provided => (
-                  <div ref={provided.innerRef} className="task-list">
-                    {tasks
-                      .filter(task => task.status === 'done')
-                      .sort((a, b) => a.order - b.order) // Tri des tâches par ordre
-                      .map((task, index) => (
-                        <Draggable key={task._id} draggableId={task._id} index={index}>
-                          {provided => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              <div
-                                className="task"
-                              >
-                                <div style={{ backgroundColor: task.color }} className="task">
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span><b>{task.title}</b></span>
-                                  <div>
-                                    <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
-                                    <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
-                                  </div>
-
-                                </div>
-                                <div>
-                                  <Box component="div">
-                                    <Typography display="block" sx={{ fontSize: 12 }}>
-                                      {task.description}
-                                    </Typography>
-                                  </Box></div>
-                                <div>
-                                  <Typography display="block" sx={{ fontSize: 12, display: 'flex', alignItems: 'middle' }}>{task.priority ? 'Priority:' : ''}
-                                    <ListItemIcon>
-                                      <div style={{ marginLeft: '10px', width: '100%', height: '14px', backgroundColor: task.priority }}></div>
-                                    </ListItemIcon>
-                                  </Typography>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <Box component="div" sx={{ marginTop: 2 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      Starting Date : <b>{Date.parse(task.begindate) ? new Date(task.begindate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                  <Box component="div" sx={{ marginTop: 2, fontSize: 10 }}>
-                                    <Typography sx={{ fontSize: 12 }}>
-                                      End Date : <b>{Date.parse(task.enddate) ? new Date(task.enddate).toLocaleDateString() : 'No Date'}</b>
-                                    </Typography>
-                                  </Box>
-                                </div>
-
-                                <div >
-                                  <Button
-                                    sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      console.log('Task ID before handleLike:', task._id);
-                                      handleLike(task._id);
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-                                  >
-                                    <ThumbUpIcon sx={{ fontSize: 17 }} />
-                                    {totalLikes}
-                                  </Button>
-
-                                  <Button sx={{ fontSize: 12 }}
-                                    color="primary"
-                                    onClick={() => {
-                                      setShowMessaging(!showMessaging);
-                                      handleCommentCount();
-                                    }}
-                                    style={{ verticalAlign: 'middle' }}
-
-                                  >
-                                    <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
-                                  </Button>
-                                </div>
-                                {showMessaging && (
-                                  <div>
-                                    <TextField
-                                      variant="outlined"
-                                      fullWidth
-                                      multiline
-                                      rows={3}
-                                      label="Write a comment"
-                                      value={commentText}
-                                      onChange={handleCommentChange}
-                                      style={{ marginTop: 20 }}
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => handleComment(task._id)}
-                                      style={{ marginTop: 20 }}
-                                    >
-                                      Comment
-                                    </Button>
-
-                                    {task.comments && task.comments.map((comment, index) => (
-                                      <ListItem key={index}>
-                                        <ListItemText
-                                          primary={
-                                            <Typography variant="body2">
-                                              {comment.content}
-                                            </Typography>
-                                          }
-                                          secondary={
-                                            <Typography variant="caption">
-                                              By <strong>{comment.firstName} {comment.lastName}</strong> on {new Date(comment.createdAt).toLocaleString()}
-                                            </Typography>
-                                          }
-                                        />
-                                      </ListItem>
-                                    ))}
-                                  </div>)}
-                              </div>
-
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+          <div className="columns-container" style={{ position: 'relative', minHeight: '100vh' }}>
+            <div className="column add-column" style={{
+              position: 'fixed',
+              bottom: '20px',
+              left: '20px',
+              width: '150px',
+              minWidth: '150px',
+              zIndex: 1000
+            }}>
+              <div className="column-header">
+                <TextField
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                  placeholder="Column Name"
+                  variant="standard"
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton onClick={handleAddColumn} size="small">
+                        <AddIcon />
+                      </IconButton>
+                    ),
+                  }}
+                />
+              </div>
+              <div className="column-content">
+                <Typography variant="body2" color="text.secondary" align="center">
+                  Add a new column
+                </Typography>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </DragDropContext >
 
   );
 };
-
 
 export default ProjectTasks;
 
