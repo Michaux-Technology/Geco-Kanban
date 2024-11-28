@@ -30,11 +30,10 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 3.00 : 
+Missing features für v. 3.10 : 
 1. New users created in List of collaborators have the password: 1234. 
 The user must change their password.
 2. Upcoming features :
-- Moving columns.
 - Add participants to each task.
 - We're going to take a different view of Kanban, to see the project as a Gantt chart. 
 
