@@ -4,7 +4,6 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
-
 import { API_URL } from './config';
 
 import Column from './Column';
@@ -16,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import { styled, createTheme, ThemeProvider } from '@mui/system';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, FormControl, Select, MenuItem, TextField, InputLabel, ListItemIcon, List, ListItem } from '@mui/material';
+import { Button, FormControl, Select, MenuItem, TextField, InputLabel, ListItemIcon } from '@mui/material';
 import { SketchPicker } from 'react-color';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -44,6 +43,8 @@ const ProjectTasks = () => {
     inProgress: 'In Progress',
     done: 'Done'
   });
+
+  const [columnData, setColumnData] = useState({});
 
   const [editingTask, setEditingTask] = useState(null);
   const [commentText, setCommentText] = useState('');
@@ -83,8 +84,17 @@ const ProjectTasks = () => {
   const handleAddColumn = async () => {
     if (newColumnName.trim()) {
       try {
-        const response = await axios.put(`${API_URL}/projects/${projectId}/columns`, { name: newColumnName });
-        setColumnNames(prev => ({ ...prev, [response.data.id]: newColumnName }));
+        const response = await axios.put(`${API_URL}/projects/${projectId}/columns`, { 
+          name: newColumnName
+        });
+        
+        setColumnNames(prev => ({ 
+          ...prev, 
+          [response.data.id]: {
+            name: response.data.name,
+            color: response.data.color
+          }
+        }));
         setNewColumnName('');
       } catch (error) {
         console.error('Error adding new column:', error);
@@ -95,7 +105,13 @@ const ProjectTasks = () => {
   const handleColumnNameChange = async (columnId, newName) => {
     try {
       await axios.put(`${API_URL}/projects/${projectId}/columns/${columnId}`, { name: newName });
-      setColumnNames(prev => ({ ...prev, [columnId]: newName }));
+      setColumnNames(prev => ({ 
+        ...prev, 
+        [columnId]: {
+          ...prev[columnId],
+          name: newName
+        }
+      }));
     } catch (error) {
       console.error('Error updating column name:', error);
     }
@@ -160,6 +176,13 @@ const ProjectTasks = () => {
     try {
       const response = await axios.get(`${API_URL}/projects/${projectId}`);
       setProjectTitle(response.data.title);
+      if (response.data.columns) {
+        const columns = {};
+        response.data.columns.forEach((value, key) => {
+          columns[key] = value.name;
+        });
+        setColumnNames(columns);
+      }
     } catch (error) {
       console.error('Error fetching project:', error);
     }
@@ -168,10 +191,15 @@ const ProjectTasks = () => {
 
   const fetchColumnNames = async () => {
     try {
-      console.log('test1', projectId);
       const response = await axios.get(`${API_URL}/projects/${projectId}/columns`);
-      console.log('test2', response.data);
-      setColumnNames(response.data);
+      const processedData = {};
+      Object.entries(response.data).forEach(([key, value]) => {
+        processedData[key] = {
+          name: value.name || value,
+          color: value.color || '#3983DA'
+        };
+      });
+      setColumnNames(processedData);
     } catch (error) {
       console.error('Error fetching column names:', error);
     }
@@ -487,8 +515,10 @@ const ProjectTasks = () => {
                     value={newTaskStatus}
                     onChange={(e) => setNewTaskStatus(e.target.value)}
                   >
-                    {Object.entries(columnNames).map(([status, name]) => (
-                      <MenuItem key={status} value={status}>{name}</MenuItem>
+                    {Object.entries(columnNames).map(([status, columnData]) => (
+                            <MenuItem key={status} value={status}>
+                            {typeof columnData === 'object' ? columnData.name : columnData}
+                          </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -619,13 +649,14 @@ const ProjectTasks = () => {
         )}
 
         <div className="columns-container">
-          {Object.entries(columnNames).map(([status, title]) => (
+          {Object.entries(columnNames).map(([status, columnData]) => (
             <Column
               key={status}
               status={status}
-              title={title}
+              title={columnData}
               tasks={tasks.filter(task => task.status === status)}
               editingColumn={editingColumn}
+              Modal
               projectId={projectId}
               handleColumnNameEdit={handleColumnNameEdit}
               handleColumnNameSave={handleColumnNameSave}
@@ -644,41 +675,42 @@ const ProjectTasks = () => {
               messagingStates={messagingStates}
               setColumnNames={setColumnNames}
               setTasks={setTasks}
+              //onColumnDeleted={handleColumnDeleted}
             />
           ))}
 
           <div className="columns-container" style={{ position: 'relative', minHeight: '100vh' }}>
-            <div className="column add-column" style={{
-              position: 'fixed',
-              bottom: '20px',
-              left: '20px',
-              width: '150px',
-              minWidth: '150px',
-              zIndex: 1000
-            }}>
-              <div className="column-header">
-                <TextField
-                  value={newColumnName}
-                  onChange={(e) => setNewColumnName(e.target.value)}
-                  placeholder="Column Name"
-                  variant="standard"
-                  fullWidth
-                  InputProps={{
-                    endAdornment: (
-                      <IconButton onClick={handleAddColumn} size="small">
-                        <AddIcon />
-                      </IconButton>
-                    ),
-                  }}
-                />
-              </div>
-              <div className="column-content">
-                <Typography variant="body2" color="text.secondary" align="center">
-                  Add a new column
-                </Typography>
-              </div>
+          <div className="column add-column" style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '20px',
+            width: '150px',
+            minWidth: '150px',
+            zIndex: 1000
+          }}>
+            <div className="column-header">
+              <TextField
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+                placeholder="Column Name"
+                variant="standard"
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={handleAddColumn} size="small">
+                      <AddIcon />
+                    </IconButton>
+                  ),
+                }}
+              />
+            </div>
+            <div className="column-content">
+              <Typography variant="body2" color="text.secondary" align="center">
+                Add a new column
+              </Typography>
             </div>
           </div>
+                </div>
         </div>
 
       </div>

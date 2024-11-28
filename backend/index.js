@@ -62,9 +62,28 @@ const ProjectSchema = new mongoose.Schema({
   order: Number,
   rating: Number,
   enddate: Date,
-  image: String
+  image: String,
+  columns: {
+    type: Map,
+    of: {
+      type: {
+        name: String,
+        color: { type: String, default: '#4CAF50' }
+      },
+      default: {
+        todo: { name: 'Todo', color: '#4CAF50' },
+        inProgress: { name: 'In Progress', color: '#4CAF50' },
+        done: { name: 'Done', color: '#4CAF50' }
+      }
+    }
+  },
 
 });
+
+ProjectSchema.statics.findColumnNamesByProjectId = async function(projectId) {
+  const project = await this.findById(projectId);
+  return project ? project.columns : null;
+};
 
 const Project = mongoose.model('Project', ProjectSchema);
 
@@ -129,34 +148,37 @@ io.on('connection', (socket) => {
   // Gérez les événements pour les projets ici
   socket.on('addProject', async (projectData) => {
     try {
-      let project = ''
+      let project = '';
+      const defaultColumns = new Map([
+        ['todo', { name: 'Todo', color: '#4CAF50' }],
+        ['inProgress', { name: 'In Progress', color: '#4CAF50' }],
+        ['done', { name: 'Done', color: '#4CAF50' }]
+      ]);
+
+  
       if (projectData.tempImage) {
         project = new Project({
           title: projectData.title,
           description: projectData.description,
           enddate: projectData.enddate,
-          image: namefile
+          image: namefile,
+          columns: defaultColumns
         });
       } else {
         project = new Project({
           title: projectData.title,
           description: projectData.description,
           enddate: projectData.enddate,
-          image: ''
+          image: '',
+          columns: defaultColumns
         });
       }
-
+  
       await project.save();
-
-      // Récupérez l'ID généré du projet
-      const projectId = { _id: project._id };;
-
-      // Envoyez une notification à tous les clients connectés que le projet a été ajouté avec succès
+      const projectId = { _id: project._id };
       io.emit('addProjectResponse', projectId);
-
-      // Retournez l'ID du projet pour une utilisation ultérieure
       return projectId;
-
+  
     } catch (error) {
       console.error('Error adding project:', error);
     }
@@ -323,13 +345,31 @@ passport.use(new LocalStrategy({
 
   }));
 
+app.put('/projects/:projectId/columns/:columnId/color', async (req, res) => {
+  try {
+    const { color } = req.body;
+    const project = await Project.findById(req.params.projectId);
+    const columnData = project.columns.get(req.params.columnId);
+    
+    project.columns.set(req.params.columnId, {
+      name: columnData.name,  // Keep the existing name
+      color: color  // Update only the color
+    });
+    
+    await project.save();
+    res.json(project.columns);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/tasks/:taskId/userId/:userId/like', async (req, res) => {
   const taskId = req.params.taskId;
   const userId = req.params.userId;
 
   try {
-    console.log('Received like request for task:', taskId);
-    console.log('Received like request for user:', userId);
+    //console.log('Received like request for task:', taskId);
+    //console.log('Received like request for user:', userId);
 
     const task = await Task.findById(taskId);
 
@@ -351,12 +391,49 @@ app.post('/tasks/:taskId/userId/:userId/like', async (req, res) => {
   }
 });
 
+app.get('/projects/:projectId/columns', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    // Fetch column names from the database for the given projectId
+    // Replace this with your actual database query
+    const columnNames = await Project.findColumnNamesByProjectId(projectId);
+    res.json(columnNames);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching column names', error });
+  }
+});
+
+app.put('/projects/:projectId/columns/:columnId', async (req, res) => {
+  const { projectId, columnId } = req.params;
+  const { name } = req.body;
+
+  try {
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    const currentColumn = project.columns.get(columnId);
+    project.columns.set(columnId, {
+      name: name,
+      color: currentColumn.color || '#4CAF50'
+    });
+    
+    await project.save();
+
+    res.json({ message: 'Column name updated successfully', column: project.columns.get(columnId) });
+  } catch (error) {
+    console.error('Error updating column name:', error);
+    res.status(500).json({ message: 'Error updating column name', error: error.message });
+  }
+});
+
 app.put('/tasks/:taskId', async (req, res) => {
   try {
     const { taskId } = req.params;
     const updatedTask2 = req.body;
     
-    console.log('Updating task:', taskId, 'with data:', updatedTask2);
+    //console.log('Updating task:', taskId, 'with data:', updatedTask2);
     
     const task = await Task.findByIdAndUpdate(taskId, updatedTask2, { new: true, runValidators: true });
     
@@ -382,6 +459,30 @@ app.get('/tasks/:taskId', async (req, res) => {
     res.json(task);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching task', error: error.message });
+  }
+});
+
+app.post('/tasks/comment', async (req, res) => {
+  const { taskId, comment, firstName, lastName } = req.body;
+  try {
+
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      { 
+        $push: { 
+          comments: { 
+            content: comment, 
+            createdAt: new Date(),
+            firstName: firstName,
+            lastName: lastName,
+          } 
+        } 
+      },
+      { new: true }
+    );
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding comment', error });
   }
 });
 
@@ -546,6 +647,63 @@ app.get('/tasks/project/:projectId', async (req, res) => {
   }
 });
 
+function generateUniqueId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+app.put('/projects/:projectId/columns', async (req, res) => {
+  const { projectId } = req.params;
+  const { name } = req.body;
+
+  try {
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    const newColumnId = generateUniqueId();
+    project.columns.set(newColumnId, {
+      name: name,
+      color: '#4CAF50' // Default color for new columns
+    });
+    
+    await project.save();
+
+    res.status(200).json({ 
+      id: newColumnId, 
+      name: name,
+      color: '#4CAF50'
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating project columns', error: error.message });
+  }
+});
+
+app.delete('/projects/:projectId/columns/:columnId', async (req, res) => {
+  const { projectId, columnId } = req.params;
+
+  try {
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.columns.has(columnId)) {
+      return res.status(404).json({ message: 'Column not found' });
+    }
+
+    project.columns.delete(columnId);
+    await project.save();
+
+    // Optionally, you might want to handle tasks in the deleted column
+    await Task.deleteMany({ projectId, status: columnId });
+
+    res.status(200).json({ message: 'Column deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting column', error: error.message });
+  }
+});
+
 app.patch('/projects/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -599,7 +757,7 @@ app.get('/tasks', async (req, res) => {
 
 app.get('/user/email/:email', async (req, res) => {
   const emailUser = req.params.email;
-  console.log(emailUser)
+  //console.log(emailUser)
 
   try {
     const user = await User.findOne({ email: emailUser })
@@ -728,13 +886,21 @@ app.put('/tasks/:id', async (req, res) => {
 
 
 app.post('/projects', async (req, res) => {
-
   const { title, description, enddate } = req.body;
 
   try {
-    const project = new Project({ title, description, enddate });
+    const project = new Project({ 
+      title, 
+      description, 
+      enddate,
+      columns: new Map([
+        ['todo', { name: 'Todo', color: '#4CAF50' }],
+        ['inProgress', { name: 'In Progress', color: '#4CAF50' }],
+        ['done', { name: 'Done', color: '#4CAF50' }]
+      ])
+    });
+    
     await project.save();
-
     io.emit('projectAdded', project);
     res.status(201).json(project);
 
