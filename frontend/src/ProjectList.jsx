@@ -45,17 +45,24 @@ const getUserInfo = async (e) => {
   setLastname(responseUser.data.lastName);
 }
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue)
-  }
+const handleChange = (event, newValue) => {
+  setValue(newValue)
+  // Update URL parameters when menu changes
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.set('menu', newValue);
+  searchParams.set('user', userId);
+  const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+  window.history.pushState({}, '', newUrl);
+}
 
-//retour de AccountEdit
-  useEffect(() => {
-    if (menu){
-      handleChange(null, 1)
-    }
-    getUserInfo()
-  }, [])
+useEffect(() => {
+  const searchParams = new URLSearchParams(location.search);
+  const menuParam = searchParams.get('menu');
+  if (menuParam !== null) {
+    setValue(parseInt(menuParam));
+  }
+  getUserInfo();
+}, [location.search]);
   
   const [anchorElNav, setAnchorElNav] = React.useState(null)
 

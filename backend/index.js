@@ -44,6 +44,7 @@ const TaskSchema = new mongoose.Schema({
   enddate: Date,
   priority: String,
   projectId: String,
+  users: [{ type: String }],
   likes: [{ type: String }], // Array of user IDs who liked the task
   comments: [{
     user: String,
@@ -283,11 +284,28 @@ io.on('connection', (socket) => {
   });
 
   socket.on('deleteProject', async (projectId) => {
-
     try {
+      console.log('Starting project deletion, projectId:', projectId);
       const validProjectId = new mongoose.Types.ObjectId(projectId);
+      
+      // Check existing records before deletion
+      const existingUsers = await ProjectUsers.find({ projectId: projectId });
+      console.log('Found project users:', existingUsers);
+      
+      // Delete project users with both formats to ensure matching
+      const deleteResult = await ProjectUsers.deleteMany({
+        $or: [
+          { projectId: projectId },
+          { projectId: validProjectId }
+        ]
+      });
+      console.log('Delete result:', deleteResult);
+      
+      await Task.deleteMany({ projectId: projectId });
       await Project.findByIdAndDelete(validProjectId);
+      
       io.emit('projectDeleted', projectId);
+      
     } catch (error) {
       console.error('Error deleting project:', error);
     }
@@ -428,24 +446,51 @@ app.put('/projects/:projectId/columns/:columnId', async (req, res) => {
   }
 });
 
+app.get('/users/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/tasks/:taskId/users/:userId', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    const exists = task.users.includes(req.params.userId);
+    res.json({ exists });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.put('/tasks/:taskId', async (req, res) => {
   try {
     const { taskId } = req.params;
     const updatedTask2 = req.body;
     
-    //console.log('Updating task:', taskId, 'with data:', updatedTask2);
-    
-    const task = await Task.findByIdAndUpdate(taskId, updatedTask2, { new: true, runValidators: true });
+    const task = await Task.findByIdAndUpdate(taskId, 
+      { 
+        ...updatedTask2,
+        users: updatedTask2.users || [] 
+      }, 
+      { new: true, runValidators: true }
+    );
     
     if (!task) {
-      console.log('Task not found:', taskId);
       return res.status(404).json({ message: 'Task not found' });
     }
     
-    console.log('Task updated successfully:', task);
     res.json(task);
   } catch (error) {
-    console.error('Error updating task:', error);
     res.status(500).json({ message: 'Error updating task', error: error.message });
   }
 });
@@ -835,30 +880,33 @@ app.delete('/tasks/:id', async (req, res) => {
 
 });
 
-
-
 app.post('/tasks', async (req, res) => {
-  const { title, status, order, color, description, priority, begindate, enddate, projectId } = req.body;
+  const { title, status, order, color, description, priority, begindate, enddate, projectId, users } = req.body;
 
   try {
-    // Étape 1 : Trouvez toutes les tâches du même projet et du même statut
     const tasksToUpdate = await Task.find({ projectId, status, description, priority, begindate, enddate });
 
-    // Étape 2 : Mettez à jour l'ordre de toutes les tâches existantes, en les incrémentant de 1
     const updatePromises = tasksToUpdate.map(task => {
       return Task.findByIdAndUpdate(task._id, { order: task.order + 1 });
     });
 
     await Promise.all(updatePromises);
 
-    // Étape 3 : Créez la nouvelle tâche avec un ordre de 0
-    const task = new Task({ title, status, order: 0, color, projectId, description, priority, begindate, enddate });
+    const task = new Task({ 
+      title, 
+      status, 
+      order: 0, 
+      color, 
+      projectId, 
+      description, 
+      priority, 
+      begindate, 
+      enddate,
+      users // Add this line to include users array
+    });
+    
     await task.save();
-
-    // Informer le frontend de la création de la nouvelle tâche
     io.emit('taskCreated', task);
-
-    // Envoyez la nouvelle tâche dans la réponse
     res.json(task);
 
   } catch (error) {
@@ -1040,30 +1088,25 @@ app.delete('/projects/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Trouver le projet avec l'ID donné
-    const project = await Project.findById(id);
+    console.log('Starting deletion process for project:', id);
+    
+    // First verify the projectId in projectusers collection
+    const projectUsers = await ProjectUsers.find({ projectId: id });
+    console.log('Found project users to delete:', projectUsers);
 
-    // Si le projet n'est pas trouvé, renvoyer une erreur 404
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
+    // Delete with explicit string comparison if needed
+    const deleteResult = await ProjectUsers.deleteMany({ projectId: String(id) });
+    console.log('Delete result:', deleteResult);
 
-    // Supprimer le projet
+    // Rest of your existing deletion code...
+    await Task.deleteMany({ projectId: id });
     await Project.findByIdAndDelete(id);
-
-    // Supprimer toutes les tâches associées au projet, s'il y en a
-    if (project.tasks && project.tasks.length > 0) {
-      await Task.deleteMany({ projectId: id });
-    }
-
-    // Envoyer une notification que le projet a été supprimé
+    
     io.emit('projectDeleted', { projectId: id });
-
-    // Renvoyer une réponse indiquant que la suppression a réussi
-    res.json({ message: 'Project and associated tasks deleted successfully' });
+    res.json({ message: 'Project and all associated data deleted successfully' });
 
   } catch (error) {
-    console.error('Error deleting project:', error);
+    console.error('Error in deletion process:', error);
     res.status(500).json({ error: 'An error occurred' });
   }
 });

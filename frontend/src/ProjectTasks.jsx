@@ -1,16 +1,25 @@
 // ProjectTasks.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { API_URL } from './config';
 
+import Gantt from './Gantt';
+
+import TimelineIcon from '@mui/icons-material/Timeline';
+
+import AvatarComponent from './AvatarComponent';
+import AvatarGroup from '@mui/material/AvatarGroup';
+import TextAvatarComponent from './TextAvatarComponent';
+
 import Column from './Column';
 
 import './styles.css';
 import Box from '@mui/material/Box';
 import { IconButton } from '@mui/material';
+import { Chip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { styled, createTheme, ThemeProvider } from '@mui/system';
 import Fab from '@mui/material/Fab';
@@ -38,14 +47,24 @@ const Modal = React.memo(({ onClose, children }) => {
 
 const ProjectTasks = () => {
 
+  const [showGanttModal, setShowGanttModal] = useState(false);
+
+  const alignementGauche = {
+    display: 'inline-flex',
+    flexWrap: 'wrap'
+  };
+
   const [columnNames, setColumnNames] = useState({
     todo: 'Todo',
     inProgress: 'In Progress',
     done: 'Done'
   });
 
+  let updatedSelectedUsers = [];
+  const [listUsersProject, setListUsersProject] = useState([]);
+  const [selectedUsersProject, setSelectedUsersProject] = useState([]);
   const [columnData, setColumnData] = useState({});
-
+  const [layout, setLayout] = useState(undefined);
   const [editingTask, setEditingTask] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [userId, setUserId] = useState(localStorage.getItem('id') || '')
@@ -60,6 +79,7 @@ const ProjectTasks = () => {
   const [newTaskEndDate, setNewTaskEndDate] = useState(''); // État pour le titre de la nouvelle tâche
   const [newTaskStatus, setNewTaskStatus] = useState('todo'); // État pour l'état initial
   const [newTaskPriority, setNewTaskPriority] = useState(''); // État pour la prioriété de la nouvelle tâche
+  const [modalKey, setModalKey] = useState(0);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -77,6 +97,88 @@ const ProjectTasks = () => {
 
   const [newColumnName, setNewColumnName] = useState('');
 
+  // Add these state variables
+
+  const [collaborators, setCollaborators] = useState([]);
+
+  const fetchCollaborators = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/users`);
+      setCollaborators(response.data);
+    } catch (error) {
+      console.error('Error fetching collaborators:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCollaborators();
+  }, []);
+
+  const [selectedUsers, setSelectedUsers] = useState([]);
+
+  const handleAvatarClickOnChild = useCallback((person) => {
+
+    //AJOUT ou SUPPRESSION un point vert sur l'icone du participant au projet
+
+    if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
+
+      setSelectedUsers(prevSelectedUsers => {
+        updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
+        return updatedSelectedUsers;
+      });
+
+    } else {
+
+      setSelectedUsers(prevSelectedUsers => {
+        updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
+        return updatedSelectedUsers;
+      });
+
+      setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
+    }
+
+  }, []);
+
+  const handleAvatarClickOn = useCallback((person) => {
+
+    //AJOUT ou SUPPRESSION un point vert sur l'icone du participant au projet
+
+    if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
+
+      setSelectedUsers(prevSelectedUsers => {
+        updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
+        return updatedSelectedUsers;
+      });
+
+    } else {
+
+      setSelectedUsers(prevSelectedUsers => {
+        updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
+        return updatedSelectedUsers;
+      });
+
+      setSelectedUsersProject(prevSelectedUsersProject => [...prevSelectedUsersProject, person._id]);
+    }
+
+  }, []);
+
+  const handelUserExistInProject = useCallback((personId, taskId) => {
+    return axios
+      .get(`${API_URL}/tasks/${taskId}/users/${personId}`)
+      .then((response) => {
+        if (response.data.exists) {
+          setSelectedUsers(prevSelectedUsers => {
+            const isUserIdPresent = prevSelectedUsers.some(user => user._id === personId);
+            if (!isUserIdPresent) {
+              const userToAdd = collaborators.find(user => user._id === personId);
+              return [...prevSelectedUsers, userToAdd];
+            }
+            return prevSelectedUsers;
+          });
+        }
+      });
+  }, [collaborators]);
+
   const resetEditing = () => {
     setModalOpen(false);
   };
@@ -84,12 +186,12 @@ const ProjectTasks = () => {
   const handleAddColumn = async () => {
     if (newColumnName.trim()) {
       try {
-        const response = await axios.put(`${API_URL}/projects/${projectId}/columns`, { 
+        const response = await axios.put(`${API_URL}/projects/${projectId}/columns`, {
           name: newColumnName
         });
-        
-        setColumnNames(prev => ({ 
-          ...prev, 
+
+        setColumnNames(prev => ({
+          ...prev,
           [response.data.id]: {
             name: response.data.name,
             color: response.data.color
@@ -103,10 +205,15 @@ const ProjectTasks = () => {
   };
 
   const handleColumnNameChange = async (columnId, newName) => {
+    // Check if newName is a string and not empty
+    if (typeof newName !== 'string' || !newName || newName === columnNames[columnId]?.name) {
+      return;
+    }
+
     try {
       await axios.put(`${API_URL}/projects/${projectId}/columns/${columnId}`, { name: newName });
-      setColumnNames(prev => ({ 
-        ...prev, 
+      setColumnNames(prev => ({
+        ...prev,
         [columnId]: {
           ...prev[columnId],
           name: newName
@@ -157,8 +264,6 @@ const ProjectTasks = () => {
       const updatedTasks = tasksData.map(task => {
         const taskLikes = task.likes ? task.likes.length : 0;
         totalLikes += taskLikes;
-        console.log('Task Likes:', taskLikes);
-        console.log('Total Likes:', totalLikes);
         return {
           ...task,
           totalLikes: taskLikes
@@ -175,14 +280,13 @@ const ProjectTasks = () => {
   const fetchProject = async () => {
     try {
       const response = await axios.get(`${API_URL}/projects/${projectId}`);
+      console.log('API Response:', response.data);
       setProjectTitle(response.data.title);
-      if (response.data.columns) {
         const columns = {};
-        response.data.columns.forEach((value, key) => {
-          columns[key] = value.name;
+        Object.entries(response.data.columns).forEach(([key, value]) => {
+          columns[key] = value.name || value;
         });
         setColumnNames(columns);
-      }
     } catch (error) {
       console.error('Error fetching project:', error);
     }
@@ -195,15 +299,46 @@ const ProjectTasks = () => {
       const processedData = {};
       Object.entries(response.data).forEach(([key, value]) => {
         processedData[key] = {
-          name: value.name || value,
-          color: value.color || '#3983DA'
+          name: value.name,
+          color: value.color
         };
       });
+      console.log('Setting column names:', processedData);
+          // Add a small delay before setting the state
+    setTimeout(() => {
       setColumnNames(processedData);
+    }, 1);
     } catch (error) {
       console.error('Error fetching column names:', error);
     }
   };
+
+  useEffect(() => {
+    if (isModalOpen && editingTask) {
+      const taskUsers = collaborators.filter(collab =>
+        editingTask.users.includes(collab._id)
+      );
+      setSelectedUsers(taskUsers);
+    }
+  }, [isModalOpen, editingTask, collaborators]);
+
+  //Chargement des Avatars
+  useEffect(() => {
+    const fetchProjectUsers = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/projectusers`);
+        console.log('projectUsers :', response.data);
+        setListUsersProject(response.data);
+      } catch (error) {
+        console.log('Error:', error);
+      }
+    };
+
+    fetchProjectUsers();
+  }, [projectId]);
+
+
+
 
   useEffect(() => {
     fetchColumnNames();
@@ -329,6 +464,16 @@ const ProjectTasks = () => {
       const response = await axios.get(`${API_URL}/tasks/${taskId}`);
       const task = response.data;
 
+      const taskUsers = collaborators.filter(collab =>
+        task.users.includes(collab._id)
+
+      );
+
+      setSelectedUsers(taskUsers);
+
+      console.log('Task Users:', taskUsers)
+
+      setSelectedUsers(taskUsers);
       setEditingTask(task);
       setNewTaskTitle(task.title);
       setNewTaskDescription(task.description);
@@ -339,6 +484,8 @@ const ProjectTasks = () => {
       setSelectedColor(task.color);
       setIsEditing(true);
       setModalOpen(true);
+      setLayout('center');
+
     } catch (error) {
       console.error('Error fetching task for editing:', error);
     }
@@ -346,6 +493,9 @@ const ProjectTasks = () => {
 
   const handleUpdateTask = async () => {
     try {
+      // Filter out project users and only keep direct task users
+      const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
+      console.log('Task Users:', taskUsers);
       const updatedTask = {
         title: newTaskTitle,
         status: newTaskStatus,
@@ -354,17 +504,17 @@ const ProjectTasks = () => {
         begindate: newTaskBeginDate,
         enddate: newTaskEndDate,
         color: selectedColor,
+        users: taskUsers.map(user => user._id)
       };
 
       const response = await axios.put(`${API_URL}/tasks/${editingTask._id}`, updatedTask);
-
       setTasks(tasks.map(task => task._id === editingTask._id ? response.data : task));
-
       resetEditing();
     } catch (error) {
       console.error('Error updating task:', error);
     }
   };
+
 
   const handleDeleteTask = async (taskId) => {
     try {
@@ -379,8 +529,10 @@ const ProjectTasks = () => {
 
   const handleCreateTask = async () => {
     try {
+      console.log('Selected users before creation:', selectedUsers);
 
-      // Envoyez la demande POST pour créer une nouvelle tâche
+      const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
+
       const response = await axios.post(`${API_URL}/tasks`, {
         title: newTaskTitle,
         status: newTaskStatus,
@@ -388,24 +540,22 @@ const ProjectTasks = () => {
         priority: newTaskPriority,
         begindate: newTaskBeginDate,
         enddate: newTaskEndDate,
-        order: 0, // Vous pouvez définir l'ordre initial ici
-        color: selectedColor, // Ajoutez la couleur sélectionnée à la requête
-        projectId: projectId, // Utilisez l'ID du projet actuel
+        order: 0,
+        color: selectedColor,
+        projectId: projectId,
+        users: taskUsers.map(user => user._id)
       });
 
-      // Mettez à jour la liste des tâches en ajoutant la nouvelle tâche au début du tableau
-      setTasks([response.data, ...tasks]);
 
-      // Réinitialisez les champs du formulaire
+      setTasks([response.data, ...tasks]);
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskPriority('');
       setNewTaskBeginDate('');
       setNewTaskEndDate('');
-      setNewTaskStatus('todo'); // Réinitialisez l'état initial au choix
-      setSelectedColor("#000000"); // Réinitialisez la couleur à une valeur par défaut
-
-      // Fermeture du modal
+      setNewTaskStatus('todo');
+      setSelectedColor("#000000");
+      setSelectedUsers([]); // Reset selected users after creation
       setModalOpen(false);
 
     } catch (error) {
@@ -485,7 +635,7 @@ const ProjectTasks = () => {
 
       {isModalOpen && (
 
-        <Modal onClose={resetEditing} >
+        <Modal key={modalKey} onClose={resetEditing}>
 
           <div className="create-task">
 
@@ -516,9 +666,9 @@ const ProjectTasks = () => {
                     onChange={(e) => setNewTaskStatus(e.target.value)}
                   >
                     {Object.entries(columnNames).map(([status, columnData]) => (
-                            <MenuItem key={status} value={status}>
-                            {typeof columnData === 'object' ? columnData.name : columnData}
-                          </MenuItem>
+                      <MenuItem key={status} value={status}>
+                        {typeof columnData === 'object' ? columnData.name : columnData}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -556,11 +706,53 @@ const ProjectTasks = () => {
                   </LocalizationProvider>
                 </div>
 
+                <Typography
+                  variant="caption"
+                  display="block"
+                  gutterBottom
+                >
+                  <br />
+                  Participants
+                </Typography>
+
+
+
+                <AvatarGroup max={100} sx={alignementGauche}>
+                  {collaborators
+.filter(person => 
+  listUsersProject.some(projectUser => projectUser.userId === person._id)
+                    )
+                    .map((person) => (
+                      person.avatar ? (
+                        <AvatarComponent
+                          key={person._id}
+                          person={person}
+                          editingProject={editingTask}
+                          handleAvatarClickOnChild={handleAvatarClickOnChild}
+                          selectedUsers={selectedUsers}
+                          handelUserExistInProject={handelUserExistInProject}
+                        />
+                      ) : (
+                        <TextAvatarComponent
+                          key={person._id}
+                          person={person}
+                          editingProject={editingTask}
+                          handleAvatarClickOnChild={handleAvatarClickOnChild}
+                          selectedUsers={selectedUsers}
+                          handelUserExistInProject={handelUserExistInProject}
+                        />
+                      )
+                    ))}
+                </AvatarGroup>
+                <br />
+
+
               </div>
 
               {/* Colonne de droite */}
 
               <div className="column-CreateTask">
+
 
                 <FormControl variant="standard" sx={{ width: '26ch' }}>
                   <InputLabel id="priority-label">Priority</InputLabel>
@@ -602,7 +794,9 @@ const ProjectTasks = () => {
                   onChangeComplete={(color) => setSelectedColor(color.hex)}
                 />
 
+
               </div>
+
             </div>
 
             <Button sx={{ marginTop: 6 }}
@@ -617,6 +811,7 @@ const ProjectTasks = () => {
             >
               {isEditing ? 'Update Task' : 'Add Task'}
             </Button>
+
 
           </div>
 
@@ -653,7 +848,9 @@ const ProjectTasks = () => {
             <Column
               key={status}
               status={status}
-              title={columnData}
+              title={columnNames[status]}
+              ccolumnData={columnNames[status]}  // Pass the full object from columnNames
+              color={columnData.color}  // Add this line
               tasks={tasks.filter(task => task.status === status)}
               editingColumn={editingColumn}
               Modal
@@ -675,42 +872,74 @@ const ProjectTasks = () => {
               messagingStates={messagingStates}
               setColumnNames={setColumnNames}
               setTasks={setTasks}
-              //onColumnDeleted={handleColumnDeleted}
+            //onColumnDeleted={handleColumnDeleted}
             />
           ))}
 
           <div className="columns-container" style={{ position: 'relative', minHeight: '100vh' }}>
-          <div className="column add-column" style={{
-            position: 'fixed',
-            bottom: '20px',
-            left: '20px',
-            width: '150px',
-            minWidth: '150px',
-            zIndex: 1000
-          }}>
-            <div className="column-header">
-              <TextField
-                value={newColumnName}
-                onChange={(e) => setNewColumnName(e.target.value)}
-                placeholder="Column Name"
-                variant="standard"
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <IconButton onClick={handleAddColumn} size="small">
-                      <AddIcon />
-                    </IconButton>
-                  ),
-                }}
-              />
+            <div className="column add-column" style={{
+              position: 'fixed',
+              bottom: '20px',
+              left: '20px',
+              width: '150px',
+              minWidth: '150px',
+              zIndex: 1000,
+              backgroundColor: '#1976d2',  // Primary blue color
+              padding: '15px',
+              borderRadius: '4px',
+              color: 'white'
+            }}>
+              <div className="column-header">
+                <TextField
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                  placeholder="Column Name"
+                  variant="standard"
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton onClick={handleAddColumn} size="small">
+                        <AddIcon />
+                      </IconButton>
+                    ),
+                  }}
+                />
+              </div>
+              <div className="column-content">
+                <Typography variant="body2" sx={{ color: 'white' }} align="center">
+                  Add a new column
+                </Typography>
+              </div>
+
             </div>
-            <div className="column-content">
-              <Typography variant="body2" color="text.secondary" align="center">
-                Add a new column
-              </Typography>
+            <div style={{
+              position: 'fixed',
+              bottom: '30px',
+              left: '220px',
+              width: '150px',
+              minWidth: '150px',
+              zIndex: 1000
+            }}>
+              <Box sx={{ '& > :not(style)': { m: 1 } }}>
+
+                <Fab color="secondary" aria-label="gantt" onClick={() => setShowGanttModal(true)}>
+                  <TimelineIcon />
+                </Fab>
+              </Box>
             </div>
-          </div>
+
+            {showGanttModal && (
+              <Modal onClose={() => setShowGanttModal(false)}>
+                <div className="gantt-view">
+                  <h1>{projectTitle}</h1>
+                  <h2>Gantt chart</h2>
+
+                  <Gantt tasks={tasks} />
                 </div>
+              </Modal>
+            )}
+
+          </div>
         </div>
 
       </div>

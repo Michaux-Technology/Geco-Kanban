@@ -17,6 +17,16 @@
   }
 }
 
+.gantt-view {
+  width: 95vw;
+  max-width: 1400px;
+  min-height: 700px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: auto;
+}
+
 .columns-container {
   display: flex;
   flex-wrap: wrap;

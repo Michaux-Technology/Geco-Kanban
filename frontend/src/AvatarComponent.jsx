@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar, Badge } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { API_URL_FRONT } from './config';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
@@ -38,8 +39,8 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
   useEffect(() => {
     // resultat des utilisateurs affectées en db
     if (person && person._id && editingProject && editingProject._id) {
-    handelUserExistInProject(person._id, editingProject._id)
-  }
+      handelUserExistInProject(person._id, editingProject._id)
+    }
   }, [editingProject, person, handelUserExistInProject]);
 
 
@@ -74,7 +75,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
           >
             <Avatar
               key={person._id}
-              src={`./uploads/${person.avatar}`}
+              src={`${API_URL_FRONT}/uploads/${person.avatar}`}
               alt={person.firstName}
               onClick={handleAvatarClickOn}
               sx={{
@@ -86,7 +87,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
         ) : (
           <Avatar
             key={person._id}
-            src={`./uploads/${person.avatar}`}
+            src={`${API_URL_FRONT}/uploads/${person.avatar}`}
             alt={person.firstName}
             onClick={handleAvatarClickOn}
             sx={{

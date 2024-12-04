@@ -41,7 +41,7 @@ const ProjectComponent = () => {
 
     let [editingProject, setEditingProject] = useState(null);
     let [isEditing, setIsEditing] = useState(false);
-    //let [isUserFromDB, setIsUserFromDB] = useState(false);
+
 
     let [tempImage, setTempImage] = useState(null);
     const DEFAULT_IMAGE = "./img/gecko.jpg";
@@ -227,7 +227,6 @@ const ProjectComponent = () => {
             );
 
             for (const user of usersToDelete) {
-                console.log("DELETE");
 
                 await axios.delete(`${API_URL}/projects/${project._id}/users/${user.userId}`);
 
@@ -242,7 +241,6 @@ const ProjectComponent = () => {
 
                 //Si n'exite pas dans la db pas alors ajouter
                 if (!userExists && person._id) {
-                    console.log("ADD")
                     await axios.post(`${API_URL}/projects/${project._id}/users/${person._id}`);
 
                     socket.on('userProjectAdded', (person) => {
@@ -398,15 +396,12 @@ const ProjectComponent = () => {
 
         if (updatedSelectedUsers.some(user => String(user._id) === String(person._id))) {
 
-            console.log('DELETE');
-
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = prevSelectedUsers.filter(user => user._id !== person._id);
                 return updatedSelectedUsers;
             });
 
         } else {
-            console.log('ADD');
 
             setSelectedUsers(prevSelectedUsers => {
                 updatedSelectedUsers = Array.isArray(prevSelectedUsers) ? [...prevSelectedUsers, person] : [person];
@@ -548,6 +543,7 @@ const ProjectComponent = () => {
                             </Typography>
 
                             {/* Liste des avatars en modification ou en creation */}
+
                             <AvatarGroup max={100}
                                 sx={alignementGauche}>
                                 {/* Afficher les avatars de toutes les utilisateurs */}
@@ -561,7 +557,6 @@ const ProjectComponent = () => {
                                                 editingProject={editingProject}
                                                 selectedUsers={selectedUsers}
                                                 handelUserExistInProject={handelUserExistInProject}
-                                            //addGreenBotton={addGreenBotton}
 
                                             />
                                         ) : (
@@ -578,7 +573,6 @@ const ProjectComponent = () => {
                                     );
                                 })}
                             </AvatarGroup>
-
                             <br></br>
                             <div>
                                 <LocalizationProvider dateAdapter={AdapterDayjs} component="div">

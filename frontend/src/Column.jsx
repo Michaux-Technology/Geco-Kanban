@@ -14,18 +14,16 @@ import Box from '@mui/material/Box';
 
 import { TextField } from '@mui/material';
 
-const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onColumnDeleted, handleColumnNameEdit, handleColumnNameSave, columnNames, setColumnNames, handleEditTask, handleDeleteTask, handleLike, setShowMessaging, handleCommentCount, totalLikes, showMessaging, commentText, handleCommentChange, handleComment, toggleMessaging, messagingStates }) => {
+const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onColumnDeleted, handleColumnNameEdit, handleColumnNameSave, columnNames, setColumnNames, handleEditTask, handleDeleteTask, handleLike, setShowMessaging, handleCommentCount, totalLikes, showMessaging, commentText, handleCommentChange, handleComment, toggleMessaging, messagingStates, ...props}) => {
 
-  console.log("title:", title)
-  console.log("columnNames.color:", title.color)
+  const [columnHeaderColor, setColumnHeaderColor] = useState(columnNames[status]?.color || '#4CAF50');
+
 
   useEffect(() => {
     if (columnNames[status]?.color) {
       setColumnHeaderColor(columnNames[status].color);
     }
   }, [columnNames, status]);
-
-  const [columnHeaderColor, setColumnHeaderColor] = useState(title.color);
 
 
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);

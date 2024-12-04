@@ -5,10 +5,38 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ChatIcon from '@mui/icons-material/Chat';
+import { AvatarGroup, Avatar } from '@mui/material';
+import { API_URL_FRONT } from './config';
+import { API_URL } from './config';
+import axios from 'axios';
 
 const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handleCommentCount, totalLikes, handleComment, showMessaging, toggleMessaging }) => {
 
   const [taskComments, setTaskComments] = useState(task.comments);
+  const [taskUserDetails, setTaskUserDetails] = useState([]);
+
+  const [userDetails, setUserDetails] = useState({});
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      if (task.users && task.users.length > 0) {
+        try {
+          const userPromises = task.users.map(userId => 
+            axios.get(`${API_URL}/users/${userId}`)
+          );
+          const responses = await Promise.all(userPromises);
+          const users = responses.map(response => response.data);
+          setTaskUserDetails(users);
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+    };
+
+    fetchUserDetails();
+  }, [task.users]);
+ 
+
 
   useEffect(() => {
     setTaskComments(task.comments);
@@ -30,6 +58,33 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
     handleComment(task._id, localCommentText);
     setLocalCommentText('');
   };
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
+    };
+  }
+
+  function stringToColor(string) {
+    let hash = 0;
+    let i;
+
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = '#';
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+
+    return color;
+  }
 
   return (
     <Draggable key={task._id} draggableId={task._id} index={index}>
@@ -59,6 +114,31 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
                 <div style={{ marginLeft: '10px', width: '100%', height: '14px', backgroundColor: task.priority }}></div>
               </ListItemIcon>
             </Typography>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px', marginLeft: '10px' }}>
+
+              <AvatarGroup max={100}>
+                {taskUserDetails.map(user => (
+                  user.avatar ? (
+                    <Avatar
+                      key={user._id}
+                      src={`${API_URL_FRONT}/uploads/${user.avatar}`}
+                      alt={user.name}
+                      sx={{ width: 24, height: 24 }}
+                    />
+                  ) : (
+                    <Avatar
+                      key={user._id}
+                      {...stringAvatar(`${user.firstName} ${user.lastName}`)}
+                      alt={user.name}
+                      sx={{ width: 24, height: 24 }}
+                    />
+                  )
+                ))}
+              </AvatarGroup>
+
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <Box component="div" sx={{ marginTop: 2 }}>
                 <Typography sx={{ fontSize: 12 }}>
@@ -71,16 +151,17 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
                 </Typography>
               </Box>
             </div>
+
             <div>
-            <Button
-  sx={{ fontSize: 12 }}
-  color="primary"
-  onClick={() => handleLike(task._id)}
-  style={{ verticalAlign: 'middle' }}
->
-  <ThumbUpIcon sx={{ fontSize: 17 }} />
-  {localLikes}
-</Button>
+              <Button
+                sx={{ fontSize: 12 }}
+                color="primary"
+                onClick={() => handleLike(task._id)}
+                style={{ verticalAlign: 'middle' }}
+              >
+                <ThumbUpIcon sx={{ fontSize: 17 }} />
+                {localLikes}
+              </Button>
               <Button
                 sx={{ fontSize: 12 }}
                 color="primary"
@@ -92,6 +173,7 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
               >
                 <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
               </Button>
+
             </div>
             {showMessaging && (
               <div>

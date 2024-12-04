@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "react-google-charts": "^5.2.1"
+  }
+}
