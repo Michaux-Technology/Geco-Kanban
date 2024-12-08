@@ -6,6 +6,9 @@ import dayjs from 'dayjs';
 
 import { API_URL } from './config';
 
+import GaugeChart from 'react-gauge-chart';
+import { Slider } from '@mui/material';
+
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button, TextField } from '@mui/material';
@@ -35,6 +38,7 @@ import ModalDialog from '@mui/joy/ModalDialog';
 
 const ProjectComponent = () => {
 
+    const [projectGauge, setProjectGauge] = useState(0);
 
     // Declaration des variables
     let [isModalOpen, setModalOpen] = useState(false);
@@ -99,8 +103,13 @@ const ProjectComponent = () => {
         }
     };
 
-    // useEffect(() => {
-    // }, [ratingProjects]);
+    useEffect(() => {
+        if (editingProject) {
+            console.log('Editing project gauge ************:', editingProject.gauge);
+            setProjectGauge(editingProject.gauge || 0);
+        }
+    }, [editingProject]);
+
 
     useEffect(() => {
         fetchData()
@@ -162,7 +171,8 @@ const ProjectComponent = () => {
         setSelectedUsers([]);
         setSelectedUsersProject([]);
         setIsEditing(false);
-        setTempImage(null)
+        setTempImage(null);
+        setProjectGauge(0);
 
     };
 
@@ -276,7 +286,8 @@ const ProjectComponent = () => {
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
-                tempImage: tempImage
+                tempImage: tempImage,
+                gauge: projectGauge // Add this
             });
 
             setProjects((prevProjects) =>
@@ -288,7 +299,7 @@ const ProjectComponent = () => {
         } catch (error) {
             console.error('Error updating project:', error);
         }
-    }, [selectedUsers, tempImage, onUpload, editingProject, setProjects, fetchData, socket]);
+    }, [selectedUsers, tempImage, onUpload, editingProject, setProjects, fetchData, , projectGauge, socket]);
 
     const handleAddProject = useCallback(async () => {
         try {
@@ -302,7 +313,8 @@ const ProjectComponent = () => {
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
-                tempImage: tempImage
+                tempImage: tempImage,
+                gauge: projectGauge // Add this
             });
 
             function handleAddProjectCallback(project) {
@@ -346,19 +358,16 @@ const ProjectComponent = () => {
         }
     };
 
-    const handleRatingChange = async (projectId, newRating) => {
+    const handleRatingChange = async (projectId, newValue) => {
         try {
-
-
-            // Enregistrez la nouvelle note dans la base de données
             socket.emit('updateRatingProject', {
                 _id: projectId,
-                rating: newRating
+                rating: newValue * 5 // Convert gauge value (0-1) to rating (0-5)
             });
-
-            // Mettez à jour l'état local avec la nouvelle note
-            setRating(prevState => ({ ...prevState, [projectId]: newRating }));
-
+            setRating(prevState => ({
+                ...prevState,
+                [projectId]: newValue * 5
+            }));
         } catch (error) {
             console.error('Error saving rating:', error);
         }
@@ -594,7 +603,27 @@ const ProjectComponent = () => {
 
                                 </LocalizationProvider>
                             </div>
+
                             <br></br>
+                            <div style={{ marginTop: '20px', width: '200px' }}>
+                                <GaugeChart
+                                    id="gauge-chart-modal"
+                                    nrOfLevels={20}
+                                    percent={projectGauge / 100} // Remove project reference, use state directly
+                                    colors={['#FF5F6D', '#FFC371', '#4CAF50']}
+                                    arcWidth={0.3}
+                                    textColor="#000000"
+                                    animate={false}
+                                />
+                            </div>
+                            <Slider
+                                value={projectGauge}
+                                onChange={(e, newValue) => setProjectGauge(newValue)}
+                                min={0}
+                                max={100}
+                                valueLabelDisplay="auto"
+                                sx={{ width: '150px', marginTop: '10px', marginLeft: '30px' }}
+                            />
                             <Button
                                 variant="contained"
                                 onClick={() => {
@@ -688,40 +717,61 @@ const ProjectComponent = () => {
                                         </Typography>
                                     </CardContent>
                                 </CardActionArea>
-                                <CardActions>
-                                    <div className="button-container">
-                                        <div className="button-flex">
-                                            <Box
-                                                sx={{
-                                                    '& > legend': { mt: 2 },
-                                                }}
-                                            >
-                                                <Rating name="no-value"
-
-                                                    value={rating[project._id] || 0}
-                                                    onChange={(event, newRating) => handleRatingChange(project._id, newRating)}
-                                                    getLabelText={(value) => `${value} Heart${value !== 1 ? 's' : ''}`}
-                                                    precision={0.5}
-                                                    icon={<GradeIcon fontSize="inherit" />}
-                                                    emptyIcon={<GradeIcon fontSize="inherit" />}
+                                <CardActions sx={{
+                                    width: '100%',
+                                    minWidth: '340px',
+                                    padding: '16px',
+                                    boxSizing: 'border-box'
+                                }}>
+                                    <div className="button-container" style={{ width: '100%' }}>
+                                        <div className="button-flex" style={{
+                                            display: 'flex',
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'space-between', // Changed from flex-start
+                                            width: '100%',
+                                            maxWidth: '100%', // Add maxWidth
+                                            overflow: 'hidden' // Prevent overflow
+                                        }}>
+                                            {/* Left side - Gauge */}
+                                            <Box sx={{ width: '120px', height: '45px' }}>
+                                                <GaugeChart
+                                                    id={`gauge-chart-${project._id}`}
+                                                    nrOfLevels={20}
+                                                    percent={project.gauge ? project.gauge / 100 : 0} // Read gauge directly from project
+                                                    arcWidth={0.3}
+                                                    colors={['#FF5F6D', '#FFC371', '#4CAF50']}
+                                                    arcPadding={0.02}
+                                                    hideText={true}
+                                                    cornerRadius={2}
+                                                    animate={true}
                                                 />
                                             </Box>
-                                            <Box component="div">
-                                                <Typography display="block">
+
+                                            {/* Right side - Date and Delete */}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '10px',
+                                                flexShrink: 0 // Prevent shrinking
+                                            }}>
+                                                <Typography noWrap>
                                                     {Date.parse(project.enddate) ? new Date(project.enddate).toLocaleDateString() : 'No End Date'}
                                                 </Typography>
+                                                <div
+                                                    onClick={() => handleDeleteProject(project._id)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
+                                                    <DeleteOutlineIcon />
+                                                </div>
                                             </Box>
-                                            <div
-                                                //role="button"
-                                                aria-label="Delete"
-                                                onClick={() => handleDeleteProject(project._id)}
-                                                style={{ cursor: 'pointer' }}
-                                            >
-                                                <DeleteOutlineIcon />
-                                            </div>
                                         </div>
                                     </div>
                                 </CardActions>
+
+
+
+
+
                             </Card>
                         </div>
                     );

@@ -5,8 +5,10 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { API_URL } from './config';
-
-import Gantt from './Gantt';
+import GaugeChart from 'react-gauge-chart';
+import GanttChart from './Gantt';
+import { Slider } from '@mui/material';
+import { Chip } from '@mui/material';
 
 import TimelineIcon from '@mui/icons-material/Timeline';
 
@@ -19,7 +21,6 @@ import Column from './Column';
 import './styles.css';
 import Box from '@mui/material/Box';
 import { IconButton } from '@mui/material';
-import { Chip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { styled, createTheme, ThemeProvider } from '@mui/system';
 import Fab from '@mui/material/Fab';
@@ -30,6 +31,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import NumberInput from './NumberInput';
 
 const socket = io(API_URL); // Connectez-vous au serveur WebSocket
 
@@ -47,8 +49,12 @@ const Modal = React.memo(({ onClose, children }) => {
 
 const ProjectTasks = () => {
 
-  const [showGanttModal, setShowGanttModal] = useState(false);
+  const [taskDependencies, setTaskDependencies] = useState([]);
+  const [selectedDependencies, setSelectedDependencies] = useState(null);
 
+  const [workingDay, setWorkingDay] = useState(1);
+  const [showGanttModal, setShowGanttModal] = useState(false);
+  const [newTaskGauge, setNewTaskGauge] = useState(0);
   const alignementGauche = {
     display: 'inline-flex',
     flexWrap: 'wrap'
@@ -282,11 +288,11 @@ const ProjectTasks = () => {
       const response = await axios.get(`${API_URL}/projects/${projectId}`);
       console.log('API Response:', response.data);
       setProjectTitle(response.data.title);
-        const columns = {};
-        Object.entries(response.data.columns).forEach(([key, value]) => {
-          columns[key] = value.name || value;
-        });
-        setColumnNames(columns);
+      const columns = {};
+      Object.entries(response.data.columns).forEach(([key, value]) => {
+        columns[key] = value.name || value;
+      });
+      setColumnNames(columns);
     } catch (error) {
       console.error('Error fetching project:', error);
     }
@@ -304,10 +310,10 @@ const ProjectTasks = () => {
         };
       });
       console.log('Setting column names:', processedData);
-          // Add a small delay before setting the state
-    setTimeout(() => {
-      setColumnNames(processedData);
-    }, 1);
+      // Add a small delay before setting the state
+      setTimeout(() => {
+        setColumnNames(processedData);
+      }, 1);
     } catch (error) {
       console.error('Error fetching column names:', error);
     }
@@ -461,17 +467,17 @@ const ProjectTasks = () => {
 
   const handleEditTask = async (taskId) => {
     try {
+
+
       const response = await axios.get(`${API_URL}/tasks/${taskId}`);
       const task = response.data;
+
+      setSelectedDependencies(task.dependencies || '');
 
       const taskUsers = collaborators.filter(collab =>
         task.users.includes(collab._id)
 
       );
-
-      setSelectedUsers(taskUsers);
-
-      console.log('Task Users:', taskUsers)
 
       setSelectedUsers(taskUsers);
       setEditingTask(task);
@@ -482,9 +488,12 @@ const ProjectTasks = () => {
       setNewTaskBeginDate(dayjs(task.begindate));
       setNewTaskEndDate(dayjs(task.enddate));
       setSelectedColor(task.color);
+      setNewTaskGauge(task.gauge || 0);
+      setWorkingDay(task.workingDay || 1);
       setIsEditing(true);
       setModalOpen(true);
       setLayout('center');
+      setSelectedDependencies(task.dependencies || []);
 
     } catch (error) {
       console.error('Error fetching task for editing:', error);
@@ -493,9 +502,15 @@ const ProjectTasks = () => {
 
   const handleUpdateTask = async () => {
     try {
-      // Filter out project users and only keep direct task users
       const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
-      console.log('Task Users:', taskUsers);
+
+      // Convert dependencies to string, ensuring it's not an array
+      const dependencyValue = typeof selectedDependencies === 'string' ?
+        selectedDependencies :
+        (selectedDependencies || '').toString();
+
+      console.log('Dependency value:', dependencyValue); // Debug log
+
       const updatedTask = {
         title: newTaskTitle,
         status: newTaskStatus,
@@ -504,9 +519,13 @@ const ProjectTasks = () => {
         begindate: newTaskBeginDate,
         enddate: newTaskEndDate,
         color: selectedColor,
-        users: taskUsers.map(user => user._id)
+        users: taskUsers.map(user => user._id),
+        gauge: newTaskGauge,
+        workingDay: workingDay,
+        dependencies: dependencyValue
       };
 
+      console.log('Updated task:', updatedTask); // Debug log
       const response = await axios.put(`${API_URL}/tasks/${editingTask._id}`, updatedTask);
       setTasks(tasks.map(task => task._id === editingTask._id ? response.data : task));
       resetEditing();
@@ -514,7 +533,6 @@ const ProjectTasks = () => {
       console.error('Error updating task:', error);
     }
   };
-
 
   const handleDeleteTask = async (taskId) => {
     try {
@@ -529,9 +547,15 @@ const ProjectTasks = () => {
 
   const handleCreateTask = async () => {
     try {
-      console.log('Selected users before creation:', selectedUsers);
+      if (dayjs(newTaskEndDate).isBefore(dayjs(newTaskBeginDate))) {
+        alert("End date must be after start date");
+        return;
+      }
 
       const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
+
+      // Define dependenciesString before using it
+      const dependenciesString = selectedDependencies ? selectedDependencies.toString() : '';
 
       const response = await axios.post(`${API_URL}/tasks`, {
         title: newTaskTitle,
@@ -543,8 +567,14 @@ const ProjectTasks = () => {
         order: 0,
         color: selectedColor,
         projectId: projectId,
-        users: taskUsers.map(user => user._id)
+        users: taskUsers.map(user => user._id),
+        gauge: newTaskGauge,
+        dependencies: dependenciesString,  // Now using the defined variable
+        workingDay: workingDay
       });
+
+      // Rest of the function...
+
 
 
       setTasks([response.data, ...tasks]);
@@ -644,7 +674,7 @@ const ProjectTasks = () => {
 
             <div className="columns-CreateTask">
 
-              {/* Colonne de gauche */}
+              {/* 1ere colonne */}
               <div className="column-CreateTask">
                 <div>
                   <TextField sx={{ width: '25ch' }}
@@ -693,6 +723,7 @@ const ProjectTasks = () => {
                       label="Starting date"
                       value={dayjs(newTaskBeginDate)}
                       onChange={(date) => setNewTaskBeginDate(date)}
+                      format="DD/MM/YYYY"
                     /></LocalizationProvider>
                 </div>
                 <div style={{ flex: 1, marginTop: '2ch', marginRight: '10px' }}>
@@ -700,9 +731,16 @@ const ProjectTasks = () => {
                     <DatePicker
                       label="End date"
                       value={dayjs(newTaskEndDate)}
-                      onChange={(date) => setNewTaskEndDate(date)}
+                      onChange={(date) => {
+                        if (date && newTaskBeginDate && date < newTaskBeginDate) {
+                          // End date cannot be before start date
+                          return;
+                        }
+                        setNewTaskEndDate(date);
+                      }}
+                      minDate={newTaskBeginDate} // This prevents selecting dates before start date
+                      format="DD/MM/YYYY"
                     />
-
                   </LocalizationProvider>
                 </div>
 
@@ -719,8 +757,8 @@ const ProjectTasks = () => {
 
                 <AvatarGroup max={100} sx={alignementGauche}>
                   {collaborators
-.filter(person => 
-  listUsersProject.some(projectUser => projectUser.userId === person._id)
+                    .filter(person =>
+                      listUsersProject.some(projectUser => projectUser.userId === person._id)
                     )
                     .map((person) => (
                       person.avatar ? (
@@ -749,7 +787,74 @@ const ProjectTasks = () => {
 
               </div>
 
-              {/* Colonne de droite */}
+              {/* 2eme colonne */}
+              <div className="column-CreateTask">
+
+                {/* Add dependencies select */}
+                <FormControl sx={{ marginTop: 4, width: '300px' }}>
+                  <InputLabel>Task Dependency</InputLabel>
+                  <Select
+                    value={selectedDependencies ?? null}
+                    onChange={(e) => {
+                      if (e && e.target) {
+                        setSelectedDependencies(e.target.value);
+                      }
+                    }}
+                  >
+                    <MenuItem value={null}>
+                      <em>None</em>
+                    </MenuItem>
+                    {tasks && tasks.length > 0 && tasks
+                      .filter(task => task?._id !== editingTask?._id)
+                      .map((task) => (
+                        task && (
+                          <MenuItem key={task._id} value={task._id}>
+                            {task.title || 'Untitled Task'}
+                          </MenuItem>
+                        )
+                      ))}
+                  </Select>
+                </FormControl>
+
+
+
+                <div style={{ marginTop: '20px' }}>
+                  <Typography variant="caption">Working Day</Typography>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <NumberInput
+                      aria-label="Working Day"
+                      min={1}
+                      max={99}
+                      value={workingDay}
+                      onChange={(event, val) => setWorkingDay(val)}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px', width: '200px' }}>
+                  <GaugeChart
+                    id="gauge-chart-modal"
+                    nrOfLevels={20}
+                    percent={newTaskGauge / 100}
+                    colors={['#FF5F6D', '#FFC371', '#4CAF50']}
+                    arcWidth={0.3}
+                    textColor="#000000"
+                    animate={false}
+                  />
+                </div>
+
+
+                <Slider
+                  value={newTaskGauge}
+                  onChange={(e, newValue) => setNewTaskGauge(newValue)}
+                  onChangeCommitted={(e, newValue) => setNewTaskGauge(newValue)}
+                  min={0}
+                  max={100}
+                  valueLabelDisplay="auto"
+                  sx={{ width: '150px', marginTop: '10px', marginLeft: '30px' }}
+                />
+              </div>
+              {/* 3eme colonne */}
 
               <div className="column-CreateTask">
 
@@ -933,11 +1038,11 @@ const ProjectTasks = () => {
                 <div className="gantt-view">
                   <h1>{projectTitle}</h1>
                   <h2>Gantt chart</h2>
-
-                  <Gantt tasks={tasks} />
+                  <GanttChart tasks={tasks} />
                 </div>
               </Modal>
             )}
+
 
           </div>
         </div>

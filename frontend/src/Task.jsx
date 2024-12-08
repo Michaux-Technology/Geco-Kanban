@@ -9,11 +9,14 @@ import { AvatarGroup, Avatar } from '@mui/material';
 import { API_URL_FRONT } from './config';
 import { API_URL } from './config';
 import axios from 'axios';
+import GaugeChart from 'react-gauge-chart';
+import { Slider } from '@mui/material';
 
 const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handleCommentCount, totalLikes, handleComment, showMessaging, toggleMessaging }) => {
 
   const [taskComments, setTaskComments] = useState(task.comments);
   const [taskUserDetails, setTaskUserDetails] = useState([]);
+  const [gaugeValue, setGaugeValue] = useState(task.gauge || 0);
 
   const [userDetails, setUserDetails] = useState({});
 
@@ -21,7 +24,7 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
     const fetchUserDetails = async () => {
       if (task.users && task.users.length > 0) {
         try {
-          const userPromises = task.users.map(userId => 
+          const userPromises = task.users.map(userId =>
             axios.get(`${API_URL}/users/${userId}`)
           );
           const responses = await Promise.all(userPromises);
@@ -35,8 +38,10 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
 
     fetchUserDetails();
   }, [task.users]);
- 
 
+  useEffect(() => {
+    setGaugeValue(task.gauge || 0);
+  }, [task.gauge]);
 
   useEffect(() => {
     setTaskComments(task.comments);
@@ -102,7 +107,27 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
                 <button onClick={() => handleEditTask(task._id)}><EditIcon /></button>
                 <button onClick={() => handleDeleteTask(task._id)}><DeleteOutlineIcon /></button>
               </div>
+
+
+
             </div>
+
+            <div style={{
+              marginTop: '10px',
+              width: '100px',
+              marginLeft: 'auto',
+              float: 'right'
+            }}>
+              <GaugeChart
+                id={`gauge-chart-${task._id}`}
+                nrOfLevels={20}
+                percent={gaugeValue / 100}
+                colors={['#FF5F6D', '#FFC371', '#4CAF50']}
+                arcWidth={0.3}
+                textColor="#000000"
+              />
+            </div>
+
             <Box component="div">
               <Typography display="block" sx={{ fontSize: 12 }}>
                 {task.description}
@@ -114,6 +139,7 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
                 <div style={{ marginLeft: '10px', width: '100%', height: '14px', backgroundColor: task.priority }}></div>
               </ListItemIcon>
             </Typography>
+
 
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px', marginLeft: '10px' }}>
 
@@ -173,6 +199,15 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
               >
                 <ChatIcon sx={{ fontSize: 17 }} />  &nbsp;{task.comments ? task.comments.length : 0}
               </Button>
+
+              <Typography
+                sx={{ fontSize: 12, display: 'inline-block', marginLeft: 2 }}
+                color="primary"
+              >
+                Working Days: {task.workingDay || 0}
+              </Typography>
+
+
 
             </div>
             {showMessaging && (
