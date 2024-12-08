@@ -38,7 +38,7 @@ const TaskSchema = new mongoose.Schema({
   title: String,
   status: String, // 'todo', 'inProgress', 'done'
   order: Number,
-  color: String,
+  color: { type: String, default: '#4A90E2' },
   description: String,
   begindate: Date,
   enddate: Date,

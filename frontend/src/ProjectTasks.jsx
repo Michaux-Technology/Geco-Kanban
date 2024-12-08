@@ -89,7 +89,7 @@ const ProjectTasks = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("#000000"); // Couleur par défaut
+  const [selectedColor, setSelectedColor] = useState("#4A90E2"); // Couleur par défaut
 
   const [commentsCount, setCommentsCount] = useState(0);
   const [likes, setLikes] = useState(0);
@@ -940,7 +940,7 @@ const ProjectTasks = () => {
               setNewTaskPriority('');
               setNewTaskBeginDate(null);
               setNewTaskEndDate(null);
-              setSelectedColor("#000000");
+              setSelectedColor("#4A90E2");
               setModalOpen(true);
             }}>
               <AddIcon />
