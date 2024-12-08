@@ -30,7 +30,7 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 3.30 : 
+Missing features für v. 3.31 : 
 1. New users created in List of collaborators have the password: 1234. 
 The user must change their password.
 2. Upcoming features :
