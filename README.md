@@ -6,9 +6,9 @@
 
 ## ✅ Description
 
-This software lets you manage projects using Kanban.
-Each project comprises tasks that can be dragged from one column to another.  
-The software is multi-user and changes are visible live, without the need to refresh the page. 
+This software lets you manage projects using Kanban and Gantt charts.
+Each project is made up of tasks that can be dragged from one column to another, liked and commented on.  
+The software is multi-user and changes are visible live, with no need to refresh the page. 
 
 ## ✅ Technologies used
 
@@ -30,12 +30,12 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 3.10 : 
+Missing features für v. 3.30 : 
 1. New users created in List of collaborators have the password: 1234. 
 The user must change their password.
 2. Upcoming features :
-- Add participants to each task.
-- We're going to take a different view of Kanban, to see the project as a Gantt chart. 
+- Add file storage to projects.
+- Employee occupancy table by project task.  
 
 ## ✅ Questions / Answers
 
