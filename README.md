@@ -68,6 +68,18 @@ Ask your questions, let us know about bugs...
 
    npm start
 
+## ✅ Make a donation
+
+To obtain a license :
+- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
+- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.en)
+  
+make the [right](https://github.com/sponsors/Michaux-Technology) donation
+
+🙏🙏🙏
+
+Good luck!
+
 ## ✅ Our video
 
 [![Alv_3hkBI8Q](https://img.youtube.com/vi/qzr9uuxXE4o/1.jpg)](https://www.youtube.com/watch?v=qzr9uuxXE4o)
@@ -83,15 +95,3 @@ Ask your questions, let us know about bugs...
 ![Capture d’écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
 
 ![Capture d’écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
-
-## ✅ Make a donation
-
-To obtain a license :
-- [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
-- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.en)
-  
-make the [right](https://github.com/sponsors/Michaux-Technology) donation
-
-🙏🙏🙏
-
-Good luck!
