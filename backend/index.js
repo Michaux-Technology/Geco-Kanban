@@ -44,6 +44,9 @@ const TaskSchema = new mongoose.Schema({
   enddate: Date,
   priority: String,
   projectId: String,
+  gauge: { type: Number, default: 0 },
+  workingDay: { type: Number, default: 0 },
+  dependencies: { type: String, default: null },
   users: [{ type: String }],
   likes: [{ type: String }], // Array of user IDs who liked the task
   comments: [{
@@ -64,6 +67,7 @@ const ProjectSchema = new mongoose.Schema({
   rating: Number,
   enddate: Date,
   image: String,
+  gauge: { type: Number, default: 0 },
   columns: {
     type: Map,
     of: {
@@ -81,7 +85,7 @@ const ProjectSchema = new mongoose.Schema({
 
 });
 
-ProjectSchema.statics.findColumnNamesByProjectId = async function(projectId) {
+ProjectSchema.statics.findColumnNamesByProjectId = async function (projectId) {
   const project = await this.findById(projectId);
   return project ? project.columns : null;
 };
@@ -155,7 +159,6 @@ io.on('connection', (socket) => {
         ['inProgress', { name: 'In Progress', color: '#4CAF50' }],
         ['done', { name: 'Done', color: '#4CAF50' }]
       ]);
-
   
       if (projectData.tempImage) {
         project = new Project({
@@ -163,6 +166,7 @@ io.on('connection', (socket) => {
           description: projectData.description,
           enddate: projectData.enddate,
           image: namefile,
+          gauge: projectData.gauge, // Add this
           columns: defaultColumns
         });
       } else {
@@ -171,6 +175,7 @@ io.on('connection', (socket) => {
           description: projectData.description,
           enddate: projectData.enddate,
           image: '',
+          gauge: projectData.gauge, // Add this
           columns: defaultColumns
         });
       }
@@ -184,6 +189,7 @@ io.on('connection', (socket) => {
       console.error('Error adding project:', error);
     }
   });
+  
 
   socket.on('addCollab', async (collabData) => {
     try {
@@ -213,29 +219,31 @@ io.on('connection', (socket) => {
 
   socket.on('updateProject', async (projectData) => {
     try {
-      const { _id, title, description, enddate, tempImage } = projectData;
-
+      const { _id, title, description, enddate, tempImage, gauge } = projectData;
+  
       if (tempImage) {
         await Project.findByIdAndUpdate(_id, {
-          title: title,
-          description: description,
-          enddate: enddate,
-          image: namefile
+          title,
+          description,
+          enddate,
+          image: namefile,
+          gauge // Add this
         });
       } else {
         await Project.findByIdAndUpdate(_id, {
-          title: title,
-          description: description,
-          enddate: enddate
+          title,
+          description,
+          enddate,
+          gauge // Add this
         });
       }
-
+  
       io.emit('projectUpdated', projectData);
-
     } catch (error) {
       console.error('Error updating project:', error);
     }
   });
+  
 
   socket.on('updateRatingProject', async (projectData) => {
     try {
@@ -287,11 +295,11 @@ io.on('connection', (socket) => {
     try {
       console.log('Starting project deletion, projectId:', projectId);
       const validProjectId = new mongoose.Types.ObjectId(projectId);
-      
+
       // Check existing records before deletion
       const existingUsers = await ProjectUsers.find({ projectId: projectId });
       console.log('Found project users:', existingUsers);
-      
+
       // Delete project users with both formats to ensure matching
       const deleteResult = await ProjectUsers.deleteMany({
         $or: [
@@ -300,12 +308,12 @@ io.on('connection', (socket) => {
         ]
       });
       console.log('Delete result:', deleteResult);
-      
+
       await Task.deleteMany({ projectId: projectId });
       await Project.findByIdAndDelete(validProjectId);
-      
+
       io.emit('projectDeleted', projectId);
-      
+
     } catch (error) {
       console.error('Error deleting project:', error);
     }
@@ -368,12 +376,12 @@ app.put('/projects/:projectId/columns/:columnId/color', async (req, res) => {
     const { color } = req.body;
     const project = await Project.findById(req.params.projectId);
     const columnData = project.columns.get(req.params.columnId);
-    
+
     project.columns.set(req.params.columnId, {
       name: columnData.name,  // Keep the existing name
       color: color  // Update only the color
     });
-    
+
     await project.save();
     res.json(project.columns);
   } catch (error) {
@@ -436,7 +444,7 @@ app.put('/projects/:projectId/columns/:columnId', async (req, res) => {
       name: name,
       color: currentColumn.color || '#4CAF50'
     });
-    
+
     await project.save();
 
     res.json({ message: 'Column name updated successfully', column: project.columns.get(columnId) });
@@ -475,20 +483,13 @@ app.get('/tasks/:taskId/users/:userId', async (req, res) => {
 app.put('/tasks/:taskId', async (req, res) => {
   try {
     const { taskId } = req.params;
-    const updatedTask2 = req.body;
-    
-    const task = await Task.findByIdAndUpdate(taskId, 
-      { 
-        ...updatedTask2,
-        users: updatedTask2.users || [] 
-      }, 
+    console.log('Backend received:', req.body);
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      { ...req.body },
       { new: true, runValidators: true }
     );
-    
-    if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
-    }
-    
+    console.log('Saved task:', task);
     res.json(task);
   } catch (error) {
     res.status(500).json({ message: 'Error updating task', error: error.message });
@@ -513,15 +514,15 @@ app.post('/tasks/comment', async (req, res) => {
 
     const task = await Task.findByIdAndUpdate(
       taskId,
-      { 
-        $push: { 
-          comments: { 
-            content: comment, 
+      {
+        $push: {
+          comments: {
+            content: comment,
             createdAt: new Date(),
             firstName: firstName,
             lastName: lastName,
-          } 
-        } 
+          }
+        }
       },
       { new: true }
     );
@@ -545,7 +546,7 @@ app.post('/tasks/:taskId/comments', async (req, res) => {
     const newComment = {
       user: userId,
       content: content,
-      createdAt: new Date() 
+      createdAt: new Date()
     };
 
     // Fetch user details
@@ -711,11 +712,11 @@ app.put('/projects/:projectId/columns', async (req, res) => {
       name: name,
       color: '#4CAF50' // Default color for new columns
     });
-    
+
     await project.save();
 
-    res.status(200).json({ 
-      id: newColumnId, 
+    res.status(200).json({
+      id: newColumnId,
       name: name,
       color: '#4CAF50'
     });
@@ -892,19 +893,19 @@ app.post('/tasks', async (req, res) => {
 
     await Promise.all(updatePromises);
 
-    const task = new Task({ 
-      title, 
-      status, 
-      order: 0, 
-      color, 
-      projectId, 
-      description, 
-      priority, 
-      begindate, 
+    const task = new Task({
+      title,
+      status,
+      order: 0,
+      color,
+      projectId,
+      description,
+      priority,
+      begindate,
       enddate,
       users // Add this line to include users array
     });
-    
+
     await task.save();
     io.emit('taskCreated', task);
     res.json(task);
@@ -937,9 +938,9 @@ app.post('/projects', async (req, res) => {
   const { title, description, enddate } = req.body;
 
   try {
-    const project = new Project({ 
-      title, 
-      description, 
+    const project = new Project({
+      title,
+      description,
       enddate,
       columns: new Map([
         ['todo', { name: 'Todo', color: '#4CAF50' }],
@@ -947,7 +948,7 @@ app.post('/projects', async (req, res) => {
         ['done', { name: 'Done', color: '#4CAF50' }]
       ])
     });
-    
+
     await project.save();
     io.emit('projectAdded', project);
     res.status(201).json(project);
@@ -1089,7 +1090,7 @@ app.delete('/projects/:id', async (req, res) => {
 
   try {
     console.log('Starting deletion process for project:', id);
-    
+
     // First verify the projectId in projectusers collection
     const projectUsers = await ProjectUsers.find({ projectId: id });
     console.log('Found project users to delete:', projectUsers);
@@ -1101,7 +1102,7 @@ app.delete('/projects/:id', async (req, res) => {
     // Rest of your existing deletion code...
     await Task.deleteMany({ projectId: id });
     await Project.findByIdAndDelete(id);
-    
+
     io.emit('projectDeleted', { projectId: id });
     res.json({ message: 'Project and all associated data deleted successfully' });
 
