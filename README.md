@@ -100,4 +100,5 @@ Here you can see the status of the project, its completion date and the people a
 You can customize columns, drag and drop tasks, view the people assigned to them, check progress, start and end dates, like and comment...
 ![Capture d’écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
 
+<b> Gantt chart.</b> You can see dependencies, task names, progress and dates, and each task has the same color as in Kanban, making it easier to visualize.
 ![Capture d’écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
