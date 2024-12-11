@@ -93,7 +93,7 @@ Good luck!
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
 ![Capture d’écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
 
-<b> User list </b>
+<b> User list </b> with Avatar.
 ![Capture d’écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
 
 <b> Kanban-based list of project tasks. </b>
