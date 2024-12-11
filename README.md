@@ -89,9 +89,11 @@ Good luck!
 Login screen
 ![Capture d’écran 2024-12-08 162032](https://github.com/user-attachments/assets/9b5c34cf-84c0-4eb8-a79d-685b4693cd2e)
 
+Project list screen in card format.
+Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
 ![Capture d’écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
 
-Project list screen in card format.
+User list 
 ![Capture d’écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
 
 ![Capture d’écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
