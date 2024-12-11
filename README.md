@@ -92,9 +92,11 @@ Good luck!
 
 <b> Project list screen in card format.</b>
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
+
 ![Capture d’écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
 
 <b> User list </b> with Avatar.
+
 ![Capture d’écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
 
 <b> Kanban-based list of project tasks. </b>
@@ -102,4 +104,5 @@ You can add and customize columns, drag and drop tasks, view the people assigned
 ![Capture d’écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
 
 <b> Gantt chart.</b> You can see dependencies, task names, progress and dates, and each task has the same color as in Kanban, making it easier to visualize.
+
 ![Capture d’écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
