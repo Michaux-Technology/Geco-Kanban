@@ -224,7 +224,7 @@ useEffect(() => {
                 {/* Tous Formats */}
 
                 {avataruser ? (
-                  <Avatar src={"./uploads/" + avataruser} />
+                  <Avatar src={"./" + avataruser} />
                 ) : (
                   <Avatar {...stringAvatar(`${firstname} ${lastname}`)} />
                 )}

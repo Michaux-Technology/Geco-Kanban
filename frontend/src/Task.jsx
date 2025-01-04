@@ -148,7 +148,7 @@ const Task = ({ task, index, handleEditTask, handleDeleteTask, handleLike, handl
                   user.avatar ? (
                     <Avatar
                       key={user._id}
-                      src={`${API_URL_FRONT}/uploads/${user.avatar}`}
+                      src={`${API_URL_FRONT}/${user.avatar}`}
                       alt={user.name}
                       sx={{ width: 24, height: 24 }}
                     />

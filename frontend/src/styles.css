@@ -1,6 +1,5 @@
 /* Dans votre fichier CSS */
 
-
 .columns-CreateTask {
   display: flex;
   flex-direction: row;
@@ -10,11 +9,28 @@
   flex: 1;
 }
 
+.create-task {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  padding: 20px;
+}
+
 @media screen and (max-width: 640px) {
   /* Styles spécifiques pour les petits écrans */
   .columns-CreateTask {
     flex-direction: column;
   }
+}
+
+.modal-button-container {
+  @apply mt-auto pt-4;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  text-align: center;
 }
 
 .gantt-view {

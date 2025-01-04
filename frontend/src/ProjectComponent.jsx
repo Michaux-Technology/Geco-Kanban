@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 
+import FileListScreen from './FileListScreen';
+
 import { API_URL } from './config';
 
 import GaugeChart from 'react-gauge-chart';
@@ -14,7 +16,6 @@ import Typography from '@mui/material/Typography';
 import { Button, TextField } from '@mui/material';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import GradeIcon from '@mui/icons-material/Grade';
 import { CardActionArea, CardActions } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,7 +23,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import EditIcon from '@mui/icons-material/Edit';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Avatar from '@mui/material/Avatar';
-import Rating from '@mui/material/Rating';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -32,11 +32,14 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AvatarComponent from './AvatarComponent';
 import TextAvatarComponent from './TextAvatarComponent';
 import Modal from '@mui/joy/Modal';
+
 import ModalClose from '@mui/joy/ModalClose';
 import ModalDialog from '@mui/joy/ModalDialog';
 
 
 const ProjectComponent = () => {
+
+    const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
     const [projectGauge, setProjectGauge] = useState(0);
 
@@ -194,32 +197,26 @@ const ProjectComponent = () => {
     };
 
     //sans envoi a un serveur 
-    const onUpload = async (file) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        try {
+    const onUpload = async (file, projectId) => {
 
-            const response = await axios.post(`${API_URL}/upload`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data', },
+        const formData = new FormData();
+        formData.append('projectImage', file);
+
+        try {
+            //const projectId = editingProject._id;
+            console.log('Uploading to project:', projectId);
+
+            const response = await axios.post(`${API_URL}/upload/projects/${projectId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             });
 
-            file = null;
-
+            console.log('Upload successful:', response.data);
+            return response.data.path;
         } catch (error) {
-            console.error('Erreur lors de l’appel axios:', error);
-            if (error.response) {
-                // La requête a été faites et le serveur a répondu avec un statut
-                // qui est hors de la plage de 2xx
-
-            } else if (error.request) {
-                // La requête a été faites mais pas de réponse a été reçue
-                console.error('Request data:', error.request);
-            } else {
-                // Quelque chose s'est produit lors de la configuration de la requête
-                console.error('Error message:', error.message);
-            }
-        } finally {
-            console.log('Finally après l’appel axios');
+            console.error('Upload error:', error);
+            throw error;
         }
     }
 
@@ -268,69 +265,86 @@ const ProjectComponent = () => {
         }
     };
 
-    // Modifiez la logique pour ouvrir le modal en mode édition
+    // Modifiez un projet
     const handleEditProject = useCallback(async (project) => {
         try {
+            console.log("handleEditProject started");
+            resetEditing();
 
-            resetEditing()
-
-            //Mise a jour des utilisateurs affecté au projet
-            UpdateUserSelect(selectedUsers, project)
-
-            if (tempImage) { // Si une nouvelle image a été déposée
-                await onUpload(tempImage); // Uploadez l'image
+            let imagePath = null;
+            if (tempImage) {
+                console.log("Uploading new image");
+                imagePath = await onUpload(tempImage, editingProject._id);
             }
+
+            // Update user assignments
 
             socket.emit('updateProject', {
                 _id: project._id,
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
-                tempImage: tempImage,
-                gauge: projectGauge // Add this
+                tempImage: imagePath ? true : false,
+                gauge: projectGauge
             });
 
-            setProjects((prevProjects) =>
-                prevProjects.map((p) => (p._id === project._id ? { ...project } : p)));
+            // Then handle user assignments with complete update
+            await UpdateUserSelect(selectedUsers, project);
 
-            // Fermeture du modal
+            setProjects((prevProjects) =>
+                prevProjects.map((p) => (p._id === project._id ? {
+                    ...project,
+                    image: imagePath || project.image
+                } : p))
+            );
+
             setModalOpen(false);
 
         } catch (error) {
-            console.error('Error updating project:', error);
+            console.log("Error in handleEditProject:", error);
         }
-    }, [selectedUsers, tempImage, onUpload, editingProject, setProjects, fetchData, , projectGauge, socket]);
+    }, [selectedUsers, tempImage, onUpload, editingProject, setProjects, fetchData, projectGauge, socket]);
 
+
+    // Inserer un Projet
     const handleAddProject = useCallback(async () => {
         try {
             resetEditing();
-
-            if (tempImage) {
-                await onUpload(tempImage);
-            }
+            let imagePath = null;
 
             socket.emit('addProject', {
                 title: editingProject.title,
                 description: editingProject.description,
                 enddate: editingProject.enddate,
-                tempImage: tempImage,
-                gauge: projectGauge // Add this
+                //tempImage: imagePath,
+                gauge: projectGauge
             });
 
             function handleAddProjectCallback(project) {
 
-                // Appelez la fonction pour insérer les utilisateurs dans le projet en utilisant l'ID du projet
+                if (tempImage) {
+                    onUpload(tempImage, project._id).then(path => {
+
+                        imagePath = path;
+
+                        socket.emit('updateProject', {
+                            _id: project._id,
+                            tempImage: imagePath,
+                        });
+                    });
+                }
+
                 UpdateUserSelect(selectedUsers, project);
             }
 
             socket.on('addProjectResponse', handleAddProjectCallback);
+            //setModalOpen(false);
 
-            // Réinitialisez les champs si nécessaire, mais ne le faites pas ici
-            setModalOpen(false);
         } catch (error) {
             console.error('Error adding/editing project:', error);
         }
-    }, [socket, editingProject, tempImage]);
+    }, [socket, editingProject, tempImage, projectGauge, selectedUsers]);
+
 
     const handleDeleteProject = async (projectId) => {
         try {
@@ -451,8 +465,11 @@ const ProjectComponent = () => {
         return color;
     }
 
+
+
     return (
         <>
+
             {!isModalOpen && (
                 <Box sx={{ '& > :not(style)': { m: 1 } }}>
                     <Fab color="primary"
@@ -653,7 +670,7 @@ const ProjectComponent = () => {
                                         <CardMedia
                                             component="img"
                                             height="140"
-                                            image={project.image ? "./uploads/" + project.image : "./img/gecko.jpg"}
+                                            image={project.image ? "." + project.image : "./img/gecko.jpg"}
                                             alt="green iguana"
                                         />
                                     </Link>
@@ -675,7 +692,7 @@ const ProjectComponent = () => {
                                                                     userProject.avatar ? (
                                                                         <Avatar
                                                                             key={userProject._id}
-                                                                            src={`./uploads/${userProject.avatar}`}
+                                                                            src={`${userProject.avatar}`}
                                                                             alt={userProject.name}
                                                                         />
                                                                     ) : (
@@ -690,7 +707,8 @@ const ProjectComponent = () => {
                                                         })}
                                                     </AvatarGroup>
 
-                                                    <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
                                                         <Fab size="small" color="primary" aria-label="edit"
                                                             onClick={() => {
                                                                 setEditingProject(project);
@@ -699,18 +717,22 @@ const ProjectComponent = () => {
                                                                 setLayout('center');
                                                                 if (project) {
                                                                     if (project.image) {
-                                                                        setPreview("./uploads/" + project.image)
+                                                                        setPreview("./" + project.image)
                                                                     } else {
                                                                         setPreview("./img/gecko.jpg")
                                                                     }
                                                                 } else {
                                                                     setPreview("./img/gecko.jpg")
                                                                 }
-
                                                             }}>
                                                             <EditIcon />
                                                         </Fab>
-                                                    </Box>
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
+                                                            <FileListScreen projectId={project._id} />
+                                                        </div>
+                                                    </div>
+
+
                                                 </div>
                                             )}
 

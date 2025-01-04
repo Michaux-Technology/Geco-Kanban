@@ -8,6 +8,8 @@ const multer = require('multer');
 const path = require('path');
 const config = require('./config.js');
 
+const fs = require('fs');
+
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
@@ -33,6 +35,16 @@ mongoose.connect(config.db, {
 
 
 // -------- Schemas ------------------------
+
+const FileSchema = new mongoose.Schema({
+  projectId: { type: String, required: true },
+  name: { type: String, required: true },
+  path: { type: String, required: true },
+  uploadDate: { type: Date, default: Date.now },
+  size: Number
+});
+
+const File = mongoose.model('File', FileSchema);
 
 const TaskSchema = new mongoose.Schema({
   title: String,
@@ -128,8 +140,80 @@ const Collaborator = mongoose.model('Collaborator', CollaboratorSchema);
 let namefile = '';
 
 
+
+
 // io.socket 
+const fileChunks = new Map();
+
 io.on('connection', (socket) => {
+
+  socket.on('fileChunk', async (data) => {
+    const { projectId, fileName, chunk, chunkIndex, totalChunks, fileType, fileSize } = data;
+
+    if (!fileChunks.has(fileName)) {
+      fileChunks.set(fileName, new Array(totalChunks));
+    }
+
+    const chunks = fileChunks.get(fileName);
+    chunks[chunkIndex] = Buffer.from(chunk);
+
+    const receivedChunks = chunks.filter(Boolean).length;
+
+    if (receivedChunks === totalChunks) {
+      const completeFile = Buffer.concat(chunks);
+
+      const uploadDir = path.join(__dirname, '..', 'frontend', 'public', 'uploads', projectId);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const filePath = path.join(uploadDir, fileName);
+      fs.writeFileSync(filePath, completeFile);
+
+      const uploadedFile = await File.create({
+        projectId,
+        name: fileName,
+        path: `/uploads/${projectId}/${fileName}`,
+        type: fileType,
+        size: fileSize
+      });
+
+      socket.emit('fileUploaded', uploadedFile);
+      fileChunks.delete(fileName);
+    }
+  });
+
+
+  socket.on('uploadFile', async (data) => {
+    try {
+      const { projectId, file } = data;
+
+      // Create upload directory if it doesn't exist
+      const uploadDir = path.join(__dirname, '..', 'frontend', 'public', 'uploads', projectId);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // Write file using Buffer
+      const buffer = Buffer.from(file.data);
+      const filePath = path.join(uploadDir, file.name);
+      fs.writeFileSync(filePath, buffer);
+
+      // Create database entry
+      const uploadedFile = await File.create({
+        projectId: projectId,
+        name: file.name,
+        path: `/uploads/${projectId}/${file.name}`,
+        type: file.type,
+        size: file.size
+      });
+
+      socket.emit('fileUploaded', uploadedFile);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  });
+
 
   socket.on('updateTask', async ({ taskId, status, order }) => {
     try {
@@ -159,13 +243,13 @@ io.on('connection', (socket) => {
         ['inProgress', { name: 'In Progress', color: '#4CAF50' }],
         ['done', { name: 'Done', color: '#4CAF50' }]
       ]);
-  
+
       if (projectData.tempImage) {
         project = new Project({
           title: projectData.title,
           description: projectData.description,
           enddate: projectData.enddate,
-          image: namefile,
+          image: `/uploads/projects/${projectData._id}/${namefile}`,
           gauge: projectData.gauge, // Add this
           columns: defaultColumns
         });
@@ -179,17 +263,17 @@ io.on('connection', (socket) => {
           columns: defaultColumns
         });
       }
-  
+
       await project.save();
       const projectId = { _id: project._id };
       io.emit('addProjectResponse', projectId);
       return projectId;
-  
+
     } catch (error) {
       console.error('Error adding project:', error);
     }
   });
-  
+
 
   socket.on('addCollab', async (collabData) => {
     try {
@@ -220,30 +304,37 @@ io.on('connection', (socket) => {
   socket.on('updateProject', async (projectData) => {
     try {
       const { _id, title, description, enddate, tempImage, gauge } = projectData;
-  
+
       if (tempImage) {
         await Project.findByIdAndUpdate(_id, {
           title,
           description,
           enddate,
-          image: namefile,
-          gauge // Add this
+          image: `/uploads/projects/${_id}/${namefile}`, // Store complete path with filename
+          gauge
         });
       } else {
         await Project.findByIdAndUpdate(_id, {
           title,
           description,
           enddate,
-          gauge // Add this
+          gauge
         });
       }
-  
+
       io.emit('projectUpdated', projectData);
+
+      return () => {
+        socket.off('projectUpdated');
+      };
+
     } catch (error) {
       console.error('Error updating project:', error);
     }
   });
-  
+
+
+
 
   socket.on('updateRatingProject', async (projectData) => {
     try {
@@ -293,12 +384,10 @@ io.on('connection', (socket) => {
 
   socket.on('deleteProject', async (projectId) => {
     try {
-      console.log('Starting project deletion, projectId:', projectId);
       const validProjectId = new mongoose.Types.ObjectId(projectId);
 
       // Check existing records before deletion
       const existingUsers = await ProjectUsers.find({ projectId: projectId });
-      console.log('Found project users:', existingUsers);
 
       // Delete project users with both formats to ensure matching
       const deleteResult = await ProjectUsers.deleteMany({
@@ -307,10 +396,16 @@ io.on('connection', (socket) => {
           { projectId: validProjectId }
         ]
       });
-      console.log('Delete result:', deleteResult);
 
       await Task.deleteMany({ projectId: projectId });
       await Project.findByIdAndDelete(validProjectId);
+
+      // Add directory deletion here
+      const projectUploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', projectId);
+
+      if (fs.existsSync(projectUploadPath)) {
+        fs.rmSync(projectUploadPath, { recursive: true, force: true });
+      }
 
       io.emit('projectDeleted', projectId);
 
@@ -318,6 +413,7 @@ io.on('connection', (socket) => {
       console.error('Error deleting project:', error);
     }
   });
+
 
   socket.on('deleteUser', async (userId) => {
     try {
@@ -394,8 +490,6 @@ app.post('/tasks/:taskId/userId/:userId/like', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    //console.log('Received like request for task:', taskId);
-    //console.log('Received like request for user:', userId);
 
     const task = await Task.findById(taskId);
 
@@ -483,13 +577,11 @@ app.get('/tasks/:taskId/users/:userId', async (req, res) => {
 app.put('/tasks/:taskId', async (req, res) => {
   try {
     const { taskId } = req.params;
-    console.log('Backend received:', req.body);
     const task = await Task.findByIdAndUpdate(
       taskId,
       { ...req.body },
       { new: true, runValidators: true }
     );
-    console.log('Saved task:', task);
     res.json(task);
   } catch (error) {
     res.status(500).json({ message: 'Error updating task', error: error.message });
@@ -626,9 +718,6 @@ app.put('/user/:id', async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // Extract the updated user information from the request body
-    const { email, company, lastName, firstName, position, password } = req.body;
-
     // Find the user by ID
     const user = await User.findById(userId);
 
@@ -636,37 +725,30 @@ app.put('/user/:id', async (req, res) => {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    if (password === undefined) {
+    // Update all fields including avatar
+    user.email = req.body.email;
+    user.company = req.body.company;
+    user.lastName = req.body.lastName;
+    user.firstName = req.body.firstName;
+    user.position = req.body.position;
+    user.avatar = req.body.avatar; // Make sure this line exists
 
-      // Update the user information
-      user.email = email;
-      user.company = company;
-      user.lastName = lastName;
-      user.firstName = firstName;
-      user.position = position;
-
-    } else {
-
-      // Hash the password
+    if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      user.email = email;
-      user.company = company;
-      user.lastName = lastName;
-      user.firstName = firstName;
-      user.position = position;
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
       user.password = hashedPassword;
     }
 
     await user.save();
 
-    res.status(200).send({ message: 'User successfully updated!' });
+    res.status(200).send({ message: 'User successfully edited!' });
 
   } catch (error) {
+    console.error('Error updating user:', error);
     res.status(500).send({ message: 'Could not update user.' });
   }
 });
+
 
 
 app.get('/auth/google', passport.authenticate('google', {
@@ -803,7 +885,6 @@ app.get('/tasks', async (req, res) => {
 
 app.get('/user/email/:email', async (req, res) => {
   const emailUser = req.params.email;
-  //console.log(emailUser)
 
   try {
     const user = await User.findOne({ email: emailUser })
@@ -935,13 +1016,14 @@ app.put('/tasks/:id', async (req, res) => {
 
 
 app.post('/projects', async (req, res) => {
-  const { title, description, enddate } = req.body;
+  const { title, description, enddate, tempImage } = req.body;
 
   try {
     const project = new Project({
       title,
       description,
       enddate,
+      image: namefile, // This will contain the latest uploaded image path
       columns: new Map([
         ['todo', { name: 'Todo', color: '#4CAF50' }],
         ['inProgress', { name: 'In Progress', color: '#4CAF50' }],
@@ -1089,28 +1171,41 @@ app.delete('/projects/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    console.log('Starting deletion process for project:', id);
 
-    // First verify the projectId in projectusers collection
-    const projectUsers = await ProjectUsers.find({ projectId: id });
-    console.log('Found project users to delete:', projectUsers);
+    // Check existing records before deletion
+    const existingUsers = await ProjectUsers.find({ projectId: id });
 
-    // Delete with explicit string comparison if needed
-    const deleteResult = await ProjectUsers.deleteMany({ projectId: String(id) });
-    console.log('Delete result:', deleteResult);
+    // Delete project users with both formats to ensure matching
+    const deleteResult = await ProjectUsers.deleteMany({
+      $or: [
+        { projectId: id },
+        { projectId: validProjectId }
+      ]
+    });
 
-    // Rest of your existing deletion code...
     await Task.deleteMany({ projectId: id });
-    await Project.findByIdAndDelete(id);
+    await Project.findByIdAndDelete(validProjectId);
 
-    io.emit('projectDeleted', { projectId: id });
-    res.json({ message: 'Project and all associated data deleted successfully' });
+    io.emit('projectDeleted', projectId);
+
+
+    // Delete the project's upload directory
+    const projectUploadPath = path.join(__dirname, 'upload', 'projects', id);
+
+    if (fs.existsSync(projectUploadPath)) {
+      fs.rmSync(projectUploadPath, { recursive: true, force: true });
+    }
+
+    res.status(200).json({ message: 'Project deleted successfully' });
 
   } catch (error) {
     console.error('Error in deletion process:', error);
     res.status(500).json({ error: 'An error occurred' });
   }
 });
+
+
+
 
 app.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
@@ -1155,33 +1250,174 @@ app.get('/user/:emailGroup/collaborators', async (req, res) => {
 // Configuration de stockage de Multer
 
 const storage = multer.diskStorage({
-
   destination: function (req, file, cb) {
-    cb(null, '../frontend/public/uploads/'); // le dossier où le fichier sera stocké
+    let uploadPath;
+
+    if (file.fieldname === 'file') {
+      // For project files
+      uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId);
+    } else {
+
+      if (file.fieldname === 'projectImage') {
+        // For project images
+        uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId || 'temp');
+      } else {
+
+        // For avatar uploads
+        uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'avatars');
+
+      }
+    }
+
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    namefile = path.join(Date.now() + '-' + file.originalname);
-    cb(null, namefile); // le nom du fichier sur le serveur
+    namefile = `${Date.now()}-${file.originalname}`;
+    cb(null, namefile);
   }
-}
-);
+});
+
+
 
 const upload = multer({ storage: storage });
 
-app.post('/upload', upload.single('image'), (req, res) => {
+app.get('/download/:fileId', async (req, res) => {
+  try {
+
+    const file = await File.findById(req.params.fileId);
+    if (!file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const filePath = path.join(__dirname, '..', 'frontend', 'public', file.path);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found on disk' });
+    }
+
+    // Log download attempt
+    res.download(filePath, file.name);
+  } catch (error) {
+    console.error('Download error:', error);
+    res.status(500).json({ error: 'Error downloading file' });
+  }
+});
+
+
+app.delete('/files/:fileId', async (req, res) => {
+  try {
+    const file = await File.findById(req.params.fileId);
+    if (!file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Delete physical file
+    const filePath = path.join(__dirname, '..', 'frontend', 'public', file.path);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Delete database record
+    await File.findByIdAndDelete(req.params.fileId);
+    res.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Error deleting file' });
+  }
+});
+
+
+app.post('/upload/projects/:projectId', upload.single('projectImage'), (req, res) => {
+
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
+    const filePath = `/uploads/projects/${req.params.projectId}/${namefile}`;
 
-    file = null;
-
-    return res.status(200).json({ message: 'File uploaded successfully.' });
+    return res.status(200).json({
+      message: 'File uploaded successfully.',
+      path: filePath
+    });
   } catch (error) {
-    console.error('Erreur lors de l’upload du fichier :', error);
+    console.error('Server error:', error);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 });
+
+app.post('/upload/projects', upload.single('projectImage'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+    const filePath = `/uploads/projects/${namefile}`;
+
+    return res.status(200).json({
+      message: 'File uploaded successfully.',
+      path: filePath
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+app.post('/upload/avatar', upload.single('avatar'), (req, res) => {
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+    const filePath = `/uploads/avatars/${namefile}`;
+
+    return res.status(200).json({
+      message: 'Avatar uploaded successfully.',
+      path: filePath
+    });
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+app.post('/upload/:projectId', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(404).json({ error: 'No file uploaded.' });
+    }
+
+    const file = new File({
+      projectId: req.params.projectId,
+      name: req.file.originalname,
+      path: `/uploads/projects/${req.params.projectId}/${req.file.filename}`,
+      type: req.file.mimetype,
+      size: req.file.size
+    });
+
+    await file.save();
+    return res.status(200).json(file);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Route pour récupérer les fichiers d'un projet
+app.get('/files/:projectId', async (req, res) => {
+  try {
+    const files = await File.find({ projectId: req.params.projectId });
+    res.json(files);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching files' });
+  }
+});
+
+
+
+
 
 // Gestionnaire d'erreur pour multer
 app.use((err, req, res, next) => {

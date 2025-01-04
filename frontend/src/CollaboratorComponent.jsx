@@ -50,14 +50,12 @@ const CollaboratorComponent = () => {
     setFirstNameCollab(null)
     setPositionCollab(null)
     setTempImage(null)
-
   }
 
   const emailRef = useRef();
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const positionRef = useRef();
-  //const iconRef = useRef();
 
   const fetchData = async () => {
 
@@ -441,7 +439,7 @@ const CollaboratorComponent = () => {
 
                 {collaborator.avatar ? (
 
-                  <Avatar src={"./uploads/" + collaborator.avatar} />
+                  <Avatar src={collaborator.avatar} />
                 ) : (
                   <Avatar
                     {...stringAvatar(`${collaborator.firstName} ${collaborator.lastName}`)}

@@ -83,96 +83,76 @@ function AccountEdit() {
 
     //sans envoi a un serveur 
     const onUpload = async (file) => {
-        console.log('Uploaded:', file)
         const formData = new FormData();
         formData.append('image', file);
-
+    
         try {
-            const response = await axios.post(`${API_URL}/upload`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data', },
+            
+            const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            console.log('File uploaded successfully');
-        } catch (error) {
-            console.error('Erreur lors de l’appel axios:', error);
-            if (error.response) {
-                // La requête a été faites et le serveur a répondu avec un statut
-                // qui est hors de la plage de 2xx
-                console.error('Response data:', error.response.data);
-                console.error('Response status:', error.response.status);
-                console.error('Response headers:', error.response.headers);
-            } else if (error.request) {
-                // La requête a été faites mais pas de réponse a été reçue
-                console.error('Request data:', error.request);
-            } else {
-                // Quelque chose s'est produit lors de la configuration de la requête
-                console.error('Error message:', error.message);
+            console.log("ffff")
+
+            if (response.data.path) {
+                setAvatar(response.data.path);
             }
-        } finally {
-            console.log('Finally après l’appel axios');
+
+            return response.data.path;
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            throw error;
         }
     }
 
     const handleSubmit = useCallback(async (e, userId, idListUsers) => {
-        e.preventDefault();
+    e.preventDefault();
+    let avatarPath = avatar;
 
-        if (tempImage) {
-            await onUpload(tempImage);
+    if (tempImage) {
+        const formData = new FormData();
+        formData.append('avatar', tempImage);
+        const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        avatarPath = response.data.path;
+    }
+
+    const password = e.target.password.value !== '' ? e.target.password.value : undefined;
+
+    let response;
+    if (idListUsers) {
+        response = await axios.put(`${API_URL}/user/${idListUsers}`, {
+            email,
+            company,
+            lastName,
+            firstName,
+            position,
+            avatar: avatarPath,
+            ...(password && { password }),
+        });
+    } else {
+        response = await axios.put(`${API_URL}/user/${userId}`, {
+            email,
+            company,
+            lastName,
+            firstName,
+            position,
+            avatar: avatarPath,
+            ...(password && { password }),
+        });
+    }
+
+    setMessage(response.data.message);
+    if (response.status === 200) {
+        if (response.data.message === 'User successfully edited!') {
+            navigate('/');
         }
+    }
+}, [email, password, company, lastName, firstName, position, navigate, tempImage, avatar]);
 
-        const password = e.target.password.value !== '' ? e.target.password.value : undefined;
-
-        let response;
-        if (idListUsers) {
-             response = await axios.put(`${API_URL}/user/${idListUsers}`, {
-                email: email,
-                company: company,
-                lastName: lastName,
-                firstName: firstName,
-                position: position,
-                ...(password && { password: password }),
-            });
-
-            socket.emit('updateCollaborator', {
-                _id: idListUsers,
-                email: email,
-                company: company,
-                lastName: lastName,
-                firstName: firstName,
-                position: position,
-                ...(password && { password: password }),
-            });
-
-        } else {
-             response = await axios.put(`${API_URL}/user/${userId}`, {
-                email: email,
-                company: company,
-                lastName: lastName,
-                firstName: firstName,
-                position: position,
-                ...(password && { password: password }),
-            });
-
-            socket.emit('updateCollaborator', {
-                _id: userId,
-                email: email,
-                company: company,
-                lastName: lastName,
-                firstName: firstName,
-                position: position,
-                ...(password && { password: password }),
-            });
-        }
-        const data = response.data.message;
-        setMessage(data);
-
-        if (response.status === 200) {
-            if (data === 'User successfully edited!') {
-                navigate('/');
-            }
-        }
-
-    }, [email, password, company, lastName, firstName, position, navigate, tempImage]);
+    
 
     return (
 

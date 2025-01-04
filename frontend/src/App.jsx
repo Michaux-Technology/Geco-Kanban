@@ -6,6 +6,8 @@ import ProjectTasks from './ProjectTasks';
 import SignIn from './SignIn';
 import AccountEdit from './AccountEdit';
 import UserList from './UserList';
+
+import './index.css';
 import './styles.css';
 import UserContext from './UserContext';
 

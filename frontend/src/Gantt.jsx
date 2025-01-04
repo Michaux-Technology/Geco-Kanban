@@ -2,6 +2,7 @@ import React from 'react';
 import { Chart } from "react-google-charts";
 
 const GanttChart = ({ tasks }) => {
+
   const data = [
     [
       { type: "string", label: "Task ID" },

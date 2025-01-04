@@ -75,7 +75,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
           >
             <Avatar
               key={person._id}
-              src={`${API_URL_FRONT}/uploads/${person.avatar}`}
+              src={`${API_URL_FRONT}/${person.avatar}`}
               alt={person.firstName}
               onClick={handleAvatarClickOn}
               sx={{
@@ -87,7 +87,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
         ) : (
           <Avatar
             key={person._id}
-            src={`${API_URL_FRONT}/uploads/${person.avatar}`}
+            src={`${API_URL_FRONT}/${person.avatar}`}
             alt={person.firstName}
             onClick={handleAvatarClickOn}
             sx={{

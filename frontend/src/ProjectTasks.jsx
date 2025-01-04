@@ -19,6 +19,7 @@ import TextAvatarComponent from './TextAvatarComponent';
 import Column from './Column';
 
 import './styles.css';
+
 import Box from '@mui/material/Box';
 import { IconButton } from '@mui/material';
 import Typography from '@mui/material/Typography';
@@ -904,18 +905,24 @@ const ProjectTasks = () => {
 
             </div>
 
-            <Button sx={{ marginTop: 6 }}
-              variant="contained"
-              onClick={() => {
-                if (isEditing) {
-                  handleUpdateTask()
-                } else {
-                  handleCreateTask()
-                }
-              }}
-            >
-              {isEditing ? 'Update Task' : 'Add Task'}
-            </Button>
+            <div style={{
+              marginTop: 'auto',
+              textAlign: 'center',
+              padding: '20px 0'
+            }}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  if (isEditing) {
+                    handleUpdateTask()
+                  } else {
+                    handleCreateTask()
+                  }
+                }}
+              >
+                {isEditing ? 'Update Task' : 'Add Task'}
+              </Button>
+            </div>
 
 
           </div>
