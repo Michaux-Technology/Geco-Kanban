@@ -32,7 +32,7 @@ by <b>Valéry-Jérôme Michaux</b>
 
 1. New features v 4.00 :
     
-It is now possible to upload files for each project. So, for example, a project manager can insert plans, pictures and/or specifications.  
+It is now possible to upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
 
 3. Missing features für v. 4.00 :
    
