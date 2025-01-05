@@ -32,11 +32,11 @@ by <b>Valéry-Jérôme Michaux</b>
 
 1. New features v 4.00 :
     
-It is now possible to: 
+  It is now possible to: 
 - upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
 - generate a random password
 
-3. Upcoming features :
+2. Upcoming features :
 - Employee occupancy table by project task.
 - Team Visio  
 
