@@ -30,7 +30,7 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-1. New features v 4.00 :
+1. New features v 4.01 :
     
   It is now possible to: 
 - upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
