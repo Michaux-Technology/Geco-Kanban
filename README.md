@@ -32,17 +32,13 @@ by <b>Valéry-Jérôme Michaux</b>
 
 1. New features v 4.00 :
     
-It is now possible to upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
+It is now possible to: 
+- upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
+- generate a random password
 
-3. Missing features für v. 4.00 :
-   
-New users created in List of collaborators have the password: 1234. 
-The user must change their password.
-
-5. Upcoming features :
-   
-- Provide new users with a random password. 
-- Employee occupancy table by project task.  
+3. Upcoming features :
+- Employee occupancy table by project task.
+- Team Visio  
 
 ## ✅ Questions / Answers
 
