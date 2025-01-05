@@ -30,10 +30,17 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-Missing features für v. 4.00 : 
-1. New users created in List of collaborators have the password: 1234. 
+1. New features v 4.00 :
+    
+It is now possible to upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
+
+3. Missing features für v. 4.00 :
+   
+New users created in List of collaborators have the password: 1234. 
 The user must change their password.
-2. Upcoming features :
+
+5. Upcoming features :
+   
 - Provide new users with a random password. 
 - Employee occupancy table by project task.  
 
