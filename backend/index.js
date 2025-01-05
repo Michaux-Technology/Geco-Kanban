@@ -282,6 +282,8 @@ io.on('connection', (socket) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(collabData.password, salt);
 
+      console.log(collabData.avatar)
+
       const collaborator = new User({
         email: collabData.email,
         lastName: collabData.lastname,
@@ -289,7 +291,7 @@ io.on('connection', (socket) => {
         position: collabData.position,
         company: collabData.company,
         password: hashedPassword,
-        avatar: namefile
+        avatar: collabData.avatar
       });
 
       await collaborator.save();

@@ -30,7 +30,10 @@ const ProjectList = () => {
   const [id, setId] = useState(localStorage.getItem('id') || '')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
-  const [avataruser] = useState(localStorage.getItem('avataruser') || '')
+
+  //const [avataruser] = useState(localStorage.getItem('avataruser') || '')
+  const [avataruser, setAvataruser] = useState(localStorage.getItem('avataruser') || '')
+
   const [value, setValue] = useState(0)
   const location = useLocation();
   
@@ -54,6 +57,20 @@ const handleChange = (event, newValue) => {
   const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
   window.history.pushState({}, '', newUrl);
 }
+
+
+// useEffect to listen for avatar changes:
+useEffect(() => {
+  const checkAvatarUpdate = setInterval(() => {
+    const currentAvatar = localStorage.getItem('avataruser');
+    if (currentAvatar !== avataruser) {
+      setAvataruser(currentAvatar);
+    }
+  }, 1000);
+
+  return () => clearInterval(checkAvatarUpdate);
+}, [avataruser]);
+
 
 useEffect(() => {
   const searchParams = new URLSearchParams(location.search);

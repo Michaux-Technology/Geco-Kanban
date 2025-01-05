@@ -36,7 +36,27 @@ const CollaboratorComponent = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const socket = io(API_URL); // Se connecter au serveur WebSocket
+  const socket = io(API_URL, {
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    timeout: 20000,
+    transports: ['websocket', 'polling']
+  });
+
+  // Add error handling
+socket.on('connect_error', (error) => {
+  console.log('Connection Error:', error);
+  socket.connect();
+});
+
+socket.on('disconnect', (reason) => {
+  console.log('Disconnected:', reason);
+  if (reason === 'io server disconnect') {
+    socket.connect();
+  }
+});
 
   const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '')
 
@@ -51,6 +71,9 @@ const CollaboratorComponent = () => {
     setPositionCollab(null)
     setTempImage(null)
   }
+
+const [showPasswordModal, setShowPasswordModal] = useState(false);
+const [generatedPassword, setGeneratedPassword] = useState('');
 
   const emailRef = useRef();
   const firstNameRef = useRef();
@@ -195,34 +218,56 @@ const CollaboratorComponent = () => {
     }
   }
 
-  const handleAddCollab = async (e) => {
-
-    try {
-      resetErrorMessage()
-      // Réinitialisez les champs
-      resetEditingCollab();
-
-      if (tempImage) { // Si une nouvelle image a été déposée
-        await onUpload(tempImage); // Uploadez l'image
-      }
-
-      socket.emit('addCollab', {
-        email: emailCollab,
-        lastname: lastNameCollab,
-        firstname: firstNameCollab,
-        position: positionCollab,
-        company: companyuser,
-        password: "1234"
-      });
-
-      setTempImage(null);
-      setModalOpenCollab(false)
-      fetchData();
-
-    } catch (error) {
-      console.error('Error adding/editing Collaborator:', error);
-    }
+  // function to generate random password
+const generateRandomPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  return password;
+};
+
+const handleAddCollab = async (e) => {
+  try {
+    resetErrorMessage();
+    const randomPassword = generateRandomPassword();
+    setGeneratedPassword(randomPassword);
+
+    let avatarPath = null;
+
+    if (tempImage) {
+      const formData = new FormData();
+      formData.append('avatar', tempImage);
+
+      const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      avatarPath = `${response.data.path}`;
+    }
+
+    console.log('Avatar Path:', avatarPath);
+
+    socket.emit('addCollab', {
+      email: emailCollab,
+      lastname: lastNameCollab,
+      firstname: firstNameCollab,
+      position: positionCollab,
+      company: companyuser,
+      password: randomPassword,
+      avatar: avatarPath
+    });
+
+    setTempImage(null);
+    setModalOpenCollab(false);
+    setShowPasswordModal(true);
+    fetchData();
+
+  } catch (error) {
+    console.error('Error adding/editing Collaborator:', error);
+  }
+};
+
 
   const handleSubmitCollab = async (e) => {
     resetErrorMessage()
@@ -424,6 +469,33 @@ const CollaboratorComponent = () => {
         </Modal>
       )
       }
+
+{showPasswordModal && (
+  <Modal open={showPasswordModal} onClose={() => setShowPasswordModal(false)}>
+    <ModalDialog>
+      <div style={{
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        <Typography variant="h6" style={{ marginBottom: '20px' }}>
+          New Collaborator Created Successfully
+        </Typography>
+        <Typography style={{ color: '#4CAF50', fontSize: '18px', fontWeight: 'bold' }}>
+          Generated Password: {generatedPassword}
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ marginTop: '20px' }}
+          onClick={() => setShowPasswordModal(false)}
+        >
+          Close
+        </Button>
+      </div>
+    </ModalDialog>
+  </Modal>
+)}
+
       <div style={{ maxWidth: '600px' }}>
 
         <List>

@@ -147,6 +147,8 @@ function AccountEdit() {
     setMessage(response.data.message);
     if (response.status === 200) {
         if (response.data.message === 'User successfully edited!') {
+            localStorage.setItem('avataruser', avatarPath);
+            window.dispatchEvent(new Event('avatarUpdated'));
             navigate('/');
         }
     }
