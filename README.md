@@ -38,6 +38,7 @@ by <b>Valéry-Jérôme Michaux</b>
 This is used when installing for the first time or when a user is lost.
 
 2. Upcoming features :
+- Database link control
 - Employee occupancy table by project task.
 - Team Visio  
 
