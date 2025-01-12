@@ -7,8 +7,9 @@
 ## ✅ Description
 
 This software lets you manage projects using Kanban and Gantt charts.
-Each project is made up of tasks that can be dragged from one column to another, liked and commented on.  
-The software is multi-user and changes are visible live, with no need to refresh the page. 
+Each project is made up of tasks that can be dragged from one column to another, liked and commented on.
+Files can be inserted into projects to keep teams informed.   
+The software is multi-user and changes are visible live, without the need to refresh the page. 
 
 ## ✅ Technologies used
 
@@ -30,11 +31,10 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-1. New features v 4.01 :
+1. New features v 4.02 :
     
   It is now possible to: 
-- upload files for each project. So, for example, a project manager can insert plans, pictures, specifications...  
-- generate a random password
+- If you don't have a user, the startup will not launch on the login page, but on the user creation page. 
 
 2. Upcoming features :
 - Employee occupancy table by project task.
