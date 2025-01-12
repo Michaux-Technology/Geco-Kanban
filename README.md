@@ -34,7 +34,8 @@ by <b>Valéry-Jérôme Michaux</b>
 1. New features v 4.02 :
     
   It is now possible to: 
-- If you don't have a user, the startup will not launch on the login page, but on the user creation page. 
+- If you don't have a user, you won't be started on the login page, but on the user creation page. 
+This is used when installing for the first time or when a user is lost.
 
 2. Upcoming features :
 - Employee occupancy table by project task.
