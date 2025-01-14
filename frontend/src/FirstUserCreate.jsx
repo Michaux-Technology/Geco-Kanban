@@ -11,6 +11,7 @@ function FirstUserCreate() {
   const [lastName, setLastName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [company, setCompany] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   
   const socket = io(API_URL, {
@@ -23,8 +24,21 @@ function FirstUserCreate() {
   });
 
   useEffect(() => {
+    socket.on('dbStatus', (data) => {
+      console.log('Received DB status:', data);
+      if (data.status === 'error') {
+        setError(data.message);
+      }
+    });
+
+    return () => {
+      socket.off('dbStatus');
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on('CollaboratorAdded', () => {
-      alert('User created successfully! Please log in.');
+      //alert('User created successfully! Please log in.');
       window.location.reload();
     });
 
@@ -70,8 +84,40 @@ function FirstUserCreate() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Create First Admin User
+          Create First User
         </Typography>
+
+        {error && (
+          <Typography 
+            color="error" 
+            style={{ 
+              marginTop: '1rem',
+              padding: '10px',
+              backgroundColor: '#ffebee',
+              borderRadius: '4px',
+              width: '100%',
+              textAlign: 'center'
+            }}
+          >
+            🔴 Database Error: {error}
+          </Typography>
+        )}
+        {!error && (
+          <Typography 
+            color="primary"
+            style={{ 
+              marginTop: '1rem',
+              padding: '10px',
+              backgroundColor: '#e8f5e9',
+              borderRadius: '4px',
+              width: '100%',
+              textAlign: 'center'
+            }}
+          >
+            🟢 Database Connected
+          </Typography>
+        )}
+
         <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmit}>
           <TextField
             variant="outlined"

@@ -31,6 +31,15 @@ const io = socketIo(server, {
 mongoose.connect(config.db, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+}).then(() => {
+  console.log('✅ Database connection successful');
+  io.emit('dbStatus', { status: 'connected' });
+}).catch((error) => {
+  console.log('❌ Database connection failed:', error.message);
+  io.emit('dbStatus', { 
+    status: 'error',
+    message: `Database connection failed: ${error.message}` 
+  });
 });
 
 
@@ -484,6 +493,17 @@ app.put('/projects/:projectId/columns/:columnId/color', async (req, res) => {
     res.json(project.columns);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/users/:userId/tasks', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    // Find all tasks where this user is assigned
+    const tasks = await Task.find({ users: userId });
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user tasks', error: error.message });
   }
 });
 

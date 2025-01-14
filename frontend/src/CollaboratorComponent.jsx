@@ -10,6 +10,7 @@ import { Avatar } from '@mui/material'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip } from '@mui/material';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import Fab from '@mui/material/Fab'
 import AddIcon from '@mui/icons-material/Add'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
@@ -18,6 +19,8 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
+
+import GanttChart from './Gantt';
 
 const CollaboratorComponent = () => {
 
@@ -36,6 +39,9 @@ const CollaboratorComponent = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const [isGanttModalOpen, setIsGanttModalOpen] = useState(false);
+  const [selectedUserTasks, setSelectedUserTasks] = useState([]);
+
   const socket = io(API_URL, {
     reconnection: true,
     reconnectionAttempts: 5,
@@ -46,17 +52,17 @@ const CollaboratorComponent = () => {
   });
 
   // Add error handling
-socket.on('connect_error', (error) => {
-  console.log('Connection Error:', error);
-  socket.connect();
-});
-
-socket.on('disconnect', (reason) => {
-  console.log('Disconnected:', reason);
-  if (reason === 'io server disconnect') {
+  socket.on('connect_error', (error) => {
+    console.log('Connection Error:', error);
     socket.connect();
-  }
-});
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('Disconnected:', reason);
+    if (reason === 'io server disconnect') {
+      socket.connect();
+    }
+  });
 
   const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '')
 
@@ -72,8 +78,8 @@ socket.on('disconnect', (reason) => {
     setTempImage(null)
   }
 
-const [showPasswordModal, setShowPasswordModal] = useState(false);
-const [generatedPassword, setGeneratedPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
 
   const emailRef = useRef();
   const firstNameRef = useRef();
@@ -218,55 +224,66 @@ const [generatedPassword, setGeneratedPassword] = useState('');
     }
   }
 
-  // function to generate random password
-const generateRandomPassword = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  let password = '';
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-};
-
-const handleAddCollab = async (e) => {
-  try {
-    resetErrorMessage();
-    const randomPassword = generateRandomPassword();
-    setGeneratedPassword(randomPassword);
-
-    let avatarPath = null;
-
-    if (tempImage) {
-      const formData = new FormData();
-      formData.append('avatar', tempImage);
-
-      const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      avatarPath = `${response.data.path}`;
+  // Add this function to handle opening the Gantt modal
+  const handleOpenGanttModal = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}/tasks`);
+      setSelectedUserTasks(response.data);
+      setIsGanttModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching user tasks:', error);
     }
+  };
 
-    console.log('Avatar Path:', avatarPath);
+  // function to generate random password
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
 
-    socket.emit('addCollab', {
-      email: emailCollab,
-      lastname: lastNameCollab,
-      firstname: firstNameCollab,
-      position: positionCollab,
-      company: companyuser,
-      password: randomPassword,
-      avatar: avatarPath
-    });
+  const handleAddCollab = async (e) => {
+    try {
+      resetErrorMessage();
+      const randomPassword = generateRandomPassword();
+      setGeneratedPassword(randomPassword);
 
-    setTempImage(null);
-    setModalOpenCollab(false);
-    setShowPasswordModal(true);
-    fetchData();
+      let avatarPath = null;
 
-  } catch (error) {
-    console.error('Error adding/editing Collaborator:', error);
-  }
-};
+      if (tempImage) {
+        const formData = new FormData();
+        formData.append('avatar', tempImage);
+
+        const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        avatarPath = `${response.data.path}`;
+      }
+
+      console.log('Avatar Path:', avatarPath);
+
+      socket.emit('addCollab', {
+        email: emailCollab,
+        lastname: lastNameCollab,
+        firstname: firstNameCollab,
+        position: positionCollab,
+        company: companyuser,
+        password: randomPassword,
+        avatar: avatarPath
+      });
+
+      setTempImage(null);
+      setModalOpenCollab(false);
+      setShowPasswordModal(true);
+      fetchData();
+
+    } catch (error) {
+      console.error('Error adding/editing Collaborator:', error);
+    }
+  };
 
 
   const handleSubmitCollab = async (e) => {
@@ -470,31 +487,50 @@ const handleAddCollab = async (e) => {
       )
       }
 
-{showPasswordModal && (
-  <Modal open={showPasswordModal} onClose={() => setShowPasswordModal(false)}>
-    <ModalDialog>
-      <div style={{
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        <Typography variant="h6" style={{ marginBottom: '20px' }}>
-          New Collaborator Created Successfully
-        </Typography>
-        <Typography style={{ color: '#4CAF50', fontSize: '18px', fontWeight: 'bold' }}>
-          Generated Password: {generatedPassword}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          style={{ marginTop: '20px' }}
-          onClick={() => setShowPasswordModal(false)}
-        >
-          Close
-        </Button>
-      </div>
-    </ModalDialog>
-  </Modal>
-)}
+
+      <Modal open={isGanttModalOpen} onClose={() => setIsGanttModalOpen(false)}>
+        <ModalDialog>
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '20px',
+            width: '90vw',
+            height: '80vh',
+            maxWidth: '1200px'
+          }}>
+            <ModalClose onClick={() => setIsGanttModalOpen(false)} />
+            <Typography variant="h6" style={{ marginBottom: '20px' }}>
+              User Tasks Timeline
+            </Typography>
+            <GanttChart tasks={selectedUserTasks} />
+          </div>
+        </ModalDialog>
+      </Modal>
+
+      {showPasswordModal && (
+        <Modal open={showPasswordModal} onClose={() => setShowPasswordModal(false)}>
+          <ModalDialog>
+            <div style={{
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <Typography variant="h6" style={{ marginBottom: '20px' }}>
+                New Collaborator Created Successfully
+              </Typography>
+              <Typography style={{ color: '#4CAF50', fontSize: '18px', fontWeight: 'bold' }}>
+                Generated Password: {generatedPassword}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginTop: '20px' }}
+                onClick={() => setShowPasswordModal(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </ModalDialog>
+        </Modal>
+      )}
 
       <div style={{ maxWidth: '600px' }}>
 
@@ -532,8 +568,9 @@ const handleAddCollab = async (e) => {
                     onClick={() => handleDeleteCollab(collaborator._id)}>
                     <DeleteOutlineIcon />
                   </IconButton>
-                  <IconButton>
-                    <ShareIcon />
+
+                  <IconButton onClick={() => handleOpenGanttModal(collaborator._id)}>
+                    <TimelineIcon />
                   </IconButton>
                 </div>
               </Tooltip>
