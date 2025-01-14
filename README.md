@@ -31,15 +31,15 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-1. New features v 4.02 :
+1. New features v 4.03 :
     
   It is now possible to: 
 - If you don't have a user, you won't be started on the login page, but on the user creation page. 
 This is used when installing for the first time or when a user is lost.
+- Database link control
+- - Employee occupancy table by project task.
 
 2. Upcoming features :
-- Database link control
-- Employee occupancy table by project task.
 - Team Visio  
 
 ## ✅ Questions / Answers
