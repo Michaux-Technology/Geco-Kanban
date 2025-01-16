@@ -37,7 +37,7 @@ by <b>Valéry-Jérôme Michaux</b>
 - If you don't have a user, you won't be started on the login page, but on the user creation page. 
 This is used when installing for the first time or when a user is lost.
 - Database link control
-- - Employee occupancy table by project task.
+- Employee occupancy table by project task.
 
 2. Upcoming features :
 - Team Visio  
