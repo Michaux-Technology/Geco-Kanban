@@ -2,16 +2,29 @@
 <img src="https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a" alt="Kanri banner" />
 </p>
 
-# ✅ Project management software Open Source
+# ✅ The Ultimate Project Management Software – Kanban, Gantt & Real-Time Collaboration
 
 ## ✅ Description
 
-This software lets you manage projects using Kanban and Gantt charts.
-Each project is made up of tasks that can be dragged from one column to another, liked and commented on.
-Files can be inserted into projects to keep teams informed.   
-The software is multi-user and changes are visible live, without the need to refresh the page. 
+Boost Productivity with an Intuitive Project Management Tool
+Our cutting-edge project management software empowers teams to organize, track, and collaborate seamlessly using Kanban boards and Gantt charts. Effortlessly drag and drop tasks, assign them to team members, add comments, and keep everyone aligned in real-time.
 
-Communication between project partners is essential, which is why we've included a videoconferencing module. 
+Key Features for Maximum Efficiency:
+✅ Drag-and-Drop Task Management – Move tasks between columns with ease.
+✅ Task Assignment & Tracking – Instantly see who is responsible for what.
+✅ Real-Time Collaboration – Changes update live without page refresh.
+✅ File Sharing – Keep teams informed by attaching relevant documents.
+✅ Multi-User Access – Work together with full transparency and efficiency.
+
+Seamless Communication with Built-in Video Conferencing
+Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
+
+Why Choose Our Project Management Software?
+🚀 Enhance Team Productivity – Streamline workflows and improve task visibility.
+📊 Powerful Project Tracking – Stay on top of deadlines with Gantt charts.
+🔄 100% Real-Time Updates – No more delays or miscommunication.
+
+💡 Start managing your projects smarter today!
 
 ## ✅ Technologies used
 
