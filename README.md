@@ -79,6 +79,12 @@ Ask your questions, let us know about bugs...
 
    npm start
 
+9. For the video conference, go in Gogole Chrome and write :
+
+   chrome://flags
+
+in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
+
 ## ✅ Make a donation
 
 To obtain a license :
