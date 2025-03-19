@@ -79,7 +79,7 @@ Ask your questions, let us know about bugs...
 
    npm start
 
-9. For the video conference, go in Gogole Chrome and write :
+9. For the video conference, go in Google Chrome and write :
 
    chrome://flags
 
