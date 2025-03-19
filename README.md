@@ -2,21 +2,28 @@
 <img src="https://github.com/user-attachments/assets/bc12afbd-acd1-4e97-b061-561dbe88599a" alt="Kanri banner" />
 </p>
 
-# ✅ The Ultimate Project Management Software – Kanban, Gantt & Real-Time Collaboration
+# The Ultimate Project Management Software – Kanban, Gantt & Real-Time Collaboration
 
 ## ✅ Description
 
 Boost Productivity with an Intuitive Project Management Tool
+
 Our cutting-edge project management software empowers teams to organize, track, and collaborate seamlessly using Kanban boards and Gantt charts. Effortlessly drag and drop tasks, assign them to team members, add comments, and keep everyone aligned in real-time.
 
 Key Features for Maximum Efficiency:
+
 ✅ Drag-and-Drop Task Management – Move tasks between columns with ease.
+
 ✅ Task Assignment & Tracking – Instantly see who is responsible for what.
+
 ✅ Real-Time Collaboration – Changes update live without page refresh.
+
 ✅ File Sharing – Keep teams informed by attaching relevant documents.
+
 ✅ Multi-User Access – Work together with full transparency and efficiency.
 
-Seamless Communication with Built-in Video Conferencing
+
+<h2>Seamless Communication with Built-in Video Conferencing</h2>
 Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
 
 Why Choose Our Project Management Software?
