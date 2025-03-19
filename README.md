@@ -37,13 +37,10 @@ by <b>Valéry-Jérôme Michaux</b>
 1. New features v 4.03 :
     
   It is now possible to: 
-- If you don't have a user, you won't be started on the login page, but on the user creation page. 
-This is used when installing for the first time or when a user is lost.
-- Database link control
-- Employee occupancy table by project task.
+- to use Video conference
 
 2. Upcoming features :
-- Team Visio  
+- compatible https
 
 ## ✅ Questions / Answers
 
@@ -68,9 +65,12 @@ Ask your questions, let us know about bugs...
 
    npm install
 
-6. Launch the backend under ./backend : 
+6. Launch the backend under ./backend/src : 
 
-   node index.js
+   node serverSoft.js
+
+and for the video conference:
+   node serverVisio.js
 
 7. Run the frontend under ./frontend : 
 
