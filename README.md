@@ -4,7 +4,7 @@
 
 # The Ultimate Project Management Software – Kanban, Gantt & Real-Time Collaboration
 
-## ➡️ Description
+## ⭐ Description
 
 <h3>Boost Productivity with an Intuitive Project Management Tool</h3>
 
@@ -36,7 +36,7 @@ Collaboration is key to success! That’s why our platform includes an integrate
 
 💡 Start managing your projects smarter today!
 
-## ➡️ Technologies used
+## ⭐ Technologies used
 
 HTML
 React.js
