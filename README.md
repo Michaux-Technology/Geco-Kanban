@@ -23,10 +23,10 @@ Key Features for Maximum Efficiency:
 ✅ Multi-User Access – Work together with full transparency and efficiency.
 
 
-<h2>Seamless Communication with Built-in Video Conferencing</h2>
+<h3>Seamless Communication with Built-in Video Conferencing</h3>
 Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
 
-<h2>Why Choose Our Project Management Software?</h2>
+<h3>Why Choose Our Project Management Software?</h3>
 
 🚀 Enhance Team Productivity – Streamline workflows and improve task visibility.
 
