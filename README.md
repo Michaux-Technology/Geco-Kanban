@@ -34,7 +34,8 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-1. New features v 4.03 :
+1. New features v 5.00 :
+(the new version comes this evening)
     
   It is now possible to: 
 - to use Video conference
@@ -69,10 +70,12 @@ Ask your questions, let us know about bugs...
 
    node serverSoft.js
 
-and for the video conference:
+   and for the video conference:
+   
    node serverVisio.js
+   if you do not need it do not lauch it.
 
-7. Run the frontend under ./frontend : 
+8. Run the frontend under ./frontend : 
 
    npm start
 
