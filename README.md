@@ -4,7 +4,7 @@
 
 # The Ultimate Project Management Software – Kanban, Gantt & Real-Time Collaboration
 
-## ⭐ Description
+## ➤ Description
 
 <h3>Boost Productivity with an Intuitive Project Management Tool</h3>
 
@@ -36,7 +36,7 @@ Collaboration is key to success! That’s why our platform includes an integrate
 
 💡 Start managing your projects smarter today!
 
-## ⭐ Technologies used
+## ➤ Technologies used
 
 HTML
 React.js
@@ -50,14 +50,14 @@ The license available on Github is :
 
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.en)
 
-## ⭐ Origin of the project
+## ➤ Origin of the project
 This project was created by a 🇫🇷 living in 🇩🇪.   
 
 This project is totally 🇪🇺. 
 
 by <b>Valéry-Jérôme Michaux</b>
 
-## ⭐ Project status
+## ➤ Project status
 
 1. New features v 5.00 :
 - Video conference
@@ -65,12 +65,12 @@ by <b>Valéry-Jérôme Michaux</b>
 2. Upcoming features :
 - compatible https
 
-## ⭐ Questions / Answers
+## ➤ Questions / Answers
 
 Ask your questions, let us know about bugs...
 [Click here](https://github.com/Michaux-Technology/Geco-Kanban/discussions)
 
-## ⭐ Setup
+## ➤ Setup
 
 1. Install your Mongodb server and create your collection with a name such as "Kanban". 
 
@@ -107,7 +107,7 @@ Ask your questions, let us know about bugs...
 
 in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
 
-## ⭐ Make a donation
+## ➤ Make a donation
 
 To obtain a license :
 - [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
@@ -119,11 +119,11 @@ make the [right](https://github.com/sponsors/Michaux-Technology) donation
 
 Good luck!
 
-## ⭐ Our video
+## ➤ Our video
 
 [![Alv_3hkBI8Q](https://img.youtube.com/vi/qzr9uuxXE4o/1.jpg)](https://www.youtube.com/watch?v=qzr9uuxXE4o)
 
-## ⭐ Our Screenshot
+## ➤ Our Screenshot
 
 <b> Login screen </b>
 
