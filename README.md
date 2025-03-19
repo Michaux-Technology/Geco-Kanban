@@ -27,8 +27,11 @@ Key Features for Maximum Efficiency:
 Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
 
 Why Choose Our Project Management Software?
+
 🚀 Enhance Team Productivity – Streamline workflows and improve task visibility.
+
 📊 Powerful Project Tracking – Stay on top of deadlines with Gantt charts.
+
 🔄 100% Real-Time Updates – No more delays or miscommunication.
 
 💡 Start managing your projects smarter today!
