@@ -30,7 +30,7 @@ function AccountEdit() {
     const [message, setMessage] = useState('');
     let [tempImage, setTempImage] = useState(null);
     const navigate = useNavigate();
-    const [userId, setUserId] = useState(localStorage.getItem('id') || '')
+    const userId = localStorage.getItem('id') || '';
     const socket = io(API_URL); // Connectez-vous au serveur WebSocket
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -39,7 +39,6 @@ function AccountEdit() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-
                 let response;
 
                 if (idListUsers) {
@@ -50,7 +49,6 @@ function AccountEdit() {
 
                 const userData = response.data;
 
-                // Mettre à jour les valeurs des champs de l'utilisateur avec les données récupérées
                 setEmail(userData.email);
                 setLastName(userData.lastName);
                 setCompany(userData.company);
@@ -63,16 +61,16 @@ function AccountEdit() {
         };
 
         fetchData();
-    }, []);
+    }, [idListUsers, userId]);
 
     //retour vers projectList
     const handleGoBack = () => {
         window.location.href = `/projectList?menu=1&user=${userId}`;
-      };
+    };
 
     const handleAvatarChange = (event) => {
         event.preventDefault();
-        console.log(event)
+        console.log(event);
 
         if (event.target.files && event.target.files[0]) {
             setAvatar(URL.createObjectURL(event.target.files[0]));
@@ -106,53 +104,53 @@ function AccountEdit() {
         }
     }
 
-    const handleSubmit = useCallback(async (e, userId, idListUsers) => {
-    e.preventDefault();
-    let avatarPath = avatar;
+    const handleSubmit = useCallback(async (e) => {
+        e.preventDefault();
+        let avatarPath = avatar;
 
-    if (tempImage) {
-        const formData = new FormData();
-        formData.append('avatar', tempImage);
-        const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        avatarPath = response.data.path;
-    }
-
-    const password = e.target.password.value !== '' ? e.target.password.value : undefined;
-
-    let response;
-    if (idListUsers) {
-        response = await axios.put(`${API_URL}/user/${idListUsers}`, {
-            email,
-            company,
-            lastName,
-            firstName,
-            position,
-            avatar: avatarPath,
-            ...(password && { password }),
-        });
-    } else {
-        response = await axios.put(`${API_URL}/user/${userId}`, {
-            email,
-            company,
-            lastName,
-            firstName,
-            position,
-            avatar: avatarPath,
-            ...(password && { password }),
-        });
-    }
-
-    setMessage(response.data.message);
-    if (response.status === 200) {
-        if (response.data.message === 'User successfully edited!') {
-            localStorage.setItem('avataruser', avatarPath);
-            window.dispatchEvent(new Event('avatarUpdated'));
-            navigate('/');
+        if (tempImage) {
+            const formData = new FormData();
+            formData.append('avatar', tempImage);
+            const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            avatarPath = response.data.path;
         }
-    }
-}, [email, password, company, lastName, firstName, position, navigate, tempImage, avatar]);
+
+        const formPassword = e.target.password.value !== '' ? e.target.password.value : undefined;
+
+        let response;
+        if (idListUsers) {
+            response = await axios.put(`${API_URL}/user/${idListUsers}`, {
+                email,
+                company,
+                lastName,
+                firstName,
+                position,
+                avatar: avatarPath,
+                ...(formPassword && { password: formPassword }),
+            });
+        } else {
+            response = await axios.put(`${API_URL}/user/${userId}`, {
+                email,
+                company,
+                lastName,
+                firstName,
+                position,
+                avatar: avatarPath,
+                ...(formPassword && { password: formPassword }),
+            });
+        }
+
+        setMessage(response.data.message);
+        if (response.status === 200) {
+            if (response.data.message === 'User successfully edited!') {
+                localStorage.setItem('avataruser', avatarPath);
+                window.dispatchEvent(new Event('avatarUpdated'));
+                navigate('/');
+            }
+        }
+    }, [email, company, lastName, firstName, position, navigate, tempImage, avatar, idListUsers, userId]);
 
     
 
@@ -175,10 +173,7 @@ function AccountEdit() {
                 <Typography component="h1" variant="h5">
                     Account Edit
                 </Typography>
-                <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={(e) => {
-
-                    handleSubmit(e, userId, idListUsers);
-                }}>
+                <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmit}>
                     {message && <p style={{ width: '100%', marginTop: '1rem', color: 'red' }}>** {message} **</p>}
                     <TextField
                         variant="outlined"

@@ -1,0 +1,66 @@
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:09:36.056Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:09:36.058Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:09:52.699Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:09:52.700Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:13:11.112Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:13:11.113Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:13:11.114Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:13:11.115Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:13:11.317Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:13:11.318Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:13:11.319Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:13:11.319Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:32:46.899Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:32:46.899Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:32:47.435Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:32:47.435Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:33:28.134Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:33:28.136Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:33:42.593Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:33:42.594Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:37:36.348Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:37:36.349Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:37:36.463Z"}
+{"level":"info","message":"Remaining connected clients: 0","timestamp":"2025-03-01T10:37:36.463Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:37:36.464Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:37:36.465Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:37:49.744Z"}
+{"level":"info","message":"Remaining connected clients: 0","timestamp":"2025-03-01T10:37:49.745Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:37:49.746Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:37:49.746Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:39:34.239Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:39:34.241Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:42:15.682Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:42:15.683Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:42:15.892Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:42:15.893Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:42:15.894Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:42:15.894Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:43:30.085Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:43:30.087Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:43:37.020Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:43:37.020Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:46:11.773Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:46:11.774Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:46:11.775Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:46:11.775Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:46:11.916Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:46:11.917Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:46:11.917Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:46:11.918Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:47:36.728Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:47:36.730Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:47:52.947Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:47:52.948Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:48:25.082Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:48:25.083Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:48:26.679Z"}
+{"level":"info","message":"Total connected clients: 2","timestamp":"2025-03-01T10:48:26.679Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:52:20.283Z"}
+{"level":"info","message":"Remaining connected clients: 1","timestamp":"2025-03-01T10:52:20.284Z"}
+{"level":"info","message":"Client disconnected","timestamp":"2025-03-01T10:52:20.535Z"}
+{"level":"info","message":"Remaining connected clients: 0","timestamp":"2025-03-01T10:52:20.535Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:52:20.536Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:52:20.537Z"}
+{"level":"info","message":"New WebSocket connection established","timestamp":"2025-03-01T10:53:27.143Z"}
+{"level":"info","message":"Total connected clients: 1","timestamp":"2025-03-01T10:53:27.145Z"}

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import './index.css';
 import './styles.css';
-
+import './process-polyfill';
 
 import App from './App';
 import reportWebVitals from './reportWebVitals';

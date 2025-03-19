@@ -5,42 +5,42 @@ import { API_URL } from './config';
 
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import ShareIcon from '@mui/icons-material/Share'
+
+import VideocamIcon from '@mui/icons-material/Videocam';
+import Checkbox from '@mui/material/Checkbox';
+import SendIcon from '@mui/icons-material/Send';
+
 import { Avatar } from '@mui/material'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip } from '@mui/material';
+import { Button, TextField, List, ListItem, ListItemAvatar, ListItemText, IconButton, Tooltip, Modal } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import Fab from '@mui/material/Fab'
 import AddIcon from '@mui/icons-material/Add'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
-import ModalClose from '@mui/joy/ModalClose';
+import CloseIcon from '@mui/icons-material/Close';
 
 import GanttChart from './Gantt';
 
 const CollaboratorComponent = () => {
 
-  //Definition des variables
-  let [isEditingCollab, setIsEditingCollab] = useState(false);
-  let [isModalOpenCollab, setModalOpenCollab] = useState(false);
-  let [editingCollab, setEditingCollab] = useState(null);
+  // Variables utilisées dans le composant
+  const [isModalOpenCollab, setModalOpenCollab] = useState(false);
   const [emailCollab, setEmailCollab] = useState('');
   const [lastNameCollab, setLastNameCollab] = useState('');
   const [firstNameCollab, setFirstNameCollab] = useState('');
   const [avatarCollab, setAvatarCollab] = useState(null);
   const [positionCollab, setPositionCollab] = useState('');
   let [tempImage, setTempImage] = useState(null);
-  const [email, setEmail] = useState(localStorage.getItem('email') || '');
-  let [isEditing, setIsEditing] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
   const [isGanttModalOpen, setIsGanttModalOpen] = useState(false);
   const [selectedUserTasks, setSelectedUserTasks] = useState([]);
+
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [meetingNameModal, setMeetingNameModal] = useState({ open: false, name: '' });
 
   const socket = io(API_URL, {
     reconnection: true,
@@ -64,11 +64,10 @@ const CollaboratorComponent = () => {
     }
   });
 
-  const [companyuser, setCompanyUser] = useState(localStorage.getItem('companyuser') || '')
+  const [companyuser] = useState(localStorage.getItem('companyuser') || '')
 
   const resetEditingCollab = () => {
     resetErrorMessage()
-    setEditingCollab(null)
     setModalOpenCollab(false)
     setEmailCollab(null)
     setAvatarCollab(null)
@@ -81,18 +80,19 @@ const CollaboratorComponent = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
 
+  const [activeMeetingsModal, setActiveMeetingsModal] = useState({ open: false });
+  const [activeMeetings, setActiveMeetings] = useState([]);
+
   const emailRef = useRef();
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const positionRef = useRef();
 
   const fetchData = async () => {
-
     try {
       // Effectuer une requête GET pour obtenir la liste des personnes depuis le backend
       const responseCollaborators = await axios.get(`${API_URL}/users`)
       setCollaborators(responseCollaborators.data)
-
     } catch (error) {
       console.error('Error fetching projects:', error)
     }
@@ -102,32 +102,7 @@ const CollaboratorComponent = () => {
     setErrorMessage('');
   };
 
-  const handleChange = () => {
-    setEmailCollab(emailRef.current.value);
-    setFirstNameCollab(firstNameRef.current.value);
-    setLastNameCollab(lastNameRef.current.value);
-    setPositionCollab(positionRef.current.value);
-  };
-
-  const [tempLastName, setTempLastName] = useState("");
-  const [tempFirstName, setTempFirstName] = useState("");
-  const [tempPosition, setTempPosition] = useState("");
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "lastName") {
-      setTempLastName(value);
-    } else if (name === "firstName") {
-      setTempFirstName(value);
-    } else if (name === "position") {
-      setTempPosition(value);
-    }
-  };
-
   useEffect(() => {
-
-
     fetchData();
 
     // Écoutez l'événement pour les projets ajoutés en temps réel
@@ -140,7 +115,6 @@ const CollaboratorComponent = () => {
       setCollaborators((prevCollaborators) => prevCollaborators.filter((collaborator) => collaborator._id !== deletedUserId));
     });
 
-
     // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
     socket.on('userUpdated', (updatedUser) => {
       setCollaborators((prevCollaborators) =>
@@ -150,13 +124,11 @@ const CollaboratorComponent = () => {
       );
     });
 
-
     return () => {
       resetErrorMessage()
       socket.disconnect();
     };
-
-  }, [])
+  }, [socket])
 
   function stringToColor(string) {
     let hash = 0
@@ -187,7 +159,6 @@ const CollaboratorComponent = () => {
 
   const handleAvatarChange = (event) => {
     event.preventDefault();
-    //console.log(event)
 
     if (event.target.files && event.target.files[0]) {
       setAvatarCollab(URL.createObjectURL(event.target.files[0]))
@@ -196,35 +167,6 @@ const CollaboratorComponent = () => {
     }
   };
 
-  const onUpload = async (file) => {
-    const formData = new FormData()
-    formData.append('image', file)
-
-    try {
-      const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data', },
-      })
-
-      //console.log('File uploaded successfully')
-    } catch (error) {
-      console.error('Erreur lors de l’appel axios:', error)
-      if (error.response) {
-        // La requête a été faites et le serveur a répondu avec un statut
-        // qui est hors de la plage de 2xx
-
-      } else if (error.request) {
-        // La requête a été faites mais pas de réponse a été reçue
-        console.error('Request data:', error.request)
-      } else {
-        // Quelque chose s'est produit lors de la configuration de la requête
-        console.error('Error message:', error.message)
-      }
-    } finally {
-      console.log('Finally après l’appel axios');
-    }
-  }
-
-  // Add this function to handle opening the Gantt modal
   const handleOpenGanttModal = async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/users/${userId}/tasks`);
@@ -235,7 +177,6 @@ const CollaboratorComponent = () => {
     }
   };
 
-  // function to generate random password
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
@@ -245,7 +186,7 @@ const CollaboratorComponent = () => {
     return password;
   };
 
-  const handleAddCollab = async (e) => {
+  const handleAddCollab = async () => {
     try {
       resetErrorMessage();
       const randomPassword = generateRandomPassword();
@@ -287,11 +228,9 @@ const CollaboratorComponent = () => {
 
 
   const handleSubmitCollab = async (e) => {
-    resetErrorMessage()
-    e.preventDefault()
-  }
-
-  const [layout, setLayout] = React.useState(undefined);
+    e.preventDefault();
+    handleAddCollab();
+  };
 
   const handleDeleteCollab = async (collabId) => {
     try {
@@ -325,212 +264,433 @@ const CollaboratorComponent = () => {
     window.location.href = `/AccountEdit?id=${collabId}`;
   };
 
+  const handleStartVideoConference = () => {
+    setMeetingNameModal({ open: true, name: '' });
+  };
+
+  const startMeetingWithName = async () => {
+    const currentUserId = localStorage.getItem('userId');
+    const allParticipants = [...selectedUsers, currentUserId];
+    const roomId = `room-${Date.now()}`;
+
+    try {
+      // Create meeting in database
+      await axios.post(`${API_URL}/meetings`, {
+        roomId,
+        name: meetingNameModal.name,
+        participants: allParticipants,
+        createdBy: currentUserId,
+        createdAt: new Date(),
+        active: true
+      });
+
+      socket.emit('initiateVideoConference', {
+        participants: allParticipants,
+        roomId: roomId,
+        meetingName: meetingNameModal.name
+      });
+
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+    }
+  };
+
+  const fetchActiveMeetings = async () => {
+    const currentUserId = localStorage.getItem('id'); // Changed from 'userId' to 'id'
+    try {
+      const response = await axios.get(`${API_URL}/meetings/user/${currentUserId}`);
+      setActiveMeetings(response.data);
+    } catch (error) {
+      console.error('Error fetching active meetings:', error);
+    }
+  };
+
+  const handleOpenActiveMeetings = () => {
+    fetchActiveMeetings();
+    setActiveMeetingsModal({ open: true });
+  };
+
   return (
     <>
+
       {!isModalOpenCollab
         && (
-
           <Box sx={{ '& > :not(style)': { m: 1 } }}>
-            <Fab
-              color="primary"
-              aria-label="add"
-              onClick={() => { setIsEditingCollab(false); setModalOpenCollab(true); setLayout('center'); }}>
-              <AddIcon />
-            </Fab>
+            <Tooltip title="Ajouter un utilisateur">
+              <Fab
+                color="primary"
+                aria-label="add"
+                onClick={() => { setModalOpenCollab(true); }}>
+                <AddIcon />
+              </Fab>
+            </Tooltip>
           </Box>
         )
       }
 
+      <Box sx={{
+        position: 'fixed',
+        bottom: 30, // Increased from 16 to 80 to place above notifications
+        right: 16,
+        display: 'flex',
+        gap: 2,
+        zIndex: 1000 // Add zIndex to ensure buttons stay on top
+      }}>
+
+        <Tooltip title="join a meeting">
+          <Fab color="primary" onClick={handleOpenActiveMeetings}>
+            <VideocamIcon />
+          </Fab>
+        </Tooltip>
+
+        <Tooltip title="invite to a meeting">
+          <span>
+            <Fab
+              color="secondary"
+              disabled={selectedUsers.length === 0}
+              onClick={handleStartVideoConference}
+            >
+              <SendIcon />
+            </Fab>
+          </span>
+        </Tooltip>
+
+      </Box>
+
       {isModalOpenCollab && (
-
         <Modal
-          open={!!layout}
-          id='modalCollab'
-          onClose={resetEditingCollab}>
+          open={isModalOpenCollab}
+          onClose={resetEditingCollab}
+          aria-labelledby="modal-collaborator"
+        >
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            width: '500px',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <IconButton
+              aria-label="close"
+              onClick={resetEditingCollab}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
 
-          <ModalDialog>
-            <div style={{
-              backgroundColor: '#ffffff',
+            <Box sx={{
               display: 'flex',
               flexDirection: 'column',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
               alignItems: 'center',
-              padding: '10px',
-              width: '500px',
-              height: '700px',
-            }}
-            >
+              mt: 4
+            }}>
+              <Avatar src={avatarCollab} sx={{ bgcolor: '#f50057', width: 80, height: 80 }}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
+                Collaborateur
+              </Typography>
 
-              <ModalClose
-                onClick={() => setModalOpenCollab(false)}
-              />
-
-              <div
-                style={
-                  {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    marginTop: '8vh',
-                  }
-                }
-              >
-
-
-                <Avatar src={avatarCollab} style={{ backgroundColor: '#f50057', width: 80, height: 80 }}>
-                  <LockOutlinedIcon />
-                </Avatar>
-                <Typography component="h1" variant="h5">
-                  Collaborator
-                </Typography>
-
-                <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmitCollab}>
-
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="email"
-                    label="E-mail address"
-                    name="email"
-                    autoComplete="email"
-                    value={emailCollab || ""}
-                    onChange={(e) => setEmailCollab(e.target.value)}
-                    inputRef={emailRef}
-                    autoFocus
-                  />
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="lastName"
-                    label="Last Name"
-                    name="lastName"
-                    autoComplete="lname"
-                    value={lastNameCollab || ""}
-                    inputRef={lastNameRef}
-                    onChange={(e) => setLastNameCollab(e.target.value)}
-                  />
-
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="firstName"
-                    label="First Name"
-                    name="firstName"
-                    autoComplete="fname"
-                    value={firstNameCollab || ""}
-                    inputRef={firstNameRef}
-                    onChange={(e) => setFirstNameCollab(e.target.value)}
-                  />
-
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="position"
-                    label="Position"
-                    name="position"
-                    value={positionCollab || ""}
-                    inputRef={positionRef}
-                    onChange={(e) => setPositionCollab(e.target.value)}
-                  />
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="icon-button-file"
-                    type="file"
-                    onChange={handleAvatarChange}
-                  />
-                  <div sx={{ alignItems: 'middle' }}>
-
-                    <label htmlFor="icon-button-file">
-                      <IconButton
-                        color="primary"
-                        aria-label="upload picture"
-                        component="span"
-                        style={{ marginTop: '1rem' }}
-                      >
-                        <PhotoCamera />
-
-                      </IconButton >
-                    </label>
-
-                    <Typography>Upload Avatar</Typography>
-                  </div>
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    style={{ marginTop: '1rem' }}
-                    onClick={() => {
-                      if (isEditing) {
-                      } else {
-                        handleAddCollab()
-                      }
-                    }}
-                  >
-                    Save
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </ModalDialog>
+              <Box component="form" sx={{ width: '100%', mt: 2 }} onSubmit={handleSubmitCollab}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Adresse e-mail"
+                  name="email"
+                  autoComplete="email"
+                  value={emailCollab || ""}
+                  onChange={(e) => setEmailCollab(e.target.value)}
+                  inputRef={emailRef}
+                  autoFocus
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="lastName"
+                  label="Nom"
+                  name="lastName"
+                  autoComplete="lname"
+                  value={lastNameCollab || ""}
+                  inputRef={lastNameRef}
+                  onChange={(e) => setLastNameCollab(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="firstName"
+                  label="Prénom"
+                  name="firstName"
+                  autoComplete="fname"
+                  value={firstNameCollab || ""}
+                  inputRef={firstNameRef}
+                  onChange={(e) => setFirstNameCollab(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="position"
+                  label="Poste"
+                  name="position"
+                  value={positionCollab || ""}
+                  inputRef={positionRef}
+                  onChange={(e) => setPositionCollab(e.target.value)}
+                />
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="icon-button-file"
+                  type="file"
+                  onChange={handleAvatarChange}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                  <label htmlFor="icon-button-file">
+                    <IconButton
+                      color="primary"
+                      aria-label="upload picture"
+                      component="span"
+                    >
+                      <PhotoCamera />
+                    </IconButton>
+                  </label>
+                  <Typography>Upload an avatar</Typography>
+                </Box>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  onClick={() => {
+                    handleAddCollab()
+                  }}
+                >
+                  Enregistrer
+                </Button>
+              </Box>
+            </Box>
+          </Box>
         </Modal>
-      )
-      }
+      )}
 
 
       <Modal open={isGanttModalOpen} onClose={() => setIsGanttModalOpen(false)}>
-        <ModalDialog>
-          <div style={{
-            backgroundColor: '#ffffff',
-            padding: '20px',
-            width: '90vw',
-            height: '80vh',
-            maxWidth: '1200px'
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          width: '90vw',
+          height: '80vh',
+          maxWidth: '1200px'
+        }}>
+          <IconButton
+            aria-label="close"
+            onClick={() => setIsGanttModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+          User task timeline
+          </Typography>
+          <GanttChart tasks={selectedUserTasks} />
+        </Box>
+      </Modal>
+
+      <Modal open={activeMeetingsModal.open} 
+             onClose={() => setActiveMeetingsModal({ open: false })}
+             aria-labelledby="active-meetings-modal"
+             aria-describedby="active-meetings-list">
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          minWidth: '400px',
+          maxHeight: '80vh',
+          overflow: 'auto'
+        }}>
+          <IconButton
+            aria-label="close"
+            onClick={() => setActiveMeetingsModal({ open: false })}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h5" sx={{ 
+            mb: 3,
+            fontWeight: 'bold',
+            color: '#1976d2'
           }}>
-            <ModalClose onClick={() => setIsGanttModalOpen(false)} />
-            <Typography variant="h6" style={{ marginBottom: '20px' }}>
-              User Tasks Timeline
-            </Typography>
-            <GanttChart tasks={selectedUserTasks} />
-          </div>
-        </ModalDialog>
+            Active Meetings
+          </Typography>
+          <List>
+            {activeMeetings.map((meeting) => (
+              <ListItem 
+                key={meeting._id}
+                button
+                onClick={() => {
+                  window.location.href = `/video-conference?room=${meeting.roomId}`;
+                }}
+                sx={{
+                  mb: 1,
+                  borderRadius: 1,
+                  border: '1px solid #e0e0e0',
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                    transform: 'translateY(-2px)',
+                    transition: 'all 0.2s ease-in-out'
+                  }
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: '#1976d2' }}>
+                    <VideocamIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText 
+                  primary={
+                    <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>
+                      {meeting.name}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography variant="body2" color="text.secondary">
+                      Created on: {new Date(meeting.createdAt).toLocaleString()}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Modal>
 
       {showPasswordModal && (
         <Modal open={showPasswordModal} onClose={() => setShowPasswordModal(false)}>
-          <ModalDialog>
-            <div style={{
-              padding: '20px',
-              textAlign: 'center'
-            }}>
-              <Typography variant="h6" style={{ marginBottom: '20px' }}>
-                New Collaborator Created Successfully
-              </Typography>
-              <Typography style={{ color: '#4CAF50', fontSize: '18px', fontWeight: 'bold' }}>
-                Generated Password: {generatedPassword}
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                style={{ marginTop: '20px' }}
-                onClick={() => setShowPasswordModal(false)}
-              >
-                Close
-              </Button>
-            </div>
-          </ModalDialog>
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            minWidth: '300px',
+            textAlign: 'center'
+          }}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setShowPasswordModal(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+            New employee successfully created
+            </Typography>
+            <Typography sx={{ color: '#4CAF50', fontSize: '18px', fontWeight: 'bold', mb: 2 }}>
+            Password generated: {generatedPassword}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setShowPasswordModal(false)}
+            >
+              Close
+            </Button>
+          </Box>
         </Modal>
       )}
+
+
+      <Modal open={meetingNameModal.open} onClose={() => setMeetingNameModal({ ...meetingNameModal, open: false })}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          minWidth: '400px',
+          textAlign: 'center'
+        }}>
+          <IconButton
+            aria-label="close"
+            onClick={() => setMeetingNameModal({ ...meetingNameModal, open: false })}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+          Meeting name
+          </Typography>
+          <TextField
+            fullWidth
+            value={meetingNameModal.name}
+            onChange={(e) => setMeetingNameModal({ ...meetingNameModal, name: e.target.value })}
+            placeholder="Nom de la réunion"
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              startMeetingWithName();
+              setMeetingNameModal({ open: false, name: '' });
+            }}
+            disabled={!meetingNameModal.name}
+          >
+            Save
+          </Button>
+        </Box>
+      </Modal>
 
       <div style={{ maxWidth: '600px' }}>
 
@@ -572,12 +732,24 @@ const CollaboratorComponent = () => {
                   <IconButton onClick={() => handleOpenGanttModal(collaborator._id)}>
                     <TimelineIcon />
                   </IconButton>
+                  <Checkbox
+                    checked={selectedUsers.includes(collaborator._id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedUsers([...selectedUsers, collaborator._id]);
+                      } else {
+                        setSelectedUsers(selectedUsers.filter(id => id !== collaborator._id));
+                      }
+                    }}
+                  />
+
                 </div>
               </Tooltip>
             </ListItem>
           ))}
         </List>
       </div>
+
     </>
   )
 }

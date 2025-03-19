@@ -62,7 +62,7 @@ const AvatarComponent = ({ person, editingProject, handleAvatarClickOnChild, sel
 
   const handleAvatarClickOn = useCallback(() => {
     handleAvatarClickOnChild(person, userExists);
-  }, [])
+  }, [handleAvatarClickOnChild, person, userExists]);
 
   return (
     <>

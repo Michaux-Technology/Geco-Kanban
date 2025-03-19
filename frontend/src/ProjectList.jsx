@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { API_URL } from './config';
 
+import Slide from '@mui/material/Slide';
+import { Snackbar, Alert } from '@mui/material';
+
 import { Avatar } from '@mui/material'
 import { IconButton } from '@mui/material'
 import AppBar from '@mui/material/AppBar'
@@ -30,6 +33,7 @@ const ProjectList = () => {
   const [id, setId] = useState(localStorage.getItem('id') || '')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
+  const navigate = useNavigate();
 
   //const [avataruser] = useState(localStorage.getItem('avataruser') || '')
   const [avataruser, setAvataruser] = useState(localStorage.getItem('avataruser') || '')
@@ -40,46 +44,105 @@ const ProjectList = () => {
   const searchParams = new URLSearchParams(location.search);
   const menu = searchParams.get('menu');
 
-const getIduser = searchParams.get('user');
+  const getIduser = searchParams.get('user');
 
-const getUserInfo = async (e) => {
-  const responseUser = await axios.get(`${API_URL}/user/${getIduser}`);
-  setFirstname(responseUser.data.firstName);
-  setLastname(responseUser.data.lastName);
-}
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [notifications, setNotifications] = useState([]);
 
-const handleChange = (event, newValue) => {
-  setValue(newValue)
-  // Update URL parameters when menu changes
-  const searchParams = new URLSearchParams(window.location.search);
-  searchParams.set('menu', newValue);
-  searchParams.set('user', userId);
-  const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-  window.history.pushState({}, '', newUrl);
-}
-
-
-// useEffect to listen for avatar changes:
-useEffect(() => {
-  const checkAvatarUpdate = setInterval(() => {
-    const currentAvatar = localStorage.getItem('avataruser');
-    if (currentAvatar !== avataruser) {
-      setAvataruser(currentAvatar);
+  // Vérifier si l'utilisateur est connecté
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('id');
+    if (!storedUserId) {
+      navigate('/');
     }
-  }, 1000);
+  }, [navigate]);
 
-  return () => clearInterval(checkAvatarUpdate);
-}, [avataruser]);
-
-
-useEffect(() => {
-  const searchParams = new URLSearchParams(location.search);
-  const menuParam = searchParams.get('menu');
-  if (menuParam !== null) {
-    setValue(parseInt(menuParam));
+  const getUserInfo = async () => {
+    try {
+      const currentUserId = localStorage.getItem('id');
+      console.log('CurrentUserId:', currentUserId);
+      if (!currentUserId) return;
+      
+      const responseUser = await axios.get(`${API_URL}/user/${currentUserId}`);
+      console.log('User data:', responseUser.data);
+      setFirstname(responseUser.data.firstName);
+      setLastname(responseUser.data.lastName);
+      setHasAvatar(responseUser.data.avatar !== null);
+      if (responseUser.data.avatar) {
+        setAvataruser(responseUser.data.avatar);
+      }
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
   }
-  getUserInfo();
-}, [location.search]);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue)
+    // Update URL parameters when menu changes
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set('menu', newValue);
+    searchParams.set('user', userId);
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({}, '', newUrl);
+  }
+
+  // Add this useEffect for checking meetings
+  useEffect(() => {
+    const currentUserId = localStorage.getItem('id');
+
+    const checkActiveMeetings = async () => {
+      if (!currentUserId) {
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/meetings/user/${currentUserId}`);
+        const activeMeetings = response.data;
+
+        if (activeMeetings.length > 0) {
+          setNotifications(activeMeetings.map(meeting => ({
+            message: `You have an active meeting: ${meeting.name}`,
+            open: true
+          })));
+        }
+      } catch (error) {
+        console.error('Error checking active meetings:', error);
+      }
+    };
+
+    checkActiveMeetings();
+    const interval = setInterval(checkActiveMeetings, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // useEffect to load user info
+  useEffect(() => {
+    getUserInfo();
+  }, []); // Appel au chargement du composant
+
+  // useEffect to listen for avatar changes:
+  useEffect(() => {
+    const checkAvatarUpdate = setInterval(() => {
+      const currentAvatar = localStorage.getItem('avataruser');
+      if (currentAvatar !== avataruser) {
+        setAvataruser(currentAvatar);
+      }
+    }, 1000);
+
+    return () => clearInterval(checkAvatarUpdate);
+  }, [avataruser]);
+
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const menuParam = searchParams.get('menu');
+    if (menuParam !== null) {
+      setValue(parseInt(menuParam));
+    }
+    getUserInfo();
+  }, [location.search]);
   
   const [anchorElNav, setAnchorElNav] = React.useState(null)
 
@@ -101,32 +164,40 @@ useEffect(() => {
   }
 
   const handleLogOut = () => {
-    setAnchorEl(null)
-    navigate('/')
+    // Effacer les données d'authentification du localStorage
+    localStorage.removeItem('id');
+    localStorage.removeItem('avataruser');
+    localStorage.removeItem('firstnameuser');
+    localStorage.removeItem('lastnameuser');
+    localStorage.removeItem('companyuser');
+    localStorage.removeItem('email');
+    
+    setAnchorEl(null);
+    navigate('/');
   }
 
   const handleEdit = () => {
     navigate('/AccountEdit')
   }
 
-  const navigate = useNavigate()
+  const [hasAvatar, setHasAvatar] = useState(false);
 
   function stringToColor(string) {
-    let hash = 0
-    let i
+    let hash = 0;
+    let i;
 
     for (i = 0; i < string.length; i += 1) {
-      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
     }
 
-    let color = '#'
+    let color = '#';
 
     for (i = 0; i < 3; i += 1) {
-      const value = (hash >> (i * 8)) & 0xff
-      color += `00${value.toString(16)}`.slice(-2)
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
     }
 
-    return color
+    return color;
   }
 
   function stringAvatar(name) {
@@ -135,7 +206,7 @@ useEffect(() => {
         bgcolor: stringToColor(name),
       },
       children: `${name.split(' ')[0][0]}${name.split(' ')[1] ? name.split(' ')[1][0] : ''}`,
-    }
+    };
   }
 
   return (
@@ -238,15 +309,18 @@ useEffect(() => {
               onClick={handleMenu}
             >
               <Box sx={{ flexGrow: 0 }}>
-                {/* Tous Formats */}
-
-                {avataruser ? (
+                {hasAvatar ? (
                   <Avatar src={"./" + avataruser} />
                 ) : (
-                  <Avatar {...stringAvatar(`${firstname} ${lastname}`)} />
+                  <Avatar
+                    {...stringAvatar(`${firstname} ${lastname}`)}
+                    sx={{
+                      ...stringAvatar(`${firstname} ${lastname}`).sx,
+                      width: 40,
+                      height: 40
+                    }}
+                  />
                 )}
-
-                {/* <Avatar src={avataruser} /> */}
               </Box>
             </IconButton>
             <Menu
@@ -288,6 +362,40 @@ useEffect(() => {
           <CollaboratorComponent />
         </div>
       )}
+
+{notifications.map((notification, index) => (
+        <Snackbar
+          key={index}
+          open={notification.open}
+          TransitionComponent={Slide}
+          TransitionProps={{
+            direction: "up",
+            timeout: 1000
+          }}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center'
+          }}
+          style={{
+            bottom: `${(index * 45) + 24}px`,
+            right: '200px'
+          }}
+        >
+          <Alert
+            severity="info"
+            onClose={() => {
+              setNotifications(notifications.map((n, i) =>
+                i === index ? { ...n, open: false } : n
+              ));
+            }}
+            sx={{
+              py: 0.02,
+            }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+      ))}
 
     </div>
   )

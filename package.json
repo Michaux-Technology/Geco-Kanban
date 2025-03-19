@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@mui/x-charts": "^7.23.1",
-    "react-google-charts": "^5.2.1"
-  }
-}

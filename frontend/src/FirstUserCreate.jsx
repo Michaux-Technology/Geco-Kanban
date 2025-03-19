@@ -34,7 +34,7 @@ function FirstUserCreate() {
     return () => {
       socket.off('dbStatus');
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     socket.on('CollaboratorAdded', () => {
@@ -57,7 +57,7 @@ function FirstUserCreate() {
     return () => {
       socket.disconnect();
     };
-  }, [navigate]);
+  }, [socket, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

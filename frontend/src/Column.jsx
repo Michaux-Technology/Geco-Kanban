@@ -65,7 +65,7 @@ const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onCo
 
   const handleColorChange = async (color) => {
     try {
-      const response = await axios.put(`${API_URL}/projects/${projectId}/columns/${status}/color`, {
+      await axios.put(`${API_URL}/projects/${projectId}/columns/${status}/color`, {
         color: color.hex
       });
       setColumnHeaderColor(color.hex);

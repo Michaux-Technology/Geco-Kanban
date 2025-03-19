@@ -47,13 +47,13 @@ function SignInPage() {
         formData.append('image', file);
 
         try {
-            const response = await axios.post(`${API_URL}/upload`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data', },
+            await axios.post(`${API_URL}/upload`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
             console.log('File uploaded successfully');
         } catch (error) {
-            console.error('Erreur lors de l’appel axios:', error);
+            console.error('Erreur lors de l\'appel axios:', error);
             if (error.response) {
                 // La requête a été faites et le serveur a répondu avec un statut
                 // qui est hors de la plage de 2xx
@@ -68,7 +68,7 @@ function SignInPage() {
                 console.error('Error message:', error.message);
             }
         } finally {
-            console.log('Finally après l’appel axios');
+            console.log('Finally après l\'appel axios');
         }
     }
 

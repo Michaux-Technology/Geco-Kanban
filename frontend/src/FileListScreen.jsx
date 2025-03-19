@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { API_URL } from './config';
 import {
   Table,
@@ -13,7 +12,6 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import axios from 'axios';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
@@ -25,90 +23,18 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const FileListScreen = ({ projectId }) => {
-  const [uploadLock, setUploadLock] = useState(false);
-  let [tempImage, setTempImage] = useState(null);
-  const socket = io(API_URL);
   const [dragActive, setDragActive] = useState(false);
-  
-  const modalOpenRef = useRef(false);
   const [files, setFiles] = useState([]);
-
-  // test 
-
-  
   const initRef = useRef(false);
   const [open, setOpen] = useState(false);
   
-  useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-    
-    const savedState = localStorage.getItem('fileModalState');
-    if (savedState) {
-      setOpen(JSON.parse(savedState));
-      fetchFiles();
-    }
-  }, [projectId]);
-
-/*   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to server with ID:', socket.id);
-    });
-    
-    // Add specific handler for file uploads
-    socket.on('fileUploaded', (data) => {
-      fetchFiles(); // Fetch fresh file list instead of appending
-      setFiles(prev => [...prev, data]);
-      setOpen(true); // Single modal trigger
-    });
-    
-    return () => {
-      socket.off('fileUploaded');
-      socket.disconnect();
-    };
-  }, [projectId]); */
-
-  ///const [open, setOpen] = useState(false)
-
-
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({
     key: 'uploadDate',
     direction: 'desc'
   });
 
-
-  useEffect(() => {
-    localStorage.setItem('fileModalState', JSON.stringify(open));
-    
-  
-    if (open) {
-      console.log('Modal is open');
-      const savedProjectId = localStorage.getItem('currentProjectId');
-      //const savedProjectId = localStorage.getItem('currentProjectId');
-      fetchFilesParam(savedProjectId);
-    }
-  }, [open, projectId]);
-
-/*   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to server with ID:', socket.id);
-    }); */
-    
-/*     socket.on('fileUploaded', (data) => {
-      if (data.projectId === projectId) {
-        setFiles(prev => [...prev, data]);
-        setOpen(true);
-      }
-    }); */
-    
-/*     return () => {
-      socket.off('fileUploaded');
-      socket.disconnect();
-    };
-  }, [projectId]); */
-
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     try {
       if (!projectId) return;
       console.log('Fetching files for project:', projectId);
@@ -120,10 +46,9 @@ const FileListScreen = ({ projectId }) => {
     } catch (error) {
       console.error('Error fetching files:', error);
     }
-  };
+  }, [projectId]);
 
-
-  const fetchFilesParam = async (savedProjectId) => {
+  const fetchFilesParam = useCallback(async (savedProjectId) => {
     try {
       console.log('fetchFilesParam', savedProjectId)
       const idToUse = savedProjectId || projectId;
@@ -137,60 +62,81 @@ const FileListScreen = ({ projectId }) => {
     } catch (error) {
       console.error('Error fetching files:', error);
     }
-  };
+  }, [projectId]);
 
-
-  const [isUploading, setIsUploading] = useState(false);
-
-
-  const onUpload = async (file) => {
-    console.log('onUpload function called');
-    console.log('File to upload:', file);
-
+  const handleFileUpload = async (file) => {
     const formData = new FormData();
-    formData.append('projectImage', file);
-    console.log('FormData created:', formData);
+    formData.append('file', file);
 
     try {
-        console.log('Making axios request to:', `${API_URL}/upload/projects`);
-        const response = await axios.post(`${API_URL}/upload/projects`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        console.log('Upload response:', response.data);
-        return response.data.path;
-    } catch (error) {
-        console.error('Upload error:', error);
-        throw error;
-    }
-}
+      localStorage.setItem('currentProjectId', projectId);
+      const response = await fetch(`${API_URL}/upload/${projectId}`, {
+        method: 'POST',
+        body: formData
+      });
 
-
-const handleFileUpload = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    localStorage.setItem('currentProjectId', projectId);
-    const response = await axios.post(`${API_URL}/upload/${projectId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress: (progressEvent) => {
-        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        console.log('Upload progress:', percentCompleted);
+      if (response.ok) {
+        const data = await response.json();
+        await fetchFiles();
+        setFiles(prev => [...prev, data]);
+        localStorage.setItem('fileModalState', JSON.stringify(true));
+        setOpen(true);
+      } else {
+        console.error('Upload failed');
       }
-    });
-
-    if (response.data) {
-      await fetchFiles(); // Fetch fresh file list after upload
-      setFiles(prev => [...prev, response.data]);
-      localStorage.setItem('fileModalState', JSON.stringify(true));
-      setOpen(true);
+    } catch (error) {
+      console.error('Upload error:', error);
     }
-  } catch (error) {
-    console.error('Upload error:', error);
-  }
-};
+  };
+  
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+    
+    const savedState = localStorage.getItem('fileModalState');
+    if (savedState) {
+      setOpen(JSON.parse(savedState));
+      fetchFiles();
+    }
+  }, [fetchFiles]);
+
+  useEffect(() => {
+    localStorage.setItem('fileModalState', JSON.stringify(open));
+  
+    if (open) {
+      console.log('Modal is open');
+      const savedProjectId = localStorage.getItem('currentProjectId');
+      fetchFilesParam(savedProjectId);
+    }
+  }, [open, fetchFilesParam]);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragActive) setDragActive(true);
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragActive) setDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      await handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
 
   const sortFiles = (filesArray) => {
     return [...filesArray].sort((a, b) => {
@@ -257,33 +203,14 @@ const handleFileUpload = async (file) => {
     }));
   };
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      await handleFileUpload(e.dataTransfer.files[0]);
-
-    }
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -303,8 +230,7 @@ const handleFileUpload = async (file) => {
 />
 
 <Modal
-    open={open && !uploadLock}
-    onClose={() => !uploadLock && setOpen(false)}
+    open={open}
 >
         <ModalDialog sx={{
           maxWidth: '80vw',
@@ -407,9 +333,9 @@ const handleFileUpload = async (file) => {
                 bgcolor: dragActive ? 'action.hover' : 'background.paper',
                 cursor: 'pointer'
               }}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
               <input

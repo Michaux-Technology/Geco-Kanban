@@ -1,25 +1,23 @@
-import React, { useState, useContext } from 'react';
-import { Container, TextField, Button, Link, CssBaseline, Avatar, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, TextField, Button, Link, CssBaseline, Avatar } from '@mui/material';
 import Typography from '@mui/joy/Typography';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import GoogleIcon from '@mui/icons-material/Google';
 import axios from 'axios';
 import Chip from '@mui/joy/Chip';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from './config';
 
-
 function AuthPage() {
-
     const [email, setEmail] = useState(localStorage.getItem('email') || '');
-    const [id, setId] = useState(localStorage.getItem('id') || '');
-    const [avatar, setAvatar] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [firstname, setFirstname] = useState('');
-    const [company, setCompany] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
-    let [password, setPassword] = useState('');
-    let navigate = useNavigate();
+    useEffect(() => {
+        const userId = localStorage.getItem('id');
+        if (userId) {
+            navigate(`/projectList?user=${userId}`);
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,17 +28,7 @@ function AuthPage() {
 
             if (response.data && response.data.message === 'Login successful') {
                 const responseUser = await axios.get(`${API_URL}/user/email/${email}`);
-                setId(responseUser.data._id);
-                setAvatar(responseUser.data.avatar);
-                setLastName(responseUser.data.lastName);
-                setFirstname(responseUser.data.firstName);
-                setCompany(responseUser.data.company);
 
-                // Enregistrer l'avatar, le prenom et le nom de famille dans le localStorage
-
-                //passage des Localstarage sous forme de fonction car sans fonction ca créé un bug
-                //Probleme de rapidité 
-                
                 saveIdToLocalStorage(responseUser.data._id);
                 saveAvatarToLocalStorage(responseUser.data.avatar);
                 savefirstnameToLocalStorage(responseUser.data.firstName);
@@ -67,8 +55,7 @@ function AuthPage() {
                     localStorage.setItem('companyuser', company);
                 }
 
-                navigate(`/projectList?user=${responseUser.data._id}`); // Redirection vers la page projectList
-
+                navigate(`/projectList?user=${responseUser.data._id}`);
             } else {
                 console.error(response.data.message);
             }
@@ -85,7 +72,6 @@ function AuthPage() {
 
     return (
         <Container component="main" maxWidth="xs">
-
             <CssBaseline />
             <div style={{
                 display: 'flex',
@@ -100,7 +86,6 @@ function AuthPage() {
                     Login
                 </Typography>
                 <form style={{ width: '100%', marginTop: '1rem' }} onSubmit={handleSubmit}>
-
                     <TextField
                         variant="outlined"
                         margin="normal"
@@ -138,8 +123,6 @@ function AuthPage() {
                         Login
                     </Button>
 
-                    {/* Ajout du bouton de connexion Google */}
-
                     <Typography
                         justifyContent="center"
                         color="primary"
@@ -169,7 +152,7 @@ function AuthPage() {
                         style={{ marginTop: '2rem' }}
                     >
                         Application created by
-                    </Typography >
+                    </Typography>
                     <Typography
                         justifyContent="center"
                         color="primary"
@@ -179,11 +162,10 @@ function AuthPage() {
                         style={{ width: '100%', textAlign: 'center' }}
                     >
                         <a href="https://github.com/Michaux-Technology/Geco-Kanban">Kanban Geco</a>
-
-                    </Typography >
+                    </Typography>
                 </form>
             </div>
-        </Container >
+        </Container>
     );
 }
 

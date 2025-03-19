@@ -1,7 +1,7 @@
 // ProjectTasks.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { API_URL } from './config';
@@ -49,6 +49,15 @@ const Modal = React.memo(({ onClose, children }) => {
 
 
 const ProjectTasks = () => {
+  const navigate = useNavigate();
+
+  // Vérifier si l'utilisateur est connecté
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('id');
+    if (!storedUserId) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const [taskDependencies, setTaskDependencies] = useState([]);
   const [selectedDependencies, setSelectedDependencies] = useState(null);
