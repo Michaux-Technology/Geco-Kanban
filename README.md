@@ -6,7 +6,7 @@
 
 ## ✅ Description
 
-Boost Productivity with an Intuitive Project Management Tool
+<h3>Boost Productivity with an Intuitive Project Management Tool</h3>
 
 Our cutting-edge project management software empowers teams to organize, track, and collaborate seamlessly using Kanban boards and Gantt charts. Effortlessly drag and drop tasks, assign them to team members, add comments, and keep everyone aligned in real-time.
 
