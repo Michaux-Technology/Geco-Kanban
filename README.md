@@ -44,7 +44,7 @@ Node.js
 Express.js
 Mongodb
 
-## ➡️ Rights
+## ➤ Rights
 
 The license available on Github is : 
 
