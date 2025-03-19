@@ -107,7 +107,7 @@ Ask your questions, let us know about bugs...
 
 in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
 
-## ✅ Make a donation
+## ➡️ Make a donation
 
 To obtain a license :
 - [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/deed.en)
@@ -119,11 +119,11 @@ make the [right](https://github.com/sponsors/Michaux-Technology) donation
 
 Good luck!
 
-## ✅ Our video
+## ➡️ Our video
 
 [![Alv_3hkBI8Q](https://img.youtube.com/vi/qzr9uuxXE4o/1.jpg)](https://www.youtube.com/watch?v=qzr9uuxXE4o)
 
-## ✅ Our Screenshot
+## ➡️ Our Screenshot
 
 <b> Login screen </b>
 
