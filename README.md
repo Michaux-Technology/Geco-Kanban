@@ -10,6 +10,7 @@ This software lets you manage projects using Kanban and Gantt charts.
 Each project is made up of tasks that can be dragged from one column to another, liked and commented on.
 Files can be inserted into projects to keep teams informed.   
 The software is multi-user and changes are visible live, without the need to refresh the page. 
+Communication between project partners is essential, which is why we've included a videoconferencing module. 
 
 ## ✅ Technologies used
 
@@ -35,10 +36,7 @@ by <b>Valéry-Jérôme Michaux</b>
 ## ✅ Project status
 
 1. New features v 5.00 :
-(the new version comes this evening)
-    
-  It is now possible to: 
-- to use Video conference
+- Video conference
 
 2. Upcoming features :
 - compatible https
