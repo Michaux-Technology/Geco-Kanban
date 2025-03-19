@@ -26,7 +26,7 @@ Key Features for Maximum Efficiency:
 <h2>Seamless Communication with Built-in Video Conferencing</h2>
 Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
 
-Why Choose Our Project Management Software?
+<h2>Why Choose Our Project Management Software?</h2>
 
 🚀 Enhance Team Productivity – Streamline workflows and improve task visibility.
 
