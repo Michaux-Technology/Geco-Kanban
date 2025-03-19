@@ -26,21 +26,22 @@ The license available on Github is :
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.en)
 
 ## ✅ Origin of the project
-This project was created in 🇫🇷 and 🇩🇪 
+This project was created by a 🇫🇷 living in 🇩🇪.   
+
+This project is totally 🇪🇺. 
+
 by <b>Valéry-Jérôme Michaux</b>
 
 ## ✅ Project status
 
-1. New features v 4.02 :
+1. New features v 5.00 :
+(the new version comes this evening)
     
   It is now possible to: 
-- If you don't have a user, you won't be started on the login page, but on the user creation page. 
-This is used when installing for the first time or when a user is lost.
+- to use Video conference
 
 2. Upcoming features :
-- Database link control
-- Employee occupancy table by project task.
-- Team Visio  
+- compatible https
 
 ## ✅ Questions / Answers
 
@@ -65,13 +66,24 @@ Ask your questions, let us know about bugs...
 
    npm install
 
-6. Launch the backend under ./backend : 
+6. Launch the backend under ./backend/src : 
 
-   node index.js
+   node serverSoft.js
 
-7. Run the frontend under ./frontend : 
+   and for the video conference:
+   
+   node serverVisio.js
+   if you do not need it do not lauch it.
+
+8. Run the frontend under ./frontend : 
 
    npm start
+
+9. For the video conference, go in Google Chrome and write :
+
+   chrome://flags
+
+in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
 
 ## ✅ Make a donation
 
