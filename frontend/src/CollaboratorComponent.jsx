@@ -44,25 +44,16 @@ const CollaboratorComponent = () => {
 
   const socket = io(API_URL, {
     reconnection: true,
-    reconnectionAttempts: 5,
+    reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     timeout: 20000,
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    autoConnect: false
   });
 
-  // Add error handling
-  socket.on('connect_error', (error) => {
-    console.log('Connection Error:', error);
-    socket.connect();
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('Disconnected:', reason);
-    if (reason === 'io server disconnect') {
-      socket.connect();
-    }
-  });
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
 
   const [companyuser] = useState(localStorage.getItem('companyuser') || '')
 
@@ -103,7 +94,39 @@ const CollaboratorComponent = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    // Tentative de connexion initiale
+    socket.connect();
+
+    // Gestionnaires d'événements de connexion
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket');
+      setIsConnected(true);
+      setConnectionError(null);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.log('Connection Error:', error);
+      setIsConnected(false);
+      setConnectionError(error.message);
+      
+      // Attendre avant de retenter la connexion
+      setTimeout(() => {
+        socket.connect();
+      }, 5000);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected:', reason);
+      setIsConnected(false);
+      
+      if (reason === 'io server disconnect') {
+        // Le serveur a forcé la déconnexion
+        setTimeout(() => {
+          socket.connect();
+        }, 5000);
+      }
+      // La reconnexion automatique sera tentée pour d'autres raisons
+    });
 
     // Écoutez l'événement pour les projets ajoutés en temps réel
     socket.on('CollaboratorAdded', (newUser) => {
@@ -124,11 +147,59 @@ const CollaboratorComponent = () => {
       );
     });
 
+    // Nettoyage à la destruction du composant
     return () => {
       resetErrorMessage()
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
       socket.disconnect();
     };
-  }, [socket])
+  }, []);
+
+  // Afficher un message d'erreur si la connexion échoue
+  useEffect(() => {
+    if (connectionError) {
+      console.warn('WebSocket connection error:', connectionError);
+      // Vous pouvez ajouter ici une notification visuelle pour l'utilisateur
+    }
+  }, [connectionError]);
+
+  useEffect(() => {
+    if (isConnected) {
+      fetchData();
+
+      // Écoutez l'événement pour les projets ajoutés en temps réel
+      socket.on('CollaboratorAdded', (newUser) => {
+        setCollaborators((prevCollaborators) => [...prevCollaborators, newUser]);
+      });
+
+      // Écoutez l'événement pour les projets supprimés en temps réel
+      socket.on('userDeleted', (deletedUserId) => {
+        setCollaborators((prevCollaborators) => 
+          prevCollaborators.filter((collaborator) => collaborator._id !== deletedUserId)
+        );
+      });
+
+      // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
+      socket.on('userUpdated', (updatedUser) => {
+        setCollaborators((prevCollaborators) =>
+          prevCollaborators.map((collaborator) =>
+            collaborator._id === updatedUser._id 
+              ? { ...collaborator, title: updatedUser.title, description: updatedUser.description, enddate: updatedUser.enddate } 
+              : collaborator
+          )
+        );
+      });
+
+      // Nettoyage des écouteurs d'événements
+      return () => {
+        socket.off('CollaboratorAdded');
+        socket.off('userDeleted');
+        socket.off('userUpdated');
+      };
+    }
+  }, [isConnected]); // Dépend de l'état de la connexion
 
   function stringToColor(string) {
     let hash = 0

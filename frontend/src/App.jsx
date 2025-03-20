@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { UNSAFE_DataRouterContext, UNSAFE_DataRouterStateContext } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from './config';
 import AuthPage from './AuthPage';
@@ -23,6 +24,13 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return children;
+};
+
+const router = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
 };
 
 const App = () => {
@@ -51,7 +59,7 @@ const App = () => {
   }
 
   return (
-    <Router>
+    <Router future={router.future}>
       <UserContext.Provider value={{ email, setEmail, avatar, setAvatar }}>
         <Routes>
           <Route path="/" element={hasUsers ? <AuthPage /> : <FirstUserCreate />} />

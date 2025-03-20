@@ -68,7 +68,7 @@ function FirstUserCreate() {
       position: 'Admin',
       company,
       password,
-      avatar: ""
+      avatar: null
     });
   };
 

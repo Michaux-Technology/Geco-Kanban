@@ -39,6 +39,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Servir les fichiers statiques depuis le dossier public de frontend
+app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads')));
+
 const server = http.createServer(app);
 
 // Utilisation de la configuration CORS avec socket.io
@@ -191,17 +194,14 @@ const fileChunks = new Map();
 io.on('connection', (socket) => {
 
   socket.on('join-room', ({ roomId, userId }) => {
-    console.log(`User ${userId} joining room ${roomId}`);
     socket.join(roomId);
     socket.to(roomId).emit('user-connected', userId);
 
     socket.on('signal', ({ userId, signal }) => {
-      console.log(`Signal from ${userId} in room ${roomId}`);
       socket.to(roomId).emit('signal', { userId, signal });
     });
 
     socket.on('disconnect', () => {
-      console.log(`User ${userId} disconnected from ${roomId}`);
       socket.to(roomId).emit('user-disconnected', userId);
     });
   });
@@ -221,7 +221,7 @@ io.on('connection', (socket) => {
     if (receivedChunks === totalChunks) {
       const completeFile = Buffer.concat(chunks);
 
-      const uploadDir = path.join(__dirname, '..', 'frontend', 'public', 'uploads', projectId);
+      const uploadDir = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', projectId);
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -248,7 +248,7 @@ io.on('connection', (socket) => {
       const { projectId, file } = data;
 
       // Create upload directory if it doesn't exist
-      const uploadDir = path.join(__dirname, '..', 'frontend', 'public', 'uploads', projectId);
+      const uploadDir = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', projectId);
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -276,13 +276,8 @@ io.on('connection', (socket) => {
 
   socket.on('updateTask', async ({ taskId, status, order }) => {
     try {
-
-      // Mettre à jour la tâche dans la base de données
       await Task.findByIdAndUpdate(taskId, { status, order });
-
-      // Diffuser la mise à jour à tous les clients connectés
       io.emit('taskUpdated', { taskId, status, order });
-
     } catch (error) {
       console.error('Error updating task:', error);
     }
@@ -336,12 +331,9 @@ io.on('connection', (socket) => {
 
   socket.on('addCollab', async (collabData) => {
     try {
-
       // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(collabData.password, salt);
-
-      console.log(collabData.avatar)
 
       const collaborator = new User({
         email: collabData.email,
@@ -354,7 +346,6 @@ io.on('connection', (socket) => {
       });
 
       await collaborator.save();
-
       io.emit('CollaboratorAdded', collaborator);
 
     } catch (error) {
@@ -462,7 +453,7 @@ io.on('connection', (socket) => {
       await Project.findByIdAndDelete(validProjectId);
 
       // Add directory deletion here
-      const projectUploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', projectId);
+      const projectUploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', projectId);
 
       if (fs.existsSync(projectUploadPath)) {
         fs.rmSync(projectUploadPath, { recursive: true, force: true });
@@ -960,28 +951,42 @@ app.put('/projects/:projectId/columns', async (req, res) => {
   }
 });
 
-app.delete('/projects/:projectId/columns/:columnId', async (req, res) => {
-  const { projectId, columnId } = req.params;
+app.delete('/projects/:id', async (req, res) => {
+  const { id } = req.params;
 
   try {
-    const project = await Project.findById(projectId);
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+    const validProjectId = new mongoose.Types.ObjectId(id);
+
+    // Check existing records before deletion
+    const existingUsers = await ProjectUsers.find({ projectId: id });
+
+    // Delete project users with both formats to ensure matching
+    const deleteResult = await ProjectUsers.deleteMany({
+      $or: [
+        { projectId: id },
+        { projectId: validProjectId }
+      ]
+    });
+
+    // Supprimer les tâches du projet
+    await Task.deleteMany({ projectId: id });
+    
+    // Supprimer le projet de la base de données
+    await Project.findByIdAndDelete(validProjectId);
+
+    // Supprimer le dossier du projet
+    const projectUploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', id);
+
+    if (fs.existsSync(projectUploadPath)) {
+      fs.rmSync(projectUploadPath, { recursive: true, force: true });
     }
 
-    if (!project.columns.has(columnId)) {
-      return res.status(404).json({ message: 'Column not found' });
-    }
+    io.emit('projectDeleted', id);
+    res.status(200).json({ message: 'Project deleted successfully' });
 
-    project.columns.delete(columnId);
-    await project.save();
-
-    // Optionally, you might want to handle tasks in the deleted column
-    await Task.deleteMany({ projectId, status: columnId });
-
-    res.status(200).json({ message: 'Column deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting column', error: error.message });
+    console.error('Error in deletion process:', error);
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
@@ -1323,46 +1328,6 @@ app.delete('/projects/:projectId/users/:personId', async (req, res) => {
   }
 });
 
-app.delete('/projects/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-
-    // Check existing records before deletion
-    const existingUsers = await ProjectUsers.find({ projectId: id });
-
-    // Delete project users with both formats to ensure matching
-    const deleteResult = await ProjectUsers.deleteMany({
-      $or: [
-        { projectId: id },
-        { projectId: validProjectId }
-      ]
-    });
-
-    await Task.deleteMany({ projectId: id });
-    await Project.findByIdAndDelete(validProjectId);
-
-    io.emit('projectDeleted', projectId);
-
-
-    // Delete the project's upload directory
-    const projectUploadPath = path.join(__dirname, 'upload', 'projects', id);
-
-    if (fs.existsSync(projectUploadPath)) {
-      fs.rmSync(projectUploadPath, { recursive: true, force: true });
-    }
-
-    res.status(200).json({ message: 'Project deleted successfully' });
-
-  } catch (error) {
-    console.error('Error in deletion process:', error);
-    res.status(500).json({ error: 'An error occurred' });
-  }
-});
-
-
-
-
 app.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -1375,6 +1340,15 @@ app.delete('/users/:id', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Supprimer l'avatar s'il existe
+    if (user.avatar) {
+      const avatarPath = path.join(__dirname, '..', '..', 'frontend', 'public', user.avatar);
+      
+      if (fs.existsSync(avatarPath)) {
+        fs.unlinkSync(avatarPath);
+      }
+    }
+
     // Supprimer l'utilisateur
     await User.findByIdAndDelete(id);
 
@@ -1382,7 +1356,7 @@ app.delete('/users/:id', async (req, res) => {
     io.emit('userDeleted', { userId: id });
 
     // Renvoyer une réponse indiquant que la suppression a réussi
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: 'User and avatar deleted successfully' });
 
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -1404,41 +1378,51 @@ app.get('/user/:emailGroup/collaborators', async (req, res) => {
 
 
 // Configuration de stockage de Multer
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let uploadPath;
-
-    if (file.fieldname === 'file') {
-      // For project files
-      uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId);
-    } else {
-
-      if (file.fieldname === 'projectImage') {
-        // For project images
-        uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId || 'temp');
-      } else {
-
-        // For avatar uploads
-        uploadPath = path.join(__dirname, '..', 'frontend', 'public', 'uploads', 'avatars');
-
-      }
+    
+    // For avatar uploads
+    if (file.fieldname === 'avatar') {
+      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'avatars');
+    }
+    // For project files
+    else if (file.fieldname === 'file') {
+      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId);
+    }
+    // For project images
+    else if (file.fieldname === 'projectImage') {
+      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId || 'temp');
     }
 
+    // Créer le dossier s'il n'existe pas
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
+    
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    namefile = `${Date.now()}-${file.originalname}`;
+    // Générer un nom de fichier unique avec l'extension d'origine
+    const extension = path.extname(file.originalname);
+    namefile = `${Date.now()}-${Math.random().toString(36).substring(7)}${extension}`;
     cb(null, namefile);
   }
 });
 
-
-
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    // Accepter uniquement les images
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  }
+});
 
 app.get('/download/:fileId', async (req, res) => {
   try {
@@ -1448,7 +1432,7 @@ app.get('/download/:fileId', async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    const filePath = path.join(__dirname, '..', 'frontend', 'public', file.path);
+    const filePath = path.join(__dirname, '..', '..', 'frontend', 'public', file.path);
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'File not found on disk' });
@@ -1471,7 +1455,7 @@ app.delete('/files/:fileId', async (req, res) => {
     }
 
     // Delete physical file
-    const filePath = path.join(__dirname, '..', 'frontend', 'public', file.path);
+    const filePath = path.join(__dirname, '..', '..', 'frontend', 'public', file.path);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
@@ -1522,21 +1506,26 @@ app.post('/upload/projects', upload.single('projectImage'), (req, res) => {
 });
 
 app.post('/upload/avatar', upload.single('avatar'), (req, res) => {
-
-  try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded.' });
+        return res.status(400).json({ message: 'No file uploaded' });
     }
-    const filePath = `/uploads/avatars/${namefile}`;
 
-    return res.status(200).json({
-      message: 'Avatar uploaded successfully.',
-      path: filePath
+    const filePath = `/uploads/avatars/${req.file.filename}`;
+    const fullPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'avatars');
+
+    // Créer le dossier s'il n'existe pas
+    if (!fs.existsSync(fullPath)) {
+        fs.mkdirSync(fullPath, { recursive: true });
+    }
+
+    // Déplacer le fichier vers le bon dossier
+    const finalPath = path.join(fullPath, req.file.filename);
+    fs.renameSync(req.file.path, finalPath);
+
+    res.json({ 
+        message: 'Avatar uploaded successfully',
+        path: filePath
     });
-  } catch (error) {
-    console.error('Error uploading avatar:', error);
-    return res.status(500).json({ error: 'Internal server error.' });
-  }
 });
 
 app.post('/upload/:projectId', upload.single('file'), async (req, res) => {
