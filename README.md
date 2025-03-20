@@ -59,7 +59,7 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.00 :
+1. New features v 5.01 :
 - Video conference
 
 2. Upcoming features :
