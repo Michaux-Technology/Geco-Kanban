@@ -84,7 +84,7 @@ const MyTasks = () => {
           });
         } else {
           sortedTasks = [...tasksWithDetails].sort((a, b) => 
-            new Date(a.begindate) - new Date(b.begindate)
+            new Date(b.begindate) - new Date(a.begindate)
           );
         }
         setTasks(sortedTasks);
@@ -260,7 +260,7 @@ const MyTasks = () => {
                   </Grid>
 
                   {/* Assigned users */}
-                  <Grid item xs={12} sm={1.5} md={2} sx={{ pl: '0 !important' }}>
+                  <Grid item xs={12} sm={1.5} md={2}>
                     <AvatarGroup 
                       max={4} 
                       sx={{ 
@@ -306,10 +306,11 @@ const MyTasks = () => {
                     <Box sx={{ 
                       display: 'flex', 
                       gap: 1,
-                      justifyContent: { xs: 'flex-start', sm: 'center' },
+                      justifyContent: 'flex-start',
                       alignItems: 'center',
                       height: '100%',
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                      flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                      ml: 2
                     }}>
                       <Chip
                         label={task.column?.title || 'No column'}
@@ -317,7 +318,14 @@ const MyTasks = () => {
                           backgroundColor: task.column?.color || '#757575',
                           color: 'white',
                           fontWeight: 'bold',
-                          display: { xs: 'none', sm: 'none', md: 'flex' }
+                          display: { xs: 'none', sm: 'none', md: 'flex' },
+                          minWidth: '120px',
+                          '& .MuiChip-label': {
+                            display: 'flex',
+                            width: '100%',
+                            justifyContent: 'center',
+                            padding: '0 8px'
+                          }
                         }}
                       />
                       <Chip
@@ -326,7 +334,7 @@ const MyTasks = () => {
                           backgroundColor: getPriorityColor(task.priority),
                           color: 'white',
                           fontWeight: 'bold',
-                          minWidth: { xs: '80px', sm: 'auto' },
+                          minWidth: { xs: '80px', sm: '100px' },
                           display: { xs: 'none', sm: 'flex' }
                         }}
                       />

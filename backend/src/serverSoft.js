@@ -110,6 +110,8 @@ const TaskSchema = new mongoose.Schema({
   gauge: { type: Number, default: 0 },
   workingDay: { type: Number, default: 0 },
   dependencies: { type: String, default: null },
+  pricePerHour: { type: Number, default: 0.0 },
+  hoursBilled: { type: Number, default: 0.0 },
   users: [{ type: String }],
   likes: [{ type: String }], // Array of user IDs who liked the task
   comments: [{

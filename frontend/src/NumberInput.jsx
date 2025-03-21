@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { Unstable_NumberInput as BaseNumberInput } from '@mui/base/Unstable_NumberInput';
 import { styled } from '@mui/system';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 
-// ... (all the styled components and color definitions)
 const grey = {
   50: '#F3F6F9',
   100: '#E5EAF2',
@@ -63,33 +61,95 @@ const StyledButton = styled('button')(
     flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 120ms;
+
+    &:hover {
+      background: ${theme.palette.mode === 'dark' ? grey[800] : grey[100]};
+    }
+
+    &:focus {
+      outline: 2px solid ${theme.palette.mode === 'dark' ? grey[600] : grey[400]};
+    }
   `,
 );
 
 const NumberInput = React.forwardRef(function CustomNumberInput(props, ref) {
+  const { onChange, value, min, max, step = 1, precision = 2, allowDecimals = true, ...other } = props;
+  const [displayValue, setDisplayValue] = React.useState(value?.toString() || '0');
+
+  const handleChange = (event) => {
+    const newValue = allowDecimals 
+      ? event.target.value.replace(/[^0-9,]/g, '')
+      : event.target.value.replace(/[^0-9]/g, '');
+    setDisplayValue(newValue);
+    
+    if (newValue) {
+      const numericValue = parseFloat(newValue.replace(',', '.'));
+      if (!isNaN(numericValue)) {
+        onChange?.(event, Math.min(Math.max(numericValue, min || 0), max || Infinity));
+      }
+    }
+  };
+
+  const handleBlur = (event) => {
+    const numericValue = parseFloat(displayValue.replace(',', '.')) || 0;
+    const clampedValue = Math.min(Math.max(numericValue, min || 0), max || Infinity);
+    const formattedValue = allowDecimals 
+      ? clampedValue.toFixed(precision).replace('.', ',')
+      : Math.round(clampedValue).toString();
+    setDisplayValue(formattedValue);
+    onChange?.(event, allowDecimals ? clampedValue : Math.round(clampedValue));
+  };
+
+  const increment = () => {
+    const currentValue = parseFloat(displayValue.replace(',', '.')) || 0;
+    const newValue = Math.min(currentValue + (step || 1), max || Infinity);
+    const formattedValue = allowDecimals 
+      ? newValue.toFixed(precision).replace('.', ',')
+      : Math.round(newValue).toString();
+    setDisplayValue(formattedValue);
+    onChange?.(null, allowDecimals ? newValue : Math.round(newValue));
+  };
+
+  const decrement = () => {
+    const currentValue = parseFloat(displayValue.replace(',', '.')) || 0;
+    const newValue = Math.max(currentValue - (step || 1), min || 0);
+    const formattedValue = allowDecimals 
+      ? newValue.toFixed(precision).replace('.', ',')
+      : Math.round(newValue).toString();
+    setDisplayValue(formattedValue);
+    onChange?.(null, allowDecimals ? newValue : Math.round(newValue));
+  };
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      const formattedValue = allowDecimals 
+        ? value.toFixed(precision).replace('.', ',')
+        : Math.round(value).toString();
+      setDisplayValue(formattedValue);
+    }
+  }, [value, precision, allowDecimals]);
+
   return (
-    <BaseNumberInput
-      slots={{
-        root: StyledInputRoot,
-        input: StyledInput,
-        incrementButton: StyledButton,
-        decrementButton: StyledButton,
-      }}
-      slotProps={{
-        incrementButton: {
-          children: <AddIcon fontSize="small" />,
-          className: 'increment',
-        },
-        decrementButton: {
-          children: <RemoveIcon fontSize="small" />,
-        },
-      }}
-      {...props}
-      ref={ref}
-    />
+    <StyledInputRoot>
+      <StyledButton type="button" onClick={decrement}>
+        <RemoveIcon fontSize="small" />
+      </StyledButton>
+      <StyledInput
+        ref={ref}
+        type="text"
+        value={displayValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        {...other}
+      />
+      <StyledButton type="button" onClick={increment}>
+        <AddIcon fontSize="small" />
+      </StyledButton>
+    </StyledInputRoot>
   );
 });
 

@@ -39,7 +39,8 @@
     "socket.io-client": "^4.7.2",
     "stream-browserify": "^3.0.0",
     "styled-components": "^6.1.8",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "recharts": "^2.12.3"
   },
   "scripts": {
     "start": "react-scripts start",

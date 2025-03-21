@@ -65,6 +65,8 @@ const ProjectTasks = () => {
   const [workingDay, setWorkingDay] = useState(1);
   const [showGanttModal, setShowGanttModal] = useState(false);
   const [newTaskGauge, setNewTaskGauge] = useState(0);
+  const [pricePerHour, setPricePerHour] = useState(0);
+  const [hoursBilled, setHoursBilled] = useState(0);
   const alignementGauche = {
     display: 'inline-flex',
     flexWrap: 'wrap'
@@ -477,8 +479,6 @@ const ProjectTasks = () => {
 
   const handleEditTask = async (taskId) => {
     try {
-
-
       const response = await axios.get(`${API_URL}/tasks/${taskId}`);
       const task = response.data;
 
@@ -486,7 +486,6 @@ const ProjectTasks = () => {
 
       const taskUsers = collaborators.filter(collab =>
         task.users.includes(collab._id)
-
       );
 
       setSelectedUsers(taskUsers);
@@ -500,6 +499,8 @@ const ProjectTasks = () => {
       setSelectedColor(task.color);
       setNewTaskGauge(task.gauge || 0);
       setWorkingDay(task.workingDay || 1);
+      setPricePerHour(task.pricePerHour || 0);
+      setHoursBilled(task.hoursBilled || 0);
       setIsEditing(true);
       setModalOpen(true);
       setLayout('center');
@@ -514,12 +515,9 @@ const ProjectTasks = () => {
     try {
       const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
 
-      // Convert dependencies to string, ensuring it's not an array
       const dependencyValue = typeof selectedDependencies === 'string' ?
         selectedDependencies :
         (selectedDependencies || '').toString();
-
-      console.log('Dependency value:', dependencyValue); // Debug log
 
       const updatedTask = {
         title: newTaskTitle,
@@ -532,10 +530,11 @@ const ProjectTasks = () => {
         users: taskUsers.map(user => user._id),
         gauge: newTaskGauge,
         workingDay: workingDay,
-        dependencies: dependencyValue
+        dependencies: dependencyValue,
+        pricePerHour: pricePerHour,
+        hoursBilled: hoursBilled
       };
 
-      console.log('Updated task:', updatedTask); // Debug log
       const response = await axios.put(`${API_URL}/tasks/${editingTask._id}`, updatedTask);
       setTasks(tasks.map(task => task._id === editingTask._id ? response.data : task));
       resetEditing();
@@ -563,8 +562,6 @@ const ProjectTasks = () => {
       }
 
       const taskUsers = selectedUsers.filter(user => user._id && !user.projectId);
-
-      // Define dependenciesString before using it
       const dependenciesString = selectedDependencies ? selectedDependencies.toString() : '';
 
       const response = await axios.post(`${API_URL}/tasks`, {
@@ -579,13 +576,11 @@ const ProjectTasks = () => {
         projectId: projectId,
         users: taskUsers.map(user => user._id),
         gauge: newTaskGauge,
-        dependencies: dependenciesString,  // Now using the defined variable
-        workingDay: workingDay
+        dependencies: dependenciesString,
+        workingDay: workingDay,
+        pricePerHour: pricePerHour,
+        hoursBilled: hoursBilled
       });
-
-      // Rest of the function...
-
-
 
       setTasks([response.data, ...tasks]);
       setNewTaskTitle('');
@@ -595,7 +590,9 @@ const ProjectTasks = () => {
       setNewTaskEndDate('');
       setNewTaskStatus('todo');
       setSelectedColor("#000000");
-      setSelectedUsers([]); // Reset selected users after creation
+      setSelectedUsers([]);
+      setPricePerHour(0);
+      setHoursBilled(0);
       setModalOpen(false);
 
     } catch (error) {
@@ -833,10 +830,41 @@ const ProjectTasks = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <NumberInput
                       aria-label="Working Day"
-                      min={1}
-                      max={99}
+                      min={0}
+                      max={999}
                       value={workingDay}
                       onChange={(event, val) => setWorkingDay(val)}
+                      allowDecimals={false}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px' }}>
+                  <Typography variant="caption">Price per Hour (€)</Typography>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <NumberInput
+                      aria-label="Price per Hour"
+                      min={0}
+                      max={999.99}
+                      step={0.01}
+                      precision={2}
+                      value={pricePerHour}
+                      onChange={(event, val) => setPricePerHour(val)}
+                      allowDecimals={true}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px' }}>
+                  <Typography variant="caption">Hours Billed</Typography>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <NumberInput
+                      aria-label="Hours Billed"
+                      min={0}
+                      max={999}
+                      value={hoursBilled}
+                      onChange={(event, val) => setHoursBilled(val)}
+                      allowDecimals={false}
                     />
                   </div>
                 </div>

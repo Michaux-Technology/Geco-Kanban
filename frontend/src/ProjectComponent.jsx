@@ -27,6 +27,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 //Components
 import AvatarComponent from './AvatarComponent';
@@ -35,6 +36,7 @@ import Modal from '@mui/joy/Modal';
 
 import ModalClose from '@mui/joy/ModalClose';
 import ModalDialog from '@mui/joy/ModalDialog';
+import StatPrice from './components/StatPrice';
 
 
 const ProjectComponent = () => {
@@ -72,6 +74,9 @@ const ProjectComponent = () => {
         display: 'inline-flex',
         flexWrap: 'wrap'
     };
+
+    const [isStatPriceModalOpen, setIsStatPriceModalOpen] = useState(false);
+    const [selectedProjectId, setSelectedProjectId] = useState(null);
 
     const fetchData = async () => {
         try {
@@ -469,13 +474,32 @@ const ProjectComponent = () => {
 
     return (
         <>
-
             {!isModalOpen && (
-                <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                    <Fab color="primary"
+                <Box sx={{ 
+                    '& > :not(style)': { m: 1 },
+                    display: 'flex',
+                    gap: 1
+                }}>
+                    <Fab 
+                        color="primary"
                         aria-label="add"
-                        onClick={() => { setIsEditing(false); setModalOpen(true); setLayout('center'); }}>
+                        onClick={() => { 
+                            setIsEditing(false); 
+                            setModalOpen(true); 
+                            setLayout('center'); 
+                        }}
+                    >
                         <AddIcon />
+                    </Fab>
+                    <Fab 
+                        color="secondary"
+                        aria-label="statistics"
+                        onClick={() => {
+                            setSelectedProjectId(null);
+                            setIsStatPriceModalOpen(true);
+                        }}
+                    >
+                        <BarChartIcon />
                     </Fab>
                 </Box>
             )}
@@ -749,17 +773,17 @@ const ProjectComponent = () => {
                                         <div className="button-flex" style={{
                                             display: 'flex',
                                             alignItems: 'flex-end',
-                                            justifyContent: 'space-between', // Changed from flex-start
+                                            justifyContent: 'space-between',
                                             width: '100%',
-                                            maxWidth: '100%', // Add maxWidth
-                                            overflow: 'hidden' // Prevent overflow
+                                            maxWidth: '100%',
+                                            overflow: 'hidden'
                                         }}>
-                                            {/* Left side - Gauge */}
+                                            {/* Left side - Gauge only */}
                                             <Box sx={{ width: '120px', height: '45px' }}>
                                                 <GaugeChart
                                                     id={`gauge-chart-${project._id}`}
                                                     nrOfLevels={20}
-                                                    percent={project.gauge ? project.gauge / 100 : 0} // Read gauge directly from project
+                                                    percent={project.gauge ? project.gauge / 100 : 0}
                                                     arcWidth={0.3}
                                                     colors={['#FF5F6D', '#FFC371', '#4CAF50']}
                                                     arcPadding={0.02}
@@ -774,7 +798,7 @@ const ProjectComponent = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '10px',
-                                                flexShrink: 0 // Prevent shrinking
+                                                flexShrink: 0
                                             }}>
                                                 <Typography noWrap>
                                                     {Date.parse(project.enddate) ? new Date(project.enddate).toLocaleDateString() : 'No End Date'}
@@ -799,6 +823,37 @@ const ProjectComponent = () => {
                     );
                 })}
             </div>
+
+            {/* Modal pour StatPrice */}
+            <Modal
+                open={isStatPriceModalOpen}
+                onClose={() => {
+                    setIsStatPriceModalOpen(false);
+                    setSelectedProjectId(null);
+                }}
+            >
+                <ModalDialog
+                    sx={{
+                        maxWidth: '90vw',
+                        minWidth: '80vw',
+                        minHeight: '80vh',
+                        maxHeight: '90vh',
+                        overflow: 'auto',
+                        padding: '24px'
+                    }}
+                >
+                    <ModalClose 
+                        onClick={() => {
+                            setIsStatPriceModalOpen(false);
+                            setSelectedProjectId(null);
+                        }} 
+                    />
+                    <Typography level="h2" mb={2}>
+                        Statistiques des prix {selectedProjectId ? 'du projet' : 'globales'}
+                    </Typography>
+                    <StatPrice projectId={selectedProjectId} />
+                </ModalDialog>
+            </Modal>
         </>
     )
 }
