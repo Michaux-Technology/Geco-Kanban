@@ -1382,42 +1382,84 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let uploadPath;
     
-    // For avatar uploads
-    if (file.fieldname === 'avatar') {
-      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'avatars');
-    }
-    // For project files
-    else if (file.fieldname === 'file') {
-      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId);
-    }
-    // For project images
-    else if (file.fieldname === 'projectImage') {
-      uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId || 'temp');
-    }
+    try {
+      // For avatar uploads
+      if (file.fieldname === 'avatar') {
+        uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'avatars');
+      }
+      // For project files
+      else if (file.fieldname === 'file') {
+        if (!req.params.projectId) {
+          return cb(new Error('Project ID is required for file uploads'));
+        }
+        uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId);
+      }
+      // For project images
+      else if (file.fieldname === 'projectImage') {
+        uploadPath = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads', 'projects', req.params.projectId || 'temp');
+      } else {
+        return cb(new Error('Invalid field name'));
+      }
 
-    // Créer le dossier s'il n'existe pas
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+      // Créer le dossier s'il n'existe pas
+      if (!fs.existsSync(uploadPath)) {
+        try {
+          fs.mkdirSync(uploadPath, { recursive: true, mode: 0o755 });
+        } catch (err) {
+          console.error('Error creating directory:', err);
+          return cb(new Error('Could not create upload directory'));
+        }
+      }
+
+      // Vérifier les permissions du dossier
+      try {
+        fs.accessSync(uploadPath, fs.constants.W_OK);
+      } catch (err) {
+        console.error('Directory not writable:', err);
+        return cb(new Error('Upload directory is not writable'));
+      }
+      
+      cb(null, uploadPath);
+    } catch (error) {
+      console.error('Error in multer destination:', error);
+      cb(error);
     }
-    
-    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    // Générer un nom de fichier unique avec l'extension d'origine
-    const extension = path.extname(file.originalname);
-    namefile = `${Date.now()}-${Math.random().toString(36).substring(7)}${extension}`;
-    cb(null, namefile);
+    try {
+      const extension = path.extname(file.originalname);
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(7);
+      namefile = `${timestamp}-${randomString}${extension}`;
+      cb(null, namefile);
+    } catch (error) {
+      console.error('Error in multer filename:', error);
+      cb(error);
+    }
   }
 });
 
 const upload = multer({ 
   storage: storage,
   fileFilter: function (req, file, cb) {
-    // Accepter uniquement les images
-    if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('Only image files are allowed!'), false);
+    try {
+      // Vérifier la taille du fichier avant l'upload
+      if (parseInt(req.headers['content-length']) > 5 * 1024 * 1024) {
+        return cb(new Error('File size exceeds 5MB limit'), false);
+      }
+
+      // Vérifier le type de fichier
+      if (file.fieldname === 'avatar' || file.fieldname === 'projectImage') {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new Error('Only image files are allowed for avatars and project images'), false);
+        }
+      }
+
+      cb(null, true);
+    } catch (error) {
+      console.error('Error in multer fileFilter:', error);
+      cb(error);
     }
-    cb(null, true);
   },
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB max
@@ -1531,7 +1573,21 @@ app.post('/upload/avatar', upload.single('avatar'), (req, res) => {
 app.post('/upload/:projectId', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(404).json({ error: 'No file uploaded.' });
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    if (!req.params.projectId) {
+      return res.status(400).json({ error: 'Project ID is required.' });
+    }
+
+    // Vérifier si le projet existe
+    const project = await Project.findById(req.params.projectId);
+    if (!project) {
+      // Supprimer le fichier si le projet n'existe pas
+      if (req.file.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(404).json({ error: 'Project not found.' });
     }
 
     const file = new File({
@@ -1543,10 +1599,30 @@ app.post('/upload/:projectId', upload.single('file'), async (req, res) => {
     });
 
     await file.save();
-    return res.status(200).json(file);
+
+    // Log successful upload
+    console.log(`File uploaded successfully: ${file.name} for project ${req.params.projectId}`);
+
+    return res.status(200).json({
+      message: 'File uploaded successfully',
+      file: {
+        id: file._id,
+        name: file.name,
+        path: file.path,
+        type: file.type,
+        size: file.size
+      }
+    });
   } catch (error) {
+    // En cas d'erreur, supprimer le fichier uploadé
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     console.error('Error uploading file:', error);
-    return res.status(500).json({ error: 'Internal server error.' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message 
+    });
   }
 });
 

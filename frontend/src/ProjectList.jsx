@@ -24,6 +24,7 @@ import { useLocation } from 'react-router-dom'
 
 import ProjectComponent from './ProjectComponent'
 import CollaboratorComponent from './CollaboratorComponent'
+import MyTasks from './MyTasks'
 
 
 const ProjectList = () => {
@@ -258,7 +259,6 @@ const ProjectList = () => {
               >
                 <MenuItem value={0} onClick={() => handleChange(null, 0)} label="List of projects">List of projects</MenuItem>
                 <MenuItem value={1} onClick={() => handleChange(null, 1)} label="List of collaborators">List of collaborators</MenuItem>
-
               </Menu>
               <Typography
                 variant="h4"
@@ -339,12 +339,9 @@ const ProjectList = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
+              <MenuItem onClick={() => handleChange(null, 2)}>My Tasks</MenuItem>
+              <MenuItem onClick={handleEdit}>Edit Profile</MenuItem>
               <MenuItem onClick={handleLogOut}>Logout</MenuItem>
-              <MenuItem
-                onClick={handleEdit}
-                id={userId}>
-                My account
-              </MenuItem>
             </Menu>
           </Toolbar>
         </Container>
@@ -360,6 +357,12 @@ const ProjectList = () => {
       {value === 1 && (
         <div>
           <CollaboratorComponent />
+        </div>
+      )}
+
+      {value === 2 && (
+        <div>
+          <MyTasks />
         </div>
       )}
 

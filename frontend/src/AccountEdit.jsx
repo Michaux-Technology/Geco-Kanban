@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from './config';
@@ -25,6 +25,30 @@ const AccountEdit = ({ userId, idListUsers }) => {
     const [message, setMessage] = useState('');
     const [avatar, setAvatar] = useState('');
     const [tempImage, setTempImage] = useState(null);
+    const currentUserId = localStorage.getItem('id');
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const id = userId || idListUsers || currentUserId;
+                console.log('Fetching user data for ID:', id); // Debug log
+                const response = await axios.get(`${API_URL}/users/${id}`);
+                console.log('User data received:', response.data); // Debug log
+                const userData = response.data;
+                setEmail(userData.email || '');
+                setCompany(userData.company || '');
+                setLastName(userData.lastName || '');
+                setFirstName(userData.firstName || '');
+                setPosition(userData.position || '');
+                setAvatar(userData.avatar || '');
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                setMessage('Error loading user information');
+            }
+        };
+
+        fetchUserData();
+    }, [userId, idListUsers, currentUserId]);
 
     const handleAvatarChange = (event) => {
         const file = event.target.files[0];
@@ -79,11 +103,8 @@ const AccountEdit = ({ userId, idListUsers }) => {
                 ...(formPassword && { password: formPassword }),
             };
 
-            if (idListUsers) {
-                response = await axios.put(`${API_URL}/user/${idListUsers}`, userData);
-            } else {
-                response = await axios.put(`${API_URL}/user/${userId}`, userData);
-            }
+            const id = idListUsers || userId || currentUserId;
+            response = await axios.put(`${API_URL}/user/${id}`, userData);
 
             setMessage(response.data.message);
             if (response.status === 200) {
@@ -224,6 +245,15 @@ const AccountEdit = ({ userId, idListUsers }) => {
                         style={{ marginTop: '1rem' }}
                     >
                         Validate
+                    </Button>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                        style={{ marginTop: '1rem' }}
+                        onClick={() => navigate('/projectList')}
+                    >
+                        Return
                     </Button>
                 </form>
             </div>

@@ -12,6 +12,7 @@ import UserList from './UserList';
 import FirstUserCreate from './FirstUserCreate';
 import UserContext from './UserContext';
 import VideoConference from './VideoConference';
+import MyTasks from './MyTasks';
 
 // Composant pour protéger les routes
 const ProtectedRoute = ({ children }) => {
@@ -84,6 +85,11 @@ const App = () => {
           <Route path="/video-conference" element={
             <ProtectedRoute>
               <VideoConference />
+            </ProtectedRoute>
+          } />
+          <Route path="/mytasks" element={
+            <ProtectedRoute>
+              <MyTasks />
             </ProtectedRoute>
           } />
           <Route path="/projects/:projectId" element={
