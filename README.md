@@ -59,8 +59,8 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.01 :
-- Video conference
+1. New features v 5.10 :
+- Visualization by a user of the tasks that belong to him.
 
 2. Upcoming features :
 - compatible https

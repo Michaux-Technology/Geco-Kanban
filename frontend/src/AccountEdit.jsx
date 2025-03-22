@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from './config';
 import {
@@ -17,6 +17,9 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 const AccountEdit = ({ userId, idListUsers }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const urlId = searchParams.get('id');
     const [email, setEmail] = useState('');
     const [company, setCompany] = useState('');
     const [lastName, setLastName] = useState('');
@@ -30,7 +33,7 @@ const AccountEdit = ({ userId, idListUsers }) => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const id = userId || idListUsers || currentUserId;
+                const id = urlId || userId || idListUsers || currentUserId;
                 console.log('Fetching user data for ID:', id); // Debug log
                 const response = await axios.get(`${API_URL}/users/${id}`);
                 console.log('User data received:', response.data); // Debug log
@@ -48,7 +51,7 @@ const AccountEdit = ({ userId, idListUsers }) => {
         };
 
         fetchUserData();
-    }, [userId, idListUsers, currentUserId]);
+    }, [userId, idListUsers, currentUserId, urlId]);
 
     const handleAvatarChange = (event) => {
         const file = event.target.files[0];
@@ -103,7 +106,7 @@ const AccountEdit = ({ userId, idListUsers }) => {
                 ...(formPassword && { password: formPassword }),
             };
 
-            const id = idListUsers || userId || currentUserId;
+            const id = urlId || idListUsers || userId || currentUserId;
             response = await axios.put(`${API_URL}/user/${id}`, userData);
 
             setMessage(response.data.message);
@@ -118,7 +121,7 @@ const AccountEdit = ({ userId, idListUsers }) => {
             console.error('Error during update:', error);
             setMessage(error.response?.data?.message || 'Error updating user information');
         }
-    }, [email, company, lastName, firstName, position, navigate, tempImage, avatar, idListUsers, userId]);
+    }, [email, company, lastName, firstName, position, navigate, tempImage, avatar, idListUsers, userId, urlId]);
 
     return (
         <Container component="main" maxWidth="xs">

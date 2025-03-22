@@ -333,6 +333,13 @@ io.on('connection', (socket) => {
 
   socket.on('addCollab', async (collabData) => {
     try {
+      // Vérifier si l'email existe déjà
+      const existingUser = await User.findOne({ email: collabData.email });
+      if (existingUser) {
+        socket.emit('CollaboratorError', { message: 'Cet email est déjà utilisé' });
+        return;
+      }
+
       // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(collabData.password, salt);
@@ -347,11 +354,38 @@ io.on('connection', (socket) => {
         avatar: collabData.avatar
       });
 
-      await collaborator.save();
-      io.emit('CollaboratorAdded', collaborator);
+      // Valider le document avant de sauvegarder
+      const validationError = collaborator.validateSync();
+      if (validationError) {
+        socket.emit('CollaboratorError', { 
+          message: 'Erreur de validation: ' + Object.values(validationError.errors).map(err => err.message).join(', ')
+        });
+        return;
+      }
+
+      try {
+        // Sauvegarder le collaborateur
+        const savedCollaborator = await collaborator.save();
+        
+        // Émettre l'événement de succès immédiatement au socket qui a fait la demande
+        socket.emit('CollaboratorAdded', savedCollaborator);
+        
+        // Émettre l'événement aux autres clients
+        socket.broadcast.emit('CollaboratorAdded', savedCollaborator);
+      } catch (saveError) {
+        console.error('Error saving collaborator:', saveError);
+        socket.emit('CollaboratorError', { 
+          message: saveError.code === 11000 
+            ? 'Cet email est déjà utilisé' 
+            : 'Erreur lors de la création du collaborateur: ' + saveError.message
+        });
+      }
 
     } catch (error) {
-      console.error('Error adding Collaborator:', error);
+      console.error('Error in addCollab:', error);
+      socket.emit('CollaboratorError', { 
+        message: 'Erreur lors de la création du collaborateur: ' + error.message
+      });
     }
   });
 

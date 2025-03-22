@@ -109,7 +109,6 @@ const CollaboratorComponent = () => {
       setIsConnected(false);
       setConnectionError(error.message);
       
-      // Attendre avant de retenter la connexion
       setTimeout(() => {
         socket.connect();
       }, 5000);
@@ -120,39 +119,46 @@ const CollaboratorComponent = () => {
       setIsConnected(false);
       
       if (reason === 'io server disconnect') {
-        // Le serveur a forcé la déconnexion
         setTimeout(() => {
           socket.connect();
         }, 5000);
       }
-      // La reconnexion automatique sera tentée pour d'autres raisons
     });
 
-    // Écoutez l'événement pour les projets ajoutés en temps réel
+    // Gestionnaires d'événements pour les collaborateurs
     socket.on('CollaboratorAdded', (newUser) => {
-      setCollaborators((prevCollaborators) => [...prevCollaborators, newUser]);
+      setCollaborators(prevCollaborators => [...prevCollaborators, newUser]);
+      fetchData();
     });
 
-    // Écoutez l'événement pour les projets supprimés en temps réel
+    socket.on('CollaboratorError', (error) => {
+      setErrorMessage(error.message || "Erreur lors de l'ajout du collaborateur");
+    });
+
     socket.on('userDeleted', (deletedUserId) => {
-      setCollaborators((prevCollaborators) => prevCollaborators.filter((collaborator) => collaborator._id !== deletedUserId));
+      setCollaborators(prevCollaborators => 
+        prevCollaborators.filter(collaborator => collaborator._id !== deletedUserId)
+      );
     });
 
-    // Écoutez l'événement pour les collaborateurs mis à jour en temps réel
     socket.on('userUpdated', (updatedUser) => {
-      setCollaborators((prevCollaborators) =>
-        prevCollaborators.map((collaborator) =>
-          collaborator._id === updatedUser._id ? { ...collaborator, title: updatedUser.title, description: updatedUser.description, enddate: updatedUser.enddate } : collaborator
+      setCollaborators(prevCollaborators =>
+        prevCollaborators.map(collaborator =>
+          collaborator._id === updatedUser._id ? updatedUser : collaborator
         )
       );
     });
 
     // Nettoyage à la destruction du composant
     return () => {
-      resetErrorMessage()
+      resetErrorMessage();
       socket.off('connect');
       socket.off('disconnect');
       socket.off('connect_error');
+      socket.off('CollaboratorAdded');
+      socket.off('CollaboratorError');
+      socket.off('userDeleted');
+      socket.off('userUpdated');
       socket.disconnect();
     };
   }, []);
@@ -260,47 +266,106 @@ const CollaboratorComponent = () => {
   const handleAddCollab = async () => {
     try {
       resetErrorMessage();
+
+      // Validation des champs requis
+      if (!emailCollab || !lastNameCollab || !firstNameCollab || !positionCollab) {
+        setErrorMessage("Tous les champs sont obligatoires");
+        return;
+      }
+
+      // Validation du format email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailCollab)) {
+        setErrorMessage("Format d'email invalide");
+        return;
+      }
+
       const randomPassword = generateRandomPassword();
       setGeneratedPassword(randomPassword);
 
       let avatarPath = null;
 
+      // Seulement tenter l'upload si une image a été sélectionnée
       if (tempImage) {
-        const formData = new FormData();
-        formData.append('avatar', tempImage);
+        try {
+          const formData = new FormData();
+          formData.append('avatar', tempImage);
 
-        const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        avatarPath = `${response.data.path}`;
+          const response = await axios.post(`${API_URL}/upload/avatar`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          avatarPath = `${response.data.path}`;
+        } catch (error) {
+          console.error('Error uploading avatar:', error);
+        }
       }
 
-      console.log('Avatar Path:', avatarPath);
+      // S'assurer que le socket est connecté
+      if (!socket.connected) {
+        socket.connect();
+      }
 
-      socket.emit('addCollab', {
-        email: emailCollab,
-        lastname: lastNameCollab,
-        firstname: firstNameCollab,
-        position: positionCollab,
-        company: companyuser,
-        password: randomPassword,
-        avatar: avatarPath
+      // Créer une promesse pour attendre la réponse du serveur
+      const collaboratorPromise = new Promise((resolve, reject) => {
+        let timeoutId;
+
+        const cleanup = () => {
+          if (timeoutId) clearTimeout(timeoutId);
+          socket.off('CollaboratorAdded', handleSuccess);
+          socket.off('CollaboratorError', handleError);
+        };
+
+        const handleSuccess = (newUser) => {
+          cleanup();
+          resolve(newUser);
+        };
+
+        const handleError = (error) => {
+          cleanup();
+          reject(new Error(error.message || "Erreur lors de la création du collaborateur"));
+        };
+
+        // Augmenter le délai d'attente à 10 secondes
+        timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error("Délai d'attente dépassé - veuillez réessayer"));
+        }, 10000);
+
+        // Écouter les événements une seule fois
+        socket.once('CollaboratorAdded', handleSuccess);
+        socket.once('CollaboratorError', handleError);
+
+        // Émettre l'événement pour créer le collaborateur
+        socket.emit('addCollab', {
+          email: emailCollab,
+          lastname: lastNameCollab,
+          firstname: firstNameCollab,
+          position: positionCollab,
+          company: companyuser,
+          password: randomPassword,
+          avatar: avatarPath
+        });
       });
 
+      // Attendre la réponse du serveur
+      const newCollaborator = await collaboratorPromise;
+      console.log('Collaborateur créé:', newCollaborator);
+      
+      // Si on arrive ici, c'est que le collaborateur a été créé avec succès
       setTempImage(null);
       setModalOpenCollab(false);
       setShowPasswordModal(true);
-      fetchData();
+      await fetchData(); // Attendre que les données soient rechargées
 
     } catch (error) {
       console.error('Error adding/editing Collaborator:', error);
+      setErrorMessage(error.message || "Une erreur est survenue lors de la création du collaborateur");
     }
   };
 
-
   const handleSubmitCollab = async (e) => {
-    e.preventDefault();
-    handleAddCollab();
+    e.preventDefault(); // Empêcher la soumission par défaut du formulaire
+    await handleAddCollab(); // Attendre que handleAddCollab se termine
   };
 
   const handleDeleteCollab = async (collabId) => {
@@ -550,9 +615,6 @@ const CollaboratorComponent = () => {
                   variant="contained"
                   color="primary"
                   sx={{ mt: 2 }}
-                  onClick={() => {
-                    handleAddCollab()
-                  }}
                 >
                   Enregistrer
                 </Button>
