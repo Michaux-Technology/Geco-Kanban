@@ -438,6 +438,35 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('deleteColumn', async ({ projectId, columnId }) => {
+    try {
+      const project = await Project.findById(projectId);
+      if (!project) {
+        socket.emit('columnDeleteError', { message: 'Project not found' });
+        return;
+      }
+
+      // Convertir la Map en objet pour la manipulation
+      const columnsObj = {};
+      project.columns.forEach((value, key) => {
+        if (key !== columnId) {
+          columnsObj[key] = value;
+        }
+      });
+      
+      // Mettre à jour le projet avec les colonnes mises à jour
+      project.columns = new Map(Object.entries(columnsObj));
+      await project.save();
+
+      // Émettre l'événement de suppression réussie
+      io.emit('columnDeleted', { projectId, columnId });
+      
+      console.log(`Column ${columnId} deleted from project ${projectId}`);
+    } catch (error) {
+      console.error('Error deleting column:', error);
+      socket.emit('columnDeleteError', { message: error.message });
+    }
+  });
 
   socket.on('updateCollaborator', async (collaboratorData) => {
     try {

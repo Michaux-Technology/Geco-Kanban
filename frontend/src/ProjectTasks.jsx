@@ -11,6 +11,7 @@ import { Slider } from '@mui/material';
 import { Chip } from '@mui/material';
 
 import TimelineIcon from '@mui/icons-material/Timeline';
+import CloseIcon from '@mui/icons-material/Close';
 
 import AvatarComponent from './AvatarComponent';
 import AvatarGroup from '@mui/material/AvatarGroup';
@@ -33,20 +34,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import NumberInput from './NumberInput';
+import { Modal as MuiModal } from '@mui/material';
 
 const socket = io(API_URL); // Connectez-vous au serveur WebSocket
-
-const Modal = React.memo(({ onClose, children }) => {
-  return (
-    <div className="modal">
-      <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
-        {children}
-      </div>
-    </div>
-  );
-});
-
 
 const ProjectTasks = () => {
   const navigate = useNavigate();
@@ -672,301 +662,328 @@ const ProjectTasks = () => {
 
       {isModalOpen && (
 
-        <Modal key={modalKey} onClose={resetEditing}>
-
-          <div className="create-task">
-
-            {isEditing ? <h2>Edit Task</h2> : <h2>Create New Task</h2>}
-
-
-            <div className="columns-CreateTask">
-
-              {/* 1ere colonne */}
-              <div className="column-CreateTask">
-                <div>
-                  <TextField sx={{ width: '25ch' }}
-                    id="standard-basic"
-                    variant="standard"
-                    label="Task Title"
-                    type="text"
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                  />
-                </div>
-
-                <FormControl variant="standard" sx={{ marginTop: 2, minWidth: 120, width: '25ch' }}>
-                  <Select
-                    labelId="demo-simple-select-filled-label"
-                    id="demo-simple-select-filled"
-                    label="Status"
-                    value={newTaskStatus}
-                    onChange={(e) => setNewTaskStatus(e.target.value)}
-                  >
-                    {Object.entries(columnNames).map(([status, columnData]) => (
-                      <MenuItem key={status} value={status}>
-                        {typeof columnData === 'object' ? columnData.name : columnData}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <div style={{ flex: 1, marginRight: '10px' }}>
-
-                  <TextField sx={{ marginTop: 2, width: '25ch' }}
-                    id="outlined-multiline-flexible"
-                    label="Description"
-                    variant="standard"
-                    value={newTaskDescription}
-                    multiline
-                    maxRows={4}
-                    onChange={(e) => setNewTaskDescription(e.target.value)}
-                    width="200px"
-                  />
-                </div>
-
-                <div style={{ flex: 1, marginTop: '4ch', marginRight: '10px' }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
-                    <DatePicker
-                      label="Starting date"
-                      value={dayjs(newTaskBeginDate)}
-                      onChange={(date) => setNewTaskBeginDate(date)}
-                      format="DD/MM/YYYY"
-                    /></LocalizationProvider>
-                </div>
-                <div style={{ flex: 1, marginTop: '2ch', marginRight: '10px' }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
-                    <DatePicker
-                      label="End date"
-                      value={dayjs(newTaskEndDate)}
-                      onChange={(date) => {
-                        if (date && newTaskBeginDate && date < newTaskBeginDate) {
-                          // End date cannot be before start date
-                          return;
-                        }
-                        setNewTaskEndDate(date);
-                      }}
-                      minDate={newTaskBeginDate} // This prevents selecting dates before start date
-                      format="DD/MM/YYYY"
-                    />
-                  </LocalizationProvider>
-                </div>
-
-                <Typography
-                  variant="caption"
-                  display="block"
-                  gutterBottom
-                >
-                  <br />
-                  Participants
-                </Typography>
-
-
-
-                <AvatarGroup max={100} sx={alignementGauche}>
-                  {collaborators
-                    .filter(person =>
-                      listUsersProject.some(projectUser => projectUser.userId === person._id)
-                    )
-                    .map((person) => (
-                      person.avatar ? (
-                        <AvatarComponent
-                          key={person._id}
-                          person={person}
-                          editingProject={editingTask}
-                          handleAvatarClickOnChild={handleAvatarClickOnChild}
-                          selectedUsers={selectedUsers}
-                          handelUserExistInProject={handelUserExistInProject}
-                        />
-                      ) : (
-                        <TextAvatarComponent
-                          key={person._id}
-                          person={person}
-                          editingProject={editingTask}
-                          handleAvatarClickOnChild={handleAvatarClickOnChild}
-                          selectedUsers={selectedUsers}
-                          handelUserExistInProject={handelUserExistInProject}
-                        />
-                      )
-                    ))}
-                </AvatarGroup>
-                <br />
-
-
+        <MuiModal
+          open={isModalOpen}
+          onClose={resetEditing}
+          aria-labelledby="create-task-modal"
+        >
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            width: '95vw',
+            height: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            outline: 'none'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <div>
+                <Typography variant="h4" component="h1" style={{ margin: 0 }}>{projectTitle}</Typography>
+                <Typography variant="h5" component="h2" style={{ margin: '10px 0 0 0' }}>Create New Task</Typography>
               </div>
+              <IconButton onClick={resetEditing} aria-label="close">
+                <CloseIcon />
+              </IconButton>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+              <div className="columns-CreateTask">
 
-              {/* 2eme colonne */}
-              <div className="column-CreateTask">
+                {/* 1ere colonne */}
+                <div className="column-CreateTask">
+                  <div>
+                    <TextField sx={{ width: '25ch' }}
+                      id="standard-basic"
+                      variant="standard"
+                      label="Task Title"
+                      type="text"
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                    />
+                  </div>
 
-                {/* Add dependencies select */}
-                <FormControl sx={{ marginTop: 4, width: '300px' }}>
-                  <InputLabel>Task Dependency</InputLabel>
-                  <Select
-                    value={selectedDependencies ?? null}
-                    onChange={(e) => {
-                      if (e && e.target) {
-                        setSelectedDependencies(e.target.value);
-                      }
-                    }}
+                  <FormControl variant="standard" sx={{ marginTop: 2, minWidth: 120, width: '25ch' }}>
+                    <Select
+                      labelId="demo-simple-select-filled-label"
+                      id="demo-simple-select-filled"
+                      label="Status"
+                      value={newTaskStatus}
+                      onChange={(e) => setNewTaskStatus(e.target.value)}
+                    >
+                      {Object.entries(columnNames).map(([status, columnData]) => (
+                        <MenuItem key={status} value={status}>
+                          {typeof columnData === 'object' ? columnData.name : columnData}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+
+                    <TextField sx={{ marginTop: 2, width: '25ch' }}
+                      id="outlined-multiline-flexible"
+                      label="Description"
+                      variant="standard"
+                      value={newTaskDescription}
+                      multiline
+                      maxRows={4}
+                      onChange={(e) => setNewTaskDescription(e.target.value)}
+                      width="200px"
+                    />
+                  </div>
+
+                  <div style={{ flex: 1, marginTop: '4ch', marginRight: '10px' }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
+                      <DatePicker
+                        label="Starting date"
+                        value={dayjs(newTaskBeginDate)}
+                        onChange={(date) => setNewTaskBeginDate(date)}
+                        format="DD/MM/YYYY"
+                      /></LocalizationProvider>
+                  </div>
+                  <div style={{ flex: 1, marginTop: '2ch', marginRight: '10px' }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} component="div">
+                      <DatePicker
+                        label="End date"
+                        value={dayjs(newTaskEndDate)}
+                        onChange={(date) => {
+                          if (date && newTaskBeginDate && date < newTaskBeginDate) {
+                            // End date cannot be before start date
+                            return;
+                          }
+                          setNewTaskEndDate(date);
+                        }}
+                        minDate={newTaskBeginDate} // This prevents selecting dates before start date
+                        format="DD/MM/YYYY"
+                      />
+                    </LocalizationProvider>
+                  </div>
+
+                  <Typography
+                    variant="caption"
+                    display="block"
+                    gutterBottom
                   >
-                    <MenuItem value={null}>
-                      <em>None</em>
-                    </MenuItem>
-                    {tasks && tasks.length > 0 && tasks
-                      .filter(task => task?._id !== editingTask?._id)
-                      .map((task) => (
-                        task && (
-                          <MenuItem key={task._id} value={task._id}>
-                            {task.title || 'Untitled Task'}
-                          </MenuItem>
+                    <br />
+                    Participants
+                  </Typography>
+
+
+
+                  <AvatarGroup max={100} sx={alignementGauche}>
+                    {collaborators
+                      .filter(person =>
+                        listUsersProject.some(projectUser => projectUser.userId === person._id)
+                      )
+                      .map((person) => (
+                        person.avatar ? (
+                          <AvatarComponent
+                            key={person._id}
+                            person={person}
+                            editingProject={editingTask}
+                            handleAvatarClickOnChild={handleAvatarClickOnChild}
+                            selectedUsers={selectedUsers}
+                            handelUserExistInProject={handelUserExistInProject}
+                          />
+                        ) : (
+                          <TextAvatarComponent
+                            key={person._id}
+                            person={person}
+                            editingProject={editingTask}
+                            handleAvatarClickOnChild={handleAvatarClickOnChild}
+                            selectedUsers={selectedUsers}
+                            handelUserExistInProject={handelUserExistInProject}
+                          />
                         )
                       ))}
-                  </Select>
-                </FormControl>
+                  </AvatarGroup>
+                  <br />
 
 
-
-                <div style={{ marginTop: '20px' }}>
-                  <Typography variant="caption">Working Day</Typography>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <NumberInput
-                      aria-label="Working Day"
-                      min={0}
-                      max={999}
-                      value={workingDay}
-                      onChange={(event, val) => setWorkingDay(val)}
-                      allowDecimals={false}
-                    />
-                  </div>
                 </div>
 
-                <div style={{ marginTop: '20px' }}>
-                  <Typography variant="caption">Price per Hour (€)</Typography>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <NumberInput
-                      aria-label="Price per Hour"
-                      min={0}
-                      max={999.99}
-                      step={0.01}
-                      precision={2}
-                      value={pricePerHour}
-                      onChange={(event, val) => setPricePerHour(val)}
-                      allowDecimals={true}
+                {/* 2eme colonne */}
+                <div className="column-CreateTask">
+
+                  {/* Add dependencies select */}
+                  <FormControl sx={{ marginTop: 4, width: '300px' }}>
+                    <InputLabel>Task Dependency</InputLabel>
+                    <Select
+                      value={selectedDependencies ?? null}
+                      onChange={(e) => {
+                        if (e && e.target) {
+                          setSelectedDependencies(e.target.value);
+                        }
+                      }}
+                    >
+                      <MenuItem value={null}>
+                        <em>None</em>
+                      </MenuItem>
+                      {tasks && tasks.length > 0 && tasks
+                        .filter(task => task?._id !== editingTask?._id)
+                        .map((task) => (
+                          task && (
+                            <MenuItem key={task._id} value={task._id}>
+                              {task.title || 'Untitled Task'}
+                            </MenuItem>
+                          )
+                        ))}
+                    </Select>
+                  </FormControl>
+
+
+
+                  <div style={{ marginTop: '20px' }}>
+                    <Typography variant="caption">Working Day</Typography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <NumberInput
+                        aria-label="Working Day"
+                        min={0}
+                        max={999}
+                        value={workingDay}
+                        onChange={(event, val) => setWorkingDay(val)}
+                        allowDecimals={false}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '20px' }}>
+                    <Typography variant="caption">Price per Hour (€)</Typography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <NumberInput
+                        aria-label="Price per Hour"
+                        min={0}
+                        max={999.99}
+                        step={0.01}
+                        precision={2}
+                        value={pricePerHour}
+                        onChange={(event, val) => setPricePerHour(val)}
+                        allowDecimals={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '20px' }}>
+                    <Typography variant="caption">Hours Billed</Typography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <NumberInput
+                        aria-label="Hours Billed"
+                        min={0}
+                        max={999}
+                        value={hoursBilled}
+                        onChange={(event, val) => setHoursBilled(val)}
+                        allowDecimals={false}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '20px', width: '200px' }}>
+                    <GaugeChart
+                      id="gauge-chart-modal"
+                      nrOfLevels={20}
+                      percent={newTaskGauge / 100}
+                      colors={['#FF5F6D', '#FFC371', '#4CAF50']}
+                      arcWidth={0.3}
+                      textColor="#000000"
+                      animate={false}
                     />
                   </div>
-                </div>
 
-                <div style={{ marginTop: '20px' }}>
-                  <Typography variant="caption">Hours Billed</Typography>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <NumberInput
-                      aria-label="Hours Billed"
-                      min={0}
-                      max={999}
-                      value={hoursBilled}
-                      onChange={(event, val) => setHoursBilled(val)}
-                      allowDecimals={false}
-                    />
-                  </div>
-                </div>
 
-                <div style={{ marginTop: '20px', width: '200px' }}>
-                  <GaugeChart
-                    id="gauge-chart-modal"
-                    nrOfLevels={20}
-                    percent={newTaskGauge / 100}
-                    colors={['#FF5F6D', '#FFC371', '#4CAF50']}
-                    arcWidth={0.3}
-                    textColor="#000000"
-                    animate={false}
+                  <Slider
+                    value={newTaskGauge}
+                    onChange={(e, newValue) => setNewTaskGauge(newValue)}
+                    onChangeCommitted={(e, newValue) => setNewTaskGauge(newValue)}
+                    min={0}
+                    max={100}
+                    valueLabelDisplay="auto"
+                    sx={{ width: '150px', marginTop: '10px', marginLeft: '30px' }}
                   />
                 </div>
+                {/* 3eme colonne */}
+
+                <div className="column-CreateTask">
 
 
-                <Slider
-                  value={newTaskGauge}
-                  onChange={(e, newValue) => setNewTaskGauge(newValue)}
-                  onChangeCommitted={(e, newValue) => setNewTaskGauge(newValue)}
-                  min={0}
-                  max={100}
-                  valueLabelDisplay="auto"
-                  sx={{ width: '150px', marginTop: '10px', marginLeft: '30px' }}
-                />
-              </div>
-              {/* 3eme colonne */}
-
-              <div className="column-CreateTask">
-
-
-                <FormControl variant="standard" sx={{ width: '26ch' }}>
-                  <InputLabel id="priority-label">Priority</InputLabel>
-                  <Select
-                    labelId="priority-label"
-                    id="priority-select"
-                    value={newTaskPriority}
-                    onChange={(event) => setNewTaskPriority(event.target.value)}
-                    label="Priority"
-                  >
-                    <MenuItem value={'green'}>
-                      <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
-                        <div style={{ width: '100%', height: '24px', backgroundColor: 'green' }}></div>
-                      </ListItemIcon>
-                      <Typography>Low</Typography>
-                    </MenuItem>
-                    <MenuItem value={'orange'}>
-                      <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
-                        <div style={{ width: '100%', height: '24px', backgroundColor: 'orange' }}></div>
-                      </ListItemIcon>
-                      <Typography>Medium</Typography>
-                    </MenuItem>
-                    <MenuItem value={'red'}>
-                      <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
-                        <div style={{ width: '100%', height: '24px', backgroundColor: 'red' }}></div>
-                      </ListItemIcon>
-                      <Typography>High</Typography>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                  <FormControl variant="standard" sx={{ width: '26ch' }}>
+                    <InputLabel id="priority-label">Priority</InputLabel>
+                    <Select
+                      labelId="priority-label"
+                      id="priority-select"
+                      value={newTaskPriority}
+                      onChange={(event) => setNewTaskPriority(event.target.value)}
+                      label="Priority"
+                    >
+                      <MenuItem value={'green'}>
+                        <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
+                          <div style={{ width: '100%', height: '24px', backgroundColor: 'green' }}></div>
+                        </ListItemIcon>
+                        <Typography>Low</Typography>
+                      </MenuItem>
+                      <MenuItem value={'orange'}>
+                        <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
+                          <div style={{ width: '100%', height: '24px', backgroundColor: 'orange' }}></div>
+                        </ListItemIcon>
+                        <Typography>Medium</Typography>
+                      </MenuItem>
+                      <MenuItem value={'red'}>
+                        <ListItemIcon style={{ minWidth: '30px', marginRight: '10px' }}>
+                          <div style={{ width: '100%', height: '24px', backgroundColor: 'red' }}></div>
+                        </ListItemIcon>
+                        <Typography>High</Typography>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
 
 
-                <Typography variant="caption" display="block" gutterBottom sx={{ marginTop: 2, width: '26ch' }}>
-                  Choose a task color
-                </Typography>
+                  <Typography variant="caption" display="block" gutterBottom sx={{ marginTop: 2, width: '26ch' }}>
+                    Choose a task color
+                  </Typography>
 
-                <SketchPicker
-                  color={selectedColor}
-                  onChangeComplete={(color) => setSelectedColor(color.hex)}
-                />
+                  <SketchPicker
+                    color={selectedColor}
+                    onChangeComplete={(color) => setSelectedColor(color.hex)}
+                  />
 
+
+                </div>
 
               </div>
 
+              <div style={{
+                marginTop: 'auto',
+                textAlign: 'center',
+                padding: '20px 0'
+              }}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    if (isEditing) {
+                      handleUpdateTask()
+                    } else {
+                      handleCreateTask()
+                    }
+                  }}
+                >
+                  {isEditing ? 'Update Task' : 'Add Task'}
+                </Button>
+              </div>
+
+
             </div>
-
-            <div style={{
-              marginTop: 'auto',
-              textAlign: 'center',
-              padding: '20px 0'
-            }}>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  if (isEditing) {
-                    handleUpdateTask()
-                  } else {
-                    handleCreateTask()
-                  }
-                }}
-              >
-                {isEditing ? 'Update Task' : 'Add Task'}
-              </Button>
-            </div>
-
-
-          </div>
-
-        </Modal>
-      )
-      }
+          </Box>
+        </MuiModal>
+      )}
 
 
       <div className="App">
@@ -1078,13 +1095,45 @@ const ProjectTasks = () => {
             </div>
 
             {showGanttModal && (
-              <Modal onClose={() => setShowGanttModal(false)}>
-                <div className="gantt-view">
-                  <h1>{projectTitle}</h1>
-                  <h2>Gantt chart</h2>
-                  <GanttChart tasks={tasks} />
-                </div>
-              </Modal>
+              <MuiModal
+                open={showGanttModal}
+                onClose={() => setShowGanttModal(false)}
+                aria-labelledby="gantt-chart-modal"
+              >
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  bgcolor: 'background.paper',
+                  boxShadow: 24,
+                  p: 4,
+                  borderRadius: 2,
+                  width: '85vw',
+                  height: '80vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  outline: 'none'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                  }}>
+                    <div>
+                      <Typography variant="h4" component="h1" style={{ margin: 0 }}>{projectTitle}</Typography>
+                      <Typography variant="h5" component="h2" style={{ margin: '10px 0 0 0' }}>Gantt chart</Typography>
+                    </div>
+                    <IconButton onClick={() => setShowGanttModal(false)} aria-label="close">
+                      <CloseIcon />
+                    </IconButton>
+                  </div>
+                  <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                    <GanttChart tasks={tasks} />
+                  </div>
+                </Box>
+              </MuiModal>
             )}
 
 

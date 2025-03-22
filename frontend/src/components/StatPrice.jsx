@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config';
 import {
@@ -11,6 +11,8 @@ import {
 
 const StatPrice = ({ projectId }) => {
     const [loading, setLoading] = useState(true);
+    const [chartsLoaded, setChartsLoaded] = useState(false);
+    const chartRef = useRef(null);
     const [stats, setStats] = useState({
         totalPrice: 0,
         totalHours: 0,
@@ -19,25 +21,54 @@ const StatPrice = ({ projectId }) => {
         detailedProjectStats: []
     });
 
-    // Fonction pour arrondir à deux décimales
-    const roundToEuro = (value) => Number(Math.round(value + 'e2') + 'e-2');
+    // Function to round to two decimals
+    const roundToDecimal = (value) => Number(Math.round(value + 'e2') + 'e-2');
+
+    // Initialize Google Charts
+    useEffect(() => {
+        const loadGoogleCharts = async () => {
+            try {
+                if (typeof window.google === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://www.gstatic.com/charts/loader.js';
+                    script.async = true;
+                    document.head.appendChild(script);
+                    
+                    await new Promise((resolve) => {
+                        script.onload = resolve;
+                    });
+                }
+
+                await new Promise((resolve) => {
+                    window.google.charts.load('current', {
+                        packages: ['corechart']
+                    });
+                    window.google.charts.setOnLoadCallback(() => {
+                        console.log('Google Charts initialized successfully');
+                        setChartsLoaded(true);
+                        resolve();
+                    });
+                });
+            } catch (err) {
+                console.error('Error initializing Google Charts:', err);
+            }
+        };
+
+        loadGoogleCharts();
+    }, []);
 
     const drawCharts = (detailedStats) => {
+        if (!chartRef.current || !window.google || !window.google.visualization) {
+            console.log('Waiting for chart container or Google Charts...');
+            return;
+        }
+
         try {
-            const detailedChartDiv = document.getElementById('detailed_chart_div');
-
-            if (!detailedChartDiv || !window.google || !window.google.visualization) {
-                console.log('Waiting for elements and Google Charts to be ready...');
-                setTimeout(() => drawCharts(detailedStats), 100);
-                return;
-            }
-
-            // Graphique : Décomposition par tâche
             const detailedData = new window.google.visualization.DataTable();
-            detailedData.addColumn('string', 'Projet');
+            detailedData.addColumn('string', 'Project');
 
-            // Collecter toutes les tâches uniques avec leurs couleurs
-            const uniqueTasks = new Map(); // Map pour stocker les tâches uniques
+            // Collect all unique tasks with their colors
+            const uniqueTasks = new Map();
             detailedStats.forEach(proj => {
                 proj.tasks.forEach(task => {
                     if (!uniqueTasks.has(task.taskName)) {
@@ -49,19 +80,19 @@ const StatPrice = ({ projectId }) => {
                 });
             });
 
-            // Ajouter une colonne pour chaque tâche unique
+            // Add a column for each unique task
             uniqueTasks.forEach((value, taskName) => {
                 detailedData.addColumn('number', taskName);
             });
 
-            // Préparer les données pour le graphique
+            // Prepare data for the chart
             const detailedChartData = detailedStats.map(proj => {
                 const row = [proj.projectName];
-                // Initialiser toutes les valeurs à 0
+                // Initialize all values to 0
                 for (let i = 0; i < uniqueTasks.size; i++) {
                     row.push(0);
                 }
-                // Remplir les coûts des tâches aux bonnes positions
+                // Fill task costs in correct positions
                 proj.tasks.forEach(task => {
                     const taskInfo = uniqueTasks.get(task.taskName);
                     if (taskInfo) {
@@ -74,30 +105,38 @@ const StatPrice = ({ projectId }) => {
             detailedData.addRows(detailedChartData);
 
             const detailedOptions = {
-                title: '',
+                // title: 'Cost Distribution by Task',
                 titleTextStyle: { fontSize: 16 },
                 isStacked: true,
+                width: '100%',
+                height: 400,
                 hAxis: {
-                    title: 'Projets',
+                    title: 'Projects',
                     textStyle: { fontSize: 12 }
                 },
                 vAxis: {
-                    title: 'costs',
+                    title: 'Costs',
                     format: '#,##0.00',
                     textStyle: { fontSize: 12 }
                 },
-                colors: Array.from(uniqueTasks.values()).map(task => task.color)
+                colors: Array.from(uniqueTasks.values()).map(task => task.color),
+                backgroundColor: '#ffffff',
+                chartArea: { width: '80%', height: '70%' }
             };
 
-            const detailedChart = new window.google.visualization.ColumnChart(detailedChartDiv);
+            const detailedChart = new window.google.visualization.ColumnChart(chartRef.current);
             detailedChart.draw(detailedData, detailedOptions);
+
         } catch (error) {
             console.error('Error drawing charts:', error);
         }
     };
 
+    // Load data
     useEffect(() => {
         const fetchStats = async () => {
+            if (!chartsLoaded) return;
+
             try {
                 if (!projectId) {
                     const projectsResponse = await axios.get(`${API_URL}/projects`);
@@ -109,11 +148,11 @@ const StatPrice = ({ projectId }) => {
                         
                         const taskDetails = tasks.map(task => ({
                             taskName: task.title,
-                            cost: roundToEuro((task.pricePerHour || 0) * (task.hoursBilled || 0)),
+                            cost: roundToDecimal((task.pricePerHour || 0) * (task.hoursBilled || 0)),
                             color: task.color
                         }));
 
-                        const totalCost = roundToEuro(taskDetails.reduce((sum, task) => sum + task.cost, 0));
+                        const totalCost = roundToDecimal(taskDetails.reduce((sum, task) => sum + task.cost, 0));
 
                         return {
                             projectName: project.title,
@@ -131,12 +170,11 @@ const StatPrice = ({ projectId }) => {
                         detailedProjectStats: detailedStats
                     }));
 
-                    // Attendre que Google Charts soit chargé
-                    window.google.charts.setOnLoadCallback(() => {
-                        setTimeout(() => drawCharts(detailedStats), 100);
-                    });
+                    // Wait for next render cycle
+                    setTimeout(() => {
+                        drawCharts(detailedStats);
+                    }, 0);
                 } else {
-                    // Code existant pour un projet spécifique
                     const response = await axios.get(`${API_URL}/projects/${projectId}/tasks`);
                     const tasks = response.data;
 
@@ -144,10 +182,10 @@ const StatPrice = ({ projectId }) => {
                         name: task.title,
                         pricePerHour: task.pricePerHour || 0,
                         hoursBilled: task.hoursBilled || 0,
-                        totalPrice: roundToEuro((task.pricePerHour || 0) * (task.hoursBilled || 0))
+                        totalPrice: roundToDecimal((task.pricePerHour || 0) * (task.hoursBilled || 0))
                     }));
 
-                    const totalPrice = roundToEuro(taskStats.reduce((sum, task) => sum + task.totalPrice, 0));
+                    const totalPrice = roundToDecimal(taskStats.reduce((sum, task) => sum + task.totalPrice, 0));
                     const totalHours = taskStats.reduce((sum, task) => sum + task.hoursBilled, 0);
 
                     setStats({
@@ -166,13 +204,7 @@ const StatPrice = ({ projectId }) => {
         };
 
         fetchStats();
-
-        // Réinitialiser les graphiques lors du démontage du composant
-        return () => {
-            const detailedChartDiv = document.getElementById('detailed_chart_div');
-            if (detailedChartDiv) detailedChartDiv.innerHTML = '';
-        };
-    }, [projectId]);
+    }, [projectId, chartsLoaded]);
 
     if (loading) {
         return (
@@ -185,11 +217,10 @@ const StatPrice = ({ projectId }) => {
     return (
         <Box sx={{ p: 2 }}>
             {!projectId ? (
-                // Vue globale pour tous les projets
                 <>
                     <Paper sx={{ p: 2, mb: 4 }}>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Project costs</Typography>
-                        <div id="detailed_chart_div" style={{ width: '100%', height: '400px' }}></div>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Project Costs</Typography>
+                        <div ref={chartRef} style={{ width: '100%', height: '400px' }}></div>
                     </Paper>
                     <Grid container spacing={2}>
                         {stats.detailedProjectStats.map((project, index) => (
@@ -197,14 +228,14 @@ const StatPrice = ({ projectId }) => {
                                 <Paper sx={{ p: 2 }}>
                                     <Typography variant="h6">{project.projectName}</Typography>
                                     <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                                        Coût total: {roundToEuro(project.totalCost)}
+                                        Total cost: {roundToDecimal(project.totalCost)}
                                     </Typography>
                                     <Grid container spacing={2}>
                                         {project.tasks.map((task, taskIndex) => (
                                             <Grid item xs={12} sm={6} md={4} key={taskIndex}>
                                                 <Paper sx={{ p: 1 }} elevation={2}>
                                                     <Typography variant="body2">
-                                                        {task.taskName}: {roundToEuro(task.cost)}
+                                                        {task.taskName}: {roundToDecimal(task.cost)}
                                                     </Typography>
                                                 </Paper>
                                             </Grid>
@@ -216,25 +247,24 @@ const StatPrice = ({ projectId }) => {
                     </Grid>
                 </>
             ) : (
-                // Vue détaillée pour un projet spécifique
                 <>
                     <Grid container spacing={2} sx={{ mb: 4 }}>
                         <Grid item xs={12} md={6}>
                             <Paper sx={{ p: 2 }}>
-                                <Typography variant="h6">Total des heures facturées</Typography>
+                                <Typography variant="h6">Total Hours Billed</Typography>
                                 <Typography variant="h4">{stats.totalHours}h</Typography>
                             </Paper>
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <Paper sx={{ p: 2 }}>
-                                <Typography variant="h6">Montant total</Typography>
-                                <Typography variant="h4">{roundToEuro(stats.totalPrice)}</Typography>
+                                <Typography variant="h6">Total Cost</Typography>
+                                <Typography variant="h4">{roundToDecimal(stats.totalPrice)}</Typography>
                             </Paper>
                         </Grid>
                     </Grid>
 
                     <Paper sx={{ p: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Détails par tâche</Typography>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Details by Task</Typography>
                         <Grid container spacing={2}>
                             {stats.taskStats.map((task, index) => (
                                 <Grid item xs={12} key={index}>
@@ -242,13 +272,13 @@ const StatPrice = ({ projectId }) => {
                                         <Typography variant="subtitle1">{task.name}</Typography>
                                         <Grid container spacing={2}>
                                             <Grid item xs={4}>
-                                                <Typography variant="body2">Prix/heure: {task.pricePerHour}</Typography>
+                                                <Typography variant="body2">Price/hour: {task.pricePerHour}</Typography>
                                             </Grid>
                                             <Grid item xs={4}>
-                                                <Typography variant="body2">Heures: {task.hoursBilled}h</Typography>
+                                                <Typography variant="body2">Hours: {task.hoursBilled}h</Typography>
                                             </Grid>
                                             <Grid item xs={4}>
-                                                <Typography variant="body2">Total: {roundToEuro(task.totalPrice)}</Typography>
+                                                <Typography variant="body2">Total: {roundToDecimal(task.totalPrice)}</Typography>
                                             </Grid>
                                         </Grid>
                                     </Paper>

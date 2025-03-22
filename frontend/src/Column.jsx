@@ -10,14 +10,31 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import Box from '@mui/material/Box';
-
+import io from 'socket.io-client';
 
 import { TextField } from '@mui/material';
+
+const socket = io(API_URL);
 
 const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onColumnDeleted, handleColumnNameEdit, handleColumnNameSave, columnNames, setColumnNames, handleEditTask, handleDeleteTask, handleLike, setShowMessaging, handleCommentCount, totalLikes, showMessaging, commentText, handleCommentChange, handleComment, toggleMessaging, messagingStates, ...props}) => {
 
   const [columnHeaderColor, setColumnHeaderColor] = useState(columnNames[status]?.color || '#4CAF50');
 
+  useEffect(() => {
+    // Écouter l'événement de suppression de colonne
+    socket.on('columnDeleted', ({ columnId }) => {
+      setColumnNames(prevColumnNames => {
+        const updatedColumnNames = { ...prevColumnNames };
+        delete updatedColumnNames[columnId];
+        return updatedColumnNames;
+      });
+      setTasks(prevTasks => prevTasks.filter(task => task.status !== columnId));
+    });
+
+    return () => {
+      socket.off('columnDeleted');
+    };
+  }, [setColumnNames, setTasks]);
 
   useEffect(() => {
     if (columnNames[status]?.color) {
@@ -25,14 +42,9 @@ const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onCo
     }
   }, [columnNames, status]);
 
-
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-
-
   const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
   const [columnToDelete, setColumnToDelete] = React.useState(null);
-
-
 
   const handleDeleteColumn = (columnId) => {
     setColumnToDelete(columnId);
@@ -46,13 +58,17 @@ const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onCo
   const confirmDeleteColumn = async () => {
     if (columnToDelete) {
       try {
-        await axios.delete(`${API_URL}/projects/${projectId}/columns/${columnToDelete}`);
-        setColumnNames(prevColumnNames => {
-          const updatedColumnNames = { ...prevColumnNames };
-          delete updatedColumnNames[columnToDelete];
-          return updatedColumnNames;
+        console.log('Attempting to delete column:', columnToDelete);
+        console.log('Project ID:', projectId);
+        
+        // Émettre l'événement de suppression via socket.io
+        socket.emit('deleteColumn', {
+          projectId: projectId,
+          columnId: status
         });
-        setTasks(prevTasks => prevTasks.filter(task => task.status !== columnToDelete));
+
+        // La mise à jour de l'interface sera gérée par l'écouteur socket.on('columnDeleted')
+        
         if (typeof onColumnDeleted === 'function') {
           onColumnDeleted(columnToDelete);
         }
@@ -65,7 +81,9 @@ const Column = ({ status, title, tasks, editingColumn, projectId, setTasks, onCo
 
   const handleColorChange = async (color) => {
     try {
-      await axios.put(`${API_URL}/projects/${projectId}/columns/${status}/color`, {
+      socket.emit('updateColumnColor', {
+        projectId: projectId,
+        columnId: status,
         color: color.hex
       });
       setColumnHeaderColor(color.hex);

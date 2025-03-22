@@ -834,12 +834,13 @@ const ProjectComponent = () => {
             >
                 <ModalDialog
                     sx={{
-                        maxWidth: '90vw',
-                        minWidth: '80vw',
-                        minHeight: '80vh',
-                        maxHeight: '90vh',
+                        maxWidth: '81vw',
+                        minWidth: '72vw',
+                        minHeight: '72vh',
+                        maxHeight: '81vh',
                         overflow: 'auto',
-                        padding: '24px'
+                        padding: '24px',
+                        backgroundColor: '#ffffff'
                     }}
                 >
                     <ModalClose 
@@ -848,9 +849,6 @@ const ProjectComponent = () => {
                             setSelectedProjectId(null);
                         }} 
                     />
-                    <Typography level="h2" mb={2}>
-                        Statistiques des prix {selectedProjectId ? 'du projet' : 'globales'}
-                    </Typography>
                     <StatPrice projectId={selectedProjectId} />
                 </ModalDialog>
             </Modal>
