@@ -12,9 +12,11 @@ Our cutting-edge project management software empowers teams to organize, track, 
 
 Key Features for Maximum Efficiency:
 
-✅ Drag-and-Drop Task Management – Move tasks between columns with ease.
+✅ Drag-and-Drop Task Management – Move tasks between columns with ease and visualize your workflow dynamically.
 
 ✅ Task Assignment & Tracking – Instantly see who is responsible for what.
+
+✅ Real-Time Cost Calculation – Track project costs and resource allocation as you work.
 
 ✅ Real-Time Collaboration – Changes update live without page refresh.
 
@@ -24,15 +26,17 @@ Key Features for Maximum Efficiency:
 
 
 <h3>Seamless Communication with Built-in Video Conferencing</h3>
-Collaboration is key to success! That’s why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
+Collaboration is key to success! That's why our platform includes an integrated video conferencing module, ensuring smooth communication between project partners, no matter where they are.
 
 <h3>Why Choose Our Project Management Software?</h3>
 
-🚀 Enhance Team Productivity – Streamline workflows and improve task visibility.
-
 📊 Powerful Project Tracking – Stay on top of deadlines with Gantt charts.
 
+🎯 Visual Task Management – Easily move and organize tasks with an intuitive drag-and-drop interface.
+
 🔄 100% Real-Time Updates – No more delays or miscommunication.
+
+💰 Smart Budgeting – Get instant cost calculations to optimize resource usage.
 
 💡 Start managing your projects smarter today!
 
@@ -59,8 +63,13 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.10 :
-- Visualization by a user of the tasks that belong to him.
+1. New features v 5.21 :
+- Video conference
+- View the tasks of the logged-in user
+- Project costing
+- Bug fixes
+- Fixed user data display in edit mode
+- Improved socket event handling
 
 2. Upcoming features :
 - compatible https
@@ -127,22 +136,22 @@ Good luck!
 
 <b> Login screen </b>
 
-![Capture d’écran 2024-12-08 162032](https://github.com/user-attachments/assets/9b5c34cf-84c0-4eb8-a79d-685b4693cd2e)
+![Capture d'écran 2024-12-08 162032](https://github.com/user-attachments/assets/9b5c34cf-84c0-4eb8-a79d-685b4693cd2e)
 
 <b> Project list screen in card format.</b>
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
 
-![Capture d’écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
+![Capture d'écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
 
 <b> User list </b> with Avatar.
 
-![Capture d’écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
+![Capture d'écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
 
 <b> Kanban-based list of project tasks. </b>
 You can add, drop and customize columns, drag and drop tasks, view the people assigned to them, check progress, start and end dates, like and comment...
 
-![Capture d’écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
+![Capture d'écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
 
 <b> Gantt chart.</b> You can see dependencies, task names, progress and dates, and each task has the same color as in Kanban, making it easier to visualize.
 
-![Capture d’écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
+![Capture d'écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
