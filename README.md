@@ -63,13 +63,13 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.21 :
+1. New features v 5.22 :
 - Video conference
 - View the tasks of the logged-in user
 - Project costing
-- Bug fixes
 - Fixed user data display in edit mode
 - Improved socket event handling
+- Bug fixes
 
 2. Upcoming features :
 - compatible https
