@@ -111,30 +111,27 @@ Prerequisites
 - Install mkcert on your system
 
   # For Windows with chocolatey
-  
- ``bash
+
   choco install mkcert
-   ```
+
 
 Certificate generation
 
 1. 1. Create a `certificates` folder at the root of the project:
 
-   ``bash
    mkdir certificates
    cd certificates
-   ```
+
 
 2. Install the local certification authority :
    
-   ``bash
    mkcert -install
-   ```
+
 
 4. Generate certificates for local development:
-   ``bash
+
    mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
-   ```
+
 
 Certificate structure
 Certificates will be used by :
