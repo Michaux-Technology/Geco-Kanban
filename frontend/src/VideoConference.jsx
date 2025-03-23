@@ -443,10 +443,10 @@ const VideoConference = () => {
     }
 
     socketRef.current = io(API_URL_VISIO, {
+      secure: true,
+      rejectUnauthorized: false,
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 10000
+      withCredentials: true
     });
     
     navigator.mediaDevices.getUserMedia({

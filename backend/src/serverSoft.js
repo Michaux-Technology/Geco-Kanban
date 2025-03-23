@@ -1,5 +1,6 @@
 // backend/index.js
 const express = require('express');
+const https = require('https');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
@@ -8,14 +9,20 @@ const multer = require('multer');
 const path = require('path');
 const config = require('./config.js');
 const winston = require('winston');
+const fs = require('fs');
 
 // Utiliser 'psl' (Public Suffix List) au lieu de 'punycode'
 // Cette dépendance doit être installée via npm install psl
-const fs = require('fs');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
+
+// Configuration SSL
+const sslOptions = {
+  key: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'private.key')),
+  cert: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'certificate.crt'))
+};
 
 // Configuration du logger
 const logger = winston.createLogger({
@@ -32,7 +39,7 @@ const logger = winston.createLogger({
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://192.168.1.101:3000'],
+  origin: ['https://localhost:3000', 'https://192.168.1.101:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
   credentials: true
@@ -42,12 +49,13 @@ app.use(express.json());
 // Servir les fichiers statiques depuis le dossier public de frontend
 app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads')));
 
-const server = http.createServer(app);
+// Créer le serveur HTTPS
+const server = https.createServer(sslOptions, app);
 
-// Utilisation de la configuration CORS avec socket.io
+// Configuration de Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: ['http://localhost:3000', 'http://192.168.1.101:3000'],
+    origin: ['https://localhost:3000', 'https://192.168.1.101:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma']

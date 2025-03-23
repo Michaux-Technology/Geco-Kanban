@@ -1,19 +1,42 @@
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const app = express();
-const server = http.createServer(app);
+
+// Configuration SSL
+const sslOptions = {
+  key: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'private.key')),
+  cert: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'certificate.crt'))
+};
+
+const server = https.createServer(sslOptions, app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: ["https://localhost:3000", "https://192.168.1.101:3000"],
+    methods: ["GET", "POST"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   }
 });
 
 // Ajouter CORS middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const allowedOrigins = ['https://localhost:3000', 'https://192.168.1.101:3000'];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   next();
 });
 

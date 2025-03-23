@@ -63,16 +63,11 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.21 :
-- Video conference
-- View the tasks of the logged-in user
-- Project costing
-- Bug fixes
-- Fixed user data display in edit mode
-- Improved socket event handling
+1. New features v 5.23 :
+- compatible https
 
 2. Upcoming features :
-- compatible https
+- bug fixes
 
 ## ➤ Questions / Answers
 
@@ -110,9 +105,55 @@ Ask your questions, let us know about bugs...
 
    npm start
 
-9. For the video conference, go in Google Chrome and write :
+9. Configuring SSL Certificates
 
-   chrome://flags
+## Prerequisites
+- Install mkcert on your system
+  ```bash
+  # For Windows with chocolatey
+  choco install mkcert
+  ```
+
+## Certificate generation
+
+1. 1. Create a `certificates` folder at the root of the project:
+   ``bash
+   mkdir certificates
+   cd certificates
+   ```
+
+2. Install the local certification authority :
+   ``bash
+   mkcert -install
+   ```
+
+3. Generate certificates for local development:
+   ``bash
+   mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
+   ```
+
+## Certificate structure
+Certificates will be used by :
+- The frontend (port 3000)
+- Main backend (port 3001)
+- Video conferencing server (port 3002)
+
+## Configuration
+Certificates are automatically configured for :
+- Frontend: via `.env` file
+- Backend: via `serverSoft.js` and `serverVisio.js`.
+
+## Important notes
+- These certificates are for local development only
+- For production, use valid certificates from a recognized certification authority
+- Generated certificates are valid for localhost, 127.0.0.1 and 192.168.1.101
+- If you use another IP address, regenerate the certificates to include it
+
+## Troubleshooting
+- If you see a “NET::ERR_CERT_AUTHORITY_INVALID” error, install the CA again with `mkcert -install`.
+- If you see an “ERR_SSL_PROTOCOL_ERROR” error, check that the certificate paths are correct in your configuration files
+
+
 
 in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
 
