@@ -64,7 +64,13 @@ by <b>Valéry-Jérôme Michaux</b>
 ## ➤ Project status
 
 1. New features v 5.23 :
-- compatible https
+- Compatible HTTPS
+- Video conference
+- View the tasks of the logged-in user
+- Project costing
+- Fixed user data display in edit mode
+- Improved socket event handling
+- Bug fixes
 
 2. Upcoming features :
 - bug fixes
@@ -150,8 +156,8 @@ Certificates are automatically configured for :
 - If you use another IP address, regenerate the certificates to include it
 
 ## Troubleshooting
-- If you see a “NET::ERR_CERT_AUTHORITY_INVALID” error, install the CA again with `mkcert -install`.
-- If you see an “ERR_SSL_PROTOCOL_ERROR” error, check that the certificate paths are correct in your configuration files
+- If you see a "NET::ERR_CERT_AUTHORITY_INVALID" error, install the CA again with `mkcert -install`.
+- If you see an "ERR_SSL_PROTOCOL_ERROR" error, check that the certificate paths are correct in your configuration files
 
 
 
