@@ -110,8 +110,7 @@ Ask your questions, let us know about bugs...
 Prerequisites
 - Install mkcert on your system
 
-  # For Windows with chocolatey
-
+  For Windows with chocolatey
   choco install mkcert
 
 
