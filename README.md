@@ -173,8 +173,7 @@ https://www.youtube.com/watch?v=dMaUxjK4si4
 ## ➤ Our Screenshot
 
 <b> Login screen </b>
-
-![Capture d'écran 2024-12-08 162032](https://github.com/user-attachments/assets/9b5c34cf-84c0-4eb8-a79d-685b4693cd2e)
+![Image](https://github.com/user-attachments/assets/20821410-f658-499e-b6ef-b4b443980a91)
 
 <b> Project list screen in card format.</b>
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
