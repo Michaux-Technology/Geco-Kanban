@@ -181,7 +181,7 @@ Here you can see the status of the project, its completion date and the people a
 
 ![Image](https://github.com/user-attachments/assets/78dd2011-0d5d-446e-ad61-807940ab96c5)
 
-<b>File upload </b>
+<b> File upload </b>
 Insert files essential to your project
 
 ![Image](https://github.com/user-attachments/assets/2e59a43e-bc33-4638-8d06-9b02429b28db)
@@ -196,16 +196,19 @@ You can add, drop and customize columns, drag and drop tasks, view the people as
 
 ![Image](https://github.com/user-attachments/assets/79c70251-5cb5-44a8-a7ec-cac5a4061157)
 
+<b> View tasks assigned to the user </b>
+
+![Image](https://github.com/user-attachments/assets/55bd859b-0840-4f8d-ae2e-39bc5f9c3dc4)
 
 <b> Gantt chart.</b> You can see dependencies, task names, progress and dates, and each task has the same color as in Kanban, making it easier to visualize.
 
 ![Image](https://github.com/user-attachments/assets/ff497da1-f3a1-476f-9d53-0339d905e2f5)
 
-<b>Project cost management</b>
+<b> Project cost management </b>
 
 ![Image](https://github.com/user-attachments/assets/967db9e8-07e9-4564-85d1-2dc0ddcadd79)
 
-<b>video conferencing</b>
+<b> video conferencing </b>
 
 ![Image](https://github.com/user-attachments/assets/cecf7d81-50c7-4aaf-adc6-b887b056a3a2)
 
