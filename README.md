@@ -119,6 +119,7 @@ Prerequisites
 Certificate generation
 
 1. 1. Create a `certificates` folder at the root of the project:
+
    ``bash
    mkdir certificates
    cd certificates
