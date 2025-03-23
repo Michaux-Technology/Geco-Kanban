@@ -211,6 +211,7 @@ You can see dependencies, task names, progress and dates, and each task has the 
 ![Image](https://github.com/user-attachments/assets/ff497da1-f3a1-476f-9d53-0339d905e2f5)
 
 <b> Project cost management </b>
+
 Track project costs in real time.
 
 ![Image](https://github.com/user-attachments/assets/967db9e8-07e9-4564-85d1-2dc0ddcadd79)
