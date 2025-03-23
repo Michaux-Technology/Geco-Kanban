@@ -167,7 +167,8 @@ Good luck!
 
 ## ➤ Our video
 
-[![Alv_3hkBI8Q](https://img.youtube.com/vi/qzr9uuxXE4o/1.jpg)](https://www.youtube.com/watch?v=qzr9uuxXE4o)
+https://www.youtube.com/watch?v=dMaUxjK4si4
+
 
 ## ➤ Our Screenshot
 
