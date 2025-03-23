@@ -65,12 +65,6 @@ by <b>Valéry-Jérôme Michaux</b>
 
 1. New features v 5.23 :
 - Compatible HTTPS
-- Video conference
-- View the tasks of the logged-in user
-- Project costing
-- Fixed user data display in edit mode
-- Improved socket event handling
-- Bug fixes
 
 2. Upcoming features :
 - bug fixes
