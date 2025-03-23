@@ -216,6 +216,7 @@ Track project costs in real time.
 ![Image](https://github.com/user-attachments/assets/967db9e8-07e9-4564-85d1-2dc0ddcadd79)
 
 <b> video conferencing </b>
+
 Videoconferencing with team members. 
 
 ![Image](https://github.com/user-attachments/assets/cecf7d81-50c7-4aaf-adc6-b887b056a3a2)
