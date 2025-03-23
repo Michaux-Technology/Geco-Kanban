@@ -111,8 +111,10 @@ Prerequisites
 - Install mkcert on your system
 
   # For Windows with chocolatey
+  
+ ``bash
   choco install mkcert
-  ```
+   ```
 
 Certificate generation
 
