@@ -153,10 +153,6 @@ Troubleshooting
 - If you see a "NET::ERR_CERT_AUTHORITY_INVALID" error, install the CA again with `mkcert -install`.
 - If you see an "ERR_SSL_PROTOCOL_ERROR" error, check that the certificate paths are correct in your configuration files
 
-
-
-in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
-
 ## ➤ Make a donation
 
 To obtain a license :
