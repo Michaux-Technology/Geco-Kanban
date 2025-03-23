@@ -107,14 +107,14 @@ Ask your questions, let us know about bugs...
 
 9. Configuring SSL Certificates
 
-## Prerequisites
+Prerequisites
 - Install mkcert on your system
-  ```bash
+
   # For Windows with chocolatey
   choco install mkcert
   ```
 
-## Certificate generation
+Certificate generation
 
 1. 1. Create a `certificates` folder at the root of the project:
    ``bash
@@ -132,24 +132,24 @@ Ask your questions, let us know about bugs...
    mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
    ```
 
-## Certificate structure
+Certificate structure
 Certificates will be used by :
 - The frontend (port 3000)
 - Main backend (port 3001)
 - Video conferencing server (port 3002)
 
-## Configuration
+Configuration
 Certificates are automatically configured for :
 - Frontend: via `.env` file
 - Backend: via `serverSoft.js` and `serverVisio.js`.
 
-## Important notes
+Important notes
 - These certificates are for local development only
 - For production, use valid certificates from a recognized certification authority
 - Generated certificates are valid for localhost, 127.0.0.1 and 192.168.1.101
 - If you use another IP address, regenerate the certificates to include it
 
-## Troubleshooting
+Troubleshooting
 - If you see a "NET::ERR_CERT_AUTHORITY_INVALID" error, install the CA again with `mkcert -install`.
 - If you see an "ERR_SSL_PROTOCOL_ERROR" error, check that the certificate paths are correct in your configuration files
 
