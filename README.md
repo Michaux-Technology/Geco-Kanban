@@ -176,7 +176,8 @@ https://www.youtube.com/watch?v=dMaUxjK4si4
 
 ![Image](https://github.com/user-attachments/assets/20821410-f658-499e-b6ef-b4b443980a91)
 
-<b> Project list screen in card format.</b>
+<b> Project list screen in card format</b>
+
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
 
 ![Image](https://github.com/user-attachments/assets/78dd2011-0d5d-446e-ad61-807940ab96c5)
