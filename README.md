@@ -173,12 +173,19 @@ https://www.youtube.com/watch?v=dMaUxjK4si4
 ## ➤ Our Screenshot
 
 <b> Login screen </b>
+
 ![Image](https://github.com/user-attachments/assets/20821410-f658-499e-b6ef-b4b443980a91)
 
 <b> Project list screen in card format.</b>
 Here you can see the status of the project, its completion date and the people assigned to it. (Soon it will be possible to consult the files assigned to a project).
 
-![Capture d'écran 2024-12-08 162147](https://github.com/user-attachments/assets/3da4f377-04af-4c89-96c9-f0c6694bd9e9)
+![Image](https://github.com/user-attachments/assets/78dd2011-0d5d-446e-ad61-807940ab96c5)
+
+<b>File upload </b>
+Insert files essential to your project
+
+![Image](https://github.com/user-attachments/assets/2e59a43e-bc33-4638-8d06-9b02429b28db)
+
 
 <b> User list </b> with Avatar.
 
@@ -187,8 +194,18 @@ Here you can see the status of the project, its completion date and the people a
 <b> Kanban-based list of project tasks. </b>
 You can add, drop and customize columns, drag and drop tasks, view the people assigned to them, check progress, start and end dates, like and comment...
 
-![Capture d'écran 2024-12-08 162240](https://github.com/user-attachments/assets/5bffbf18-a2ae-4922-a243-795551fe200e)
+![Image](https://github.com/user-attachments/assets/79c70251-5cb5-44a8-a7ec-cac5a4061157)
+
 
 <b> Gantt chart.</b> You can see dependencies, task names, progress and dates, and each task has the same color as in Kanban, making it easier to visualize.
 
-![Capture d'écran 2024-12-08 162315](https://github.com/user-attachments/assets/1a64a3c7-8293-46ac-be04-e819417e15a2)
+![Image](https://github.com/user-attachments/assets/ff497da1-f3a1-476f-9d53-0339d905e2f5)
+
+<b>Project cost management</b>
+
+![Image](https://github.com/user-attachments/assets/967db9e8-07e9-4564-85d1-2dc0ddcadd79)
+
+<b>video conferencing</b>
+
+![Image](https://github.com/user-attachments/assets/cecf7d81-50c7-4aaf-adc6-b887b056a3a2)
+
