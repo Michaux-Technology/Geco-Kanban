@@ -192,7 +192,8 @@ Insert files essential to your project
 
 ![Capture d'écran 2024-12-08 162211](https://github.com/user-attachments/assets/40335590-c3a3-4e34-a8e8-ea45d1c7f52f)
 
-<b> Kanban-based list of project tasks. </b>
+<b> Kanban-based list of project tasks </b>
+
 You can add, drop and customize columns, drag and drop tasks, view the people assigned to them, check progress, start and end dates, like and comment...
 
 ![Image](https://github.com/user-attachments/assets/79c70251-5cb5-44a8-a7ec-cac5a4061157)
