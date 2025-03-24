@@ -55,7 +55,7 @@ The license available on Github is :
 [CC BY-NC-ND 4.0 DEED](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.en)
 
 ## ➤ Origin of the project
-This project was created by a 🇫🇷 living in 🇩🇪.   
+This project was created by a 🇫🇷 living in 🇩🇪 in Thüringen.   
 
 This project is totally 🇪🇺. 
 
