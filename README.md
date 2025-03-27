@@ -170,18 +170,18 @@ Ask your questions, let us know about bugs...
 ## Certificate generation
 
 1. 1. Create a `certificates` folder at the root of the project:
-   ``bash
+  ```bash
    mkdir certificates
    cd certificates
    ```
 
 2. Install the local certification authority :
-   ``bash
+ ```bash
    mkcert -install
    ```
 
 3. Generate certificates for local development:
-   ``bash
+ ```bash
    mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
    ```
 
