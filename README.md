@@ -76,82 +76,139 @@ Ask your questions, let us know about bugs...
 
 ## ➤ Setup
 
-1. Install your Mongodb server and create your collection with a name such as "Kanban". 
+### Prérequis
+1. MongoDB
+   - Installez MongoDB sur votre système
+   - Créez une base de données nommée "Kanban"
 
-2. Install Node.js and npm.
+2. Node.js et npm
+   - Installez Node.js (version 14 ou supérieure recommandée)
+   - npm sera installé automatiquement avec Node.js
 
-3. Configure your backend so that it can read this collection under : 
+### Configuration du Backend
+1. Configurez la connexion à MongoDB :
+   ```javascript
+   // Dans /backend/src/config.js
+   module.exports = {
+     db: 'mongodb://localhost:27017/Kanban',
+     // autres configurations...
+   };
+   ```
 
-   /backend/config.js
-
-4. Then configure your React.js frontend so that it can read your backend server: 
-
-   /frontend/config.jsx
-
-5. install the project in the command prompt :
-
+2. Installez les dépendances :
+   ```bash
+   cd backend
    npm install
+   ```
 
-6. Launch the backend under ./backend/src : 
+### Configuration du Frontend
+1. Configurez l'URL du backend :
+   ```javascript
+   // Dans /frontend/src/config.jsx
+   export const API_URL = 'https://192.168.1.101:3001';
+   export const API_URL_VISIO = 'https://192.168.1.101:3002';
+   ```
 
-   node serverSoft.js
+2. Installez les dépendances :
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-   and for the video conference:
-   
-   node serverVisio.js
-   if you do not need it do not lauch it.
+### Configuration SSL (HTTPS)
+1. Installez mkcert :
+   ```bash
+   # Windows (avec chocolatey)
+   choco install mkcert
+   ```
 
-8. Run the frontend under ./frontend : 
-
-   npm start
-
-9. Configuring SSL Certificates
-
-Prerequisites
-- Install mkcert on your system
-
-  For Windows with chocolatey
-  choco install mkcert
-
-
-Certificate generation
-
-1. 1. Create a `certificates` folder at the root of the project:
-
+2. Générez les certificats :
+   ```bash
    mkdir certificates
    cd certificates
+   mkcert -install
+   mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
+   ```
 
+### Démarrage des Serveurs
+1. Backend principal :
+   ```bash
+   cd backend/src
+   node serverSoft.js
+   ```
+
+2. Serveur de visioconférence (optionnel) :
+   ```bash
+   cd backend/src
+   node serverVisio.js
+   ```
+
+3. Frontend :
+   ```bash
+   cd frontend
+   npm start
+   ```
+
+### Vérification
+- Frontend : https://localhost:3000 ou https://192.168.1.101:3000
+- Backend : https://192.168.1.101:3001
+- Visioconférence : https://192.168.1.101:3002
+
+### Notes Importantes
+- Pour le développement local, acceptez les certificats auto-signés dans votre navigateur
+- Pour la production, utilisez des certificats SSL valides
+- Assurez-vous que tous les ports nécessaires (3000, 3001, 3002) sont disponibles
+- Configurez votre pare-feu pour autoriser ces connexions
+
+## Prerequisites
+- Install mkcert on your system
+  ```bash
+  # For Windows with chocolatey
+  choco install mkcert
+  ```
+
+## Certificate generation
+
+1. 1. Create a `certificates` folder at the root of the project:
+   ``bash
+   mkdir certificates
+   cd certificates
+   ```
 
 2. Install the local certification authority :
-   
+   ``bash
    mkcert -install
+   ```
 
-
-4. Generate certificates for local development:
-
+3. Generate certificates for local development:
+   ``bash
    mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
+   ```
 
-
-Certificate structure
+## Certificate structure
 Certificates will be used by :
 - The frontend (port 3000)
 - Main backend (port 3001)
 - Video conferencing server (port 3002)
 
-Configuration
+## Configuration
 Certificates are automatically configured for :
 - Frontend: via `.env` file
 - Backend: via `serverSoft.js` and `serverVisio.js`.
 
-Important notes
+## Important notes
 - These certificates are for local development only
 - For production, use valid certificates from a recognized certification authority
 - Generated certificates are valid for localhost, 127.0.0.1 and 192.168.1.101
 - If you use another IP address, regenerate the certificates to include it
 
-Troubleshooting
+## Troubleshooting
 - If you see a "NET::ERR_CERT_AUTHORITY_INVALID" error, install the CA again with `mkcert -install`.
 - If you see an "ERR_SSL_PROTOCOL_ERROR" error, check that the certificate paths are correct in your configuration files
+
+
+
+in <b>Insecure origins treated as secure</b> write the IP adress of your frontend server
 
 ## ➤ Make a donation
 
