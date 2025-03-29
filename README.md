@@ -76,53 +76,53 @@ Ask your questions, let us know about bugs...
 
 ## ➤ Setup
 
-### Prérequis
+### Requirements
 1. MongoDB
-   - Installez MongoDB sur votre système
-   - Créez une base de données nommée "Kanban"
+   - Install MongoDB on your system
+   - Create a database named “Kanban”.
 
-2. Node.js et npm
-   - Installez Node.js (version 14 ou supérieure recommandée)
-   - npm sera installé automatiquement avec Node.js
+2. Node.js and npm
+   - Install Node.js (version 14 or higher recommended)
+   - npm will be installed automatically with Node.js
 
-### Configuration du Backend
-1. Configurez la connexion à MongoDB :
+### Backend configuration
+1. Configure the connection to MongoDB :
    ```javascript
-   // Dans /backend/src/config.js
+   // In /backend/src/config.js
    module.exports = {
      db: 'mongodb://localhost:27017/Kanban',
-     // autres configurations...
+     // other configurations...
    };
    ```
 
-2. Installez les dépendances :
+2. Install dependencies :
    ```bash
    cd backend
    npm install
    ```
 
-### Configuration du Frontend
-1. Configurez l'URL du backend :
+### Frontend configuration
+1. Configure the backend URL:
    ```javascript
-   // Dans /frontend/src/config.jsx
+   // In /frontend/src/config.jsx
    export const API_URL = 'https://192.168.1.101:3001';
    export const API_URL_VISIO = 'https://192.168.1.101:3002';
    ```
 
-2. Installez les dépendances :
+2. Install dependencies :
    ```bash
    cd frontend
    npm install
    ```
 
-### Configuration SSL (HTTPS)
-1. Installez mkcert :
+### SSL configuration (HTTPS)
+1. Install mkcert :
    ```bash
-   # Windows (avec chocolatey)
+   # Windows (with chocolatey)
    choco install mkcert
    ```
 
-2. Générez les certificats :
+2. Generate certificates :
    ```bash
    mkdir certificates
    cd certificates
@@ -130,14 +130,14 @@ Ask your questions, let us know about bugs...
    mkcert -cert-file certificate.crt -key-file private.key localhost 127.0.0.1 192.168.1.101
    ```
 
-### Démarrage des Serveurs
-1. Backend principal :
+### Server startup
+1. Main backend :
    ```bash
    cd backend/src
    node serverSoft.js
    ```
 
-2. Serveur de visioconférence (optionnel) :
+2. Videoconferencing server (optional) :
    ```bash
    cd backend/src
    node serverVisio.js
@@ -149,18 +149,18 @@ Ask your questions, let us know about bugs...
    npm start
    ```
 
-### Vérification
+### Check
 - Frontend : https://localhost:3000 ou https://192.168.1.101:3000
 - Backend : https://192.168.1.101:3001
 - Visioconférence : https://192.168.1.101:3002
 
-### Notes Importantes
-- Pour le développement local, acceptez les certificats auto-signés dans votre navigateur
-- Pour la production, utilisez des certificats SSL valides
-- Assurez-vous que tous les ports nécessaires (3000, 3001, 3002) sont disponibles
-- Configurez votre pare-feu pour autoriser ces connexions
+### Important notes
+- For local development, accept self-signed certificates in your browser
+- For production, use valid SSL certificates
+- Ensure that all necessary ports (3000, 3001, 3002) are available
+- Configure your firewall to allow these connections
 
-## Prerequisites
+## Requirements
 - Install mkcert on your system
   ```bash
   # For Windows with chocolatey
