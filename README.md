@@ -94,7 +94,7 @@ Ask your questions, let us know about bugs...
 ### Backend configuration
 1. Configure the connection to MongoDB :
    ```javascript
-   // In /backend/src/config.js
+   // In /Geco-Kanban/backend/src/config.js
    module.exports = {
      db: 'mongodb://localhost:27017/Kanban',
      // other configurations...
@@ -110,7 +110,7 @@ Ask your questions, let us know about bugs...
 ### Frontend configuration
 1. Configure the backend URL:
    ```javascript
-   // In /frontend/src/config.jsx
+   // In /Geco-Kanban/frontend/src/config.jsx
    export const API_URL = 'https://192.168.1.101:3001';
    export const API_URL_VISIO = 'https://192.168.1.101:3002';
    ```
@@ -130,6 +130,7 @@ Ask your questions, let us know about bugs...
 
 2. Generate certificates :
    ```bash
+   //in /Geco-Kanban
    mkdir certificates
    cd certificates
    mkcert -install
