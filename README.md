@@ -80,15 +80,16 @@ Ask your questions, let us know about bugs...
 1. MongoDB
    - Install MongoDB on your system
    - Create a database named “Kanban”.
-   - Clone the project
-     ```javascript
-      // in PowerShell
-     git clone https://github.com/Michaux-Technology/Geco-Kanban.git
-    ```
 
 2. Node.js and npm
    - Install Node.js (version 14 or higher recommended)
    - npm will be installed automatically with Node.js
+     
+3. Clone the project
+     ```javascript
+      // in PowerShell
+     git clone https://github.com/Michaux-Technology/Geco-Kanban.git
+    ```
 
 ### Backend configuration
 1. Configure the connection to MongoDB :
