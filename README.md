@@ -63,8 +63,8 @@ by <b>Valéry-Jérôme Michaux</b>
 
 ## ➤ Project status
 
-1. New features v 5.23 :
-- Compatible HTTPS
+1. New features v 5.24 :
+- Bug HTTPS
 
 2. Upcoming features :
 - bug fixes
