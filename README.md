@@ -83,7 +83,7 @@ Ask your questions, let us know about bugs...
    - Clone the project
      ```javascript
       // in PowerShell
-     git clone 
+     git clone https://github.com/Michaux-Technology/Geco-Kanban.git
     ```
 
 2. Node.js and npm
