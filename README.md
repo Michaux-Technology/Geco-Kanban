@@ -80,6 +80,11 @@ Ask your questions, let us know about bugs...
 1. MongoDB
    - Install MongoDB on your system
    - Create a database named “Kanban”.
+   - Clone the project
+     ```javascript
+      // in PowerShell
+     git clone 
+    ```
 
 2. Node.js and npm
    - Install Node.js (version 14 or higher recommended)
