@@ -64,7 +64,7 @@ by <b>Valéry-Jérôme Michaux</b>
 ## ➤ Project status
 
 1. New features v 5.24 :
-- Bug HTTPS
+- Bug fix HTTPS
 
 2. Upcoming features :
 - bug fixes
