@@ -38,12 +38,19 @@ const logger = winston.createLogger({
 });
 
 const app = express();
+
+// Configuration CORS plus permissive
 app.use(cors({
   origin: ['https://localhost:3000', 'https://192.168.1.101:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Access-Control-Allow-Origin'],
+  credentials: true,
+  preflightContinue: false
 }));
+
+// Middleware pour gérer les requêtes OPTIONS
+app.options('*', cors());
+
 app.use(express.json());
 
 // Servir les fichiers statiques depuis le dossier public de frontend
@@ -1725,9 +1732,9 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Serveur
+// Démarrer le serveur HTTPS
 server.listen(3001, () => {
-  console.log('Server is running on port 3001');
+  console.log('HTTPS Server is running on port 3001');
 });
 
 // Application created by Valery-Jerome Michaux

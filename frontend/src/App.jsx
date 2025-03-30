@@ -14,6 +14,9 @@ import UserContext from './UserContext';
 import VideoConference from './VideoConference';
 import MyTasks from './MyTasks';
 
+// Configuration d'Axios
+axios.defaults.withCredentials = true;
+
 // Composant pour protéger les routes
 const ProtectedRoute = ({ children }) => {
   const userId = localStorage.getItem('id');
@@ -37,7 +40,7 @@ const router = {
 const App = () => {
   const [email, setEmail] = useState('');
   const [avatar, setAvatar] = useState('');
-  const [hasUsers, setHasUsers] = useState(null);
+  const [hasUsers, setHasUsers] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,9 +48,19 @@ const App = () => {
       try {
         console.log('Checking users at:', `${API_URL}/users`);
         const response = await axios.get(`${API_URL}/users`);
-        setHasUsers(response.data.length > 0);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        console.log('Response data:', response.data);
+        const userCount = response.data.length;
+        console.log('Number of users found:', userCount);
+        setHasUsers(userCount > 0);
+        console.log('hasUsers set to:', userCount > 0);
       } catch (error) {
         console.error('Error checking users:', error);
+        console.error('Error status:', error.response?.status);
+        console.error('Error headers:', error.response?.headers);
+        console.error('Error details:', error.response?.data || error.message);
+        setHasUsers(false);
       } finally {
         setIsLoading(false);
       }
@@ -56,8 +69,10 @@ const App = () => {
   }, []);
 
   if (isLoading) {
-    return null; // or return a loading spinner if preferred
+    return <div>Chargement...</div>;
   }
+
+  console.log('Current hasUsers value:', hasUsers);
 
   return (
     <Router future={router.future}>

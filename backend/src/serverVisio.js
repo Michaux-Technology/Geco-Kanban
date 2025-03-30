@@ -1,5 +1,8 @@
 const express = require('express');
 const https = require('https');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const app = express();
@@ -10,34 +13,33 @@ const sslOptions = {
   cert: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'certificate.crt'))
 };
 
-const server = https.createServer(sslOptions, app);
-const io = require('socket.io')(server, {
-  cors: {
-    origin: ["https://localhost:3000", "https://192.168.1.101:3000"],
-    methods: ["GET", "POST"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-  }
-});
+// Configuration CORS plus permissive
+app.use(cors({
+  origin: ['https://localhost:3000', 'https://192.168.1.101:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Access-Control-Allow-Origin'],
+  credentials: true,
+  preflightContinue: false
+}));
 
-// Ajouter CORS middleware
-app.use((req, res, next) => {
-  const allowedOrigins = ['https://localhost:3000', 'https://192.168.1.101:3000'];
-  const origin = req.headers.origin;
-  
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  next();
+// Middleware pour gérer les requêtes OPTIONS
+app.options('*', cors());
+
+app.use(express.json());
+
+// Créer le serveur HTTPS
+const server = https.createServer(sslOptions, app);
+
+// Configuration de Socket.IO
+const io = socketIo(server, {
+  cors: {
+    origin: ['https://localhost:3000', 'https://192.168.1.101:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma']
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
 });
 
 // Ajouter l'endpoint health check
@@ -130,7 +132,7 @@ io.on('connection', socket => {
   });
 });
 
-const port = 3002;
-server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Démarrer le serveur HTTPS
+server.listen(3002, () => {
+  console.log('HTTPS Visio Server is running on port 3002');
 }); 
