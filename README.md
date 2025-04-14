@@ -122,13 +122,23 @@ Ask your questions, let us know about bugs...
    ```
 
 ### SSL configuration (HTTPS)
-1. Install mkcert :
+
+1. Install chocolatey, in PowerShell :
+
+```bash
+   Set-ExecutionPolicy Bypass -Scope Process -Force; `
+[System.Net.ServicePointManager]::SecurityProtocol = `
+[System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+   ```
+
+2. Install mkcert :
    ```bash
    # Windows (with chocolatey)
    choco install mkcert
    ```
 
-2. Generate certificates :
+3. Generate certificates :
    ```bash
    //in /Geco-Kanban
    mkdir certificates
